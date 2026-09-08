@@ -1,44 +1,75 @@
 /**
  * ============================================================================
- * CUE RADAR — Career OS & Opportunities Hub (Full Beachhead Edition)
- * Beachhead Markets: Cologne/NRW, Berlin, Brussels, Israel
- * Disciplines: Contemporary Dance, Performance Art, Experimental Sound & Indie Music
- * Integrations: Google Drive API (Portfolio Vault & Dossier Sync) + LocalStorage MVP
- * Architecture: Structured for seamless REST API connection to Supabase / Airtable
+ * CUE RADAR — Digital Career OS for Alternative Artists
+ * Relational Two-Table Architecture: Sources & Opportunities
+ * Master Database Brain: 268 Sources · 23 Markets · 18 Countries
+ * Design System: Japanese Minimalism & Resident Advisor Editorial Feed
  * ============================================================================
  */
 
-import { institutions, liveOpportunities } from "./data.js";
-import { initAuth, signInWithGoogle, signOutUser, getAccessToken, getCurrentUser } from "./auth.js";
-import { listDriveFiles, exportDossierToDrive, createDriveFolder } from "./drive.js";
+import {
+  sources,
+  opportunities,
+  masterMetadata,
+  getOpportunityWithSource,
+  calculateDaysRemaining,
+  formatDeadlineDate,
+  parseMasterCSV,
+  exportSourcesToCSV,
+  artistProfile,
+  artistPortfolio
+} from "./data.js";
+
+import { initAuth, signInWithGoogle, signOutUser } from "./auth.js";
 
 // ============================================================================
-// 1. GLOBAL STATE & LOCAL STORAGE INITIALIZATION
+// 1. APPLICATION STATE
 // ============================================================================
-
-const STORAGE_KEY = "cue_radar_saved_ids";
+const STORAGE_KEY = "cue_radar_saved_opp_ids_v2";
+const STORAGE_SOURCES_KEY = "cue_radar_master_sources_v2";
+const STORAGE_OPPS_KEY = "cue_radar_master_opps_v2";
 
 const state = {
-  opportunities: [...liveOpportunities],
-  institutions: [...institutions],
-  savedIds: new Set(),
-  activeRegion: "All", // "All" | "Cologne / NRW" | "Berlin" | "Brussels" | "Israel"
-  activeCategory: "All", // "All" | "Dance" | "Sound" | "Residency" | "Funding" | "Saved"
+  activeView: "hub", // "hub" | "profile"
+  activeProfileTab: "saved", // "saved" | "portfolio"
+
+  // Master Database Metadata
+  masterMetadata: { ...masterMetadata },
+
+  // Relational data collections
+  sources: [...sources],
+  opportunities: [...opportunities],
+
+  // Filter state
+  activeCity: "All", // "All" | "Berlin" | "Cologne" | "Tel Aviv" | "Brussels" | etc.
+  activeDiscipline: "All", // "All" | "Dance" | "Sound" | "Multidisciplinary"
+  activeType: "All", // "All" | "Funding" | "Residency" | "Open Call"
+  savedOnly: false,
   searchQuery: "",
-  sortBy: "deadline-asc",
-  // Auth & Drive State
+  sortBy: "deadline-asc", // "deadline-asc" | "deadline-desc" | "title-asc"
+
+  // Bookmarks in LocalStorage
+  savedIds: new Set(),
+
+  // Auth state
   user: null,
-  accessToken: null,
-  driveFiles: [],
-  driveFilesLoading: false,
-  activeModal: null // null | "details" | "drive-vault" | "institutions"
+
+  // Showreel video state
+  isVideoPlaying: false,
+  isVideoMuted: false,
+
+  // Modal state
+  activeModalData: null,
+  activeSyncTab: "overview", // "overview" | "import" | "guide" | "export"
+  stagedParsedSources: []
 };
 
-/**
- * Load saved bookmarks from LocalStorage
- */
+// ============================================================================
+// 2. LOCAL STORAGE PERSISTENCE
+// ============================================================================
 function initStorage() {
   try {
+    // 1. Load saved opportunity IDs
     const raw = localStorage.getItem(STORAGE_KEY);
     if (raw) {
       const parsed = JSON.parse(raw);
@@ -47,14 +78,39 @@ function initStorage() {
       }
     }
   } catch (err) {
-    console.warn("[CUE RADAR] LocalStorage load failed:", err);
+    console.warn("[CUE RADAR] LocalStorage savedIds load failed:", err);
     state.savedIds = new Set();
+  }
+
+  try {
+    // 2. Load custom/updated sources if stored
+    const customSourcesRaw = localStorage.getItem(STORAGE_SOURCES_KEY);
+    if (customSourcesRaw) {
+      const parsedSources = JSON.parse(customSourcesRaw);
+      if (Array.isArray(parsedSources) && parsedSources.length > 0) {
+        state.sources = parsedSources;
+        console.log(`[CUE RADAR] Loaded ${parsedSources.length} custom sources from LocalStorage.`);
+      }
+    }
+  } catch (err) {
+    console.warn("[CUE RADAR] Custom sources load failed, using default master dataset:", err);
+  }
+
+  try {
+    // 3. Load custom/updated opportunities if stored
+    const customOppsRaw = localStorage.getItem(STORAGE_OPPS_KEY);
+    if (customOppsRaw) {
+      const parsedOpps = JSON.parse(customOppsRaw);
+      if (Array.isArray(parsedOpps) && parsedOpps.length > 0) {
+        state.opportunities = parsedOpps;
+        console.log(`[CUE RADAR] Loaded ${parsedOpps.length} custom opportunities from LocalStorage.`);
+      }
+    }
+  } catch (err) {
+    console.warn("[CUE RADAR] Custom opps load failed, using default opportunities:", err);
   }
 }
 
-/**
- * Persist bookmarks to LocalStorage
- */
 function persistSavedIds() {
   try {
     localStorage.setItem(STORAGE_KEY, JSON.stringify(Array.from(state.savedIds)));
@@ -63,20 +119,42 @@ function persistSavedIds() {
   }
 }
 
+function persistSourcesToStorage(sourcesArray) {
+  try {
+    localStorage.setItem(STORAGE_SOURCES_KEY, JSON.stringify(sourcesArray));
+  } catch (err) {
+    console.error("[CUE RADAR] Failed to save sources to LocalStorage:", err);
+  }
+}
+
+function resetMasterSourcesToDefault() {
+  try {
+    localStorage.removeItem(STORAGE_SOURCES_KEY);
+    localStorage.removeItem(STORAGE_OPPS_KEY);
+    state.sources = [...sources];
+    state.opportunities = [...opportunities];
+    updateUI();
+    showToast("Reset database to master default (268 sources)");
+  } catch (err) {
+    console.error("[CUE RADAR] Failed to reset sources:", err);
+  }
+}
+
 /**
- * Toggle bookmark state
+ * Toggle bookmark state for an opportunity ID
+ * @param {string} oppId
  */
 function toggleSaveOpportunity(oppId) {
   const isSaved = state.savedIds.has(oppId);
-  const opp = state.opportunities.find(o => o.id === oppId);
-  const oppTitle = opp ? opp.title : "Opportunity";
+  const opp = state.opportunities.find((o) => o.opp_id === oppId);
+  const title = opp ? opp.title : "Opportunity";
 
   if (isSaved) {
     state.savedIds.delete(oppId);
-    showToast(`Removed "${truncate(oppTitle, 30)}" from radar`, "removed");
+    showToast(`Removed "${truncate(title, 28)}" from saved`);
   } else {
     state.savedIds.add(oppId);
-    showToast(`Bookmarked "${truncate(oppTitle, 30)}" to radar`, "saved");
+    showToast(`Saved "${truncate(title, 28)}"`);
   }
 
   persistSavedIds();
@@ -85,39 +163,65 @@ function toggleSaveOpportunity(oppId) {
 }
 
 // ============================================================================
-// 2. FILTERING & SORTING PIPELINE
+// 3. FILTERING & SORTING PIPELINE
+// Relational join with Sources for city, market and institution details
 // ============================================================================
-
 function getFilteredOpportunities() {
-  let list = state.opportunities.filter((opp) => {
-    // 1. Region Filter (Cologne / NRW, Berlin, Brussels, Israel)
-    if (state.activeRegion !== "All") {
-      if (opp.region !== state.activeRegion) return false;
+  // First join with Sources
+  const joinedList = state.opportunities.map((opp) => getOpportunityWithSource(opp, state.sources));
+
+  const filtered = joinedList.filter((item) => {
+    // 1. City / Market Filter (Row 1)
+    if (state.activeCity !== "All") {
+      const target = state.activeCity.toLowerCase();
+      const city = (item.city || "").toLowerCase();
+      const market = (item.market || "").toLowerCase();
+      const country = (item.country || "").toLowerCase();
+
+      const match =
+        city.includes(target) ||
+        market.includes(target) ||
+        target.includes(city) ||
+        (target.includes("cologne") && (city.includes("köln") || market.includes("köln"))) ||
+        (target.includes("köln") && city.includes("cologne"));
+
+      if (!match) {
+        return false;
+      }
     }
 
-    // 2. Category / Saved Filter
-    if (state.activeCategory === "Saved") {
-      if (!state.savedIds.has(opp.id)) return false;
-    } else if (state.activeCategory !== "All") {
-      const matchesCategory = opp.category.some(
-        c => c.toLowerCase() === state.activeCategory.toLowerCase()
-      );
-      const matchesDiscipline = opp.disciplines.some(
-        d => d.toLowerCase().includes(state.activeCategory.toLowerCase())
-      );
-      if (!matchesCategory && !matchesDiscipline) return false;
+    // 2. Discipline Filter (Row 2)
+    if (state.activeDiscipline !== "All") {
+      if (item.discipline.toLowerCase() !== state.activeDiscipline.toLowerCase()) {
+        return false;
+      }
     }
 
-    // 3. Search Query (Matches Title, Institution, Disciplines, City, Description)
-    if (state.searchQuery.trim() !== "") {
+    // 3. Opportunity Type Filter (Row 3)
+    if (state.activeType !== "All") {
+      if (item.type.toLowerCase() !== state.activeType.toLowerCase()) {
+        return false;
+      }
+    }
+
+    // 4. Saved Only Toggle
+    if (state.savedOnly) {
+      if (!state.savedIds.has(item.opp_id)) {
+        return false;
+      }
+    }
+
+    // 5. Search Query
+    if (state.searchQuery.trim()) {
       const q = state.searchQuery.toLowerCase().trim();
-      const inTitle = opp.title.toLowerCase().includes(q);
-      const inInst = opp.institution.toLowerCase().includes(q);
-      const inCity = opp.city.toLowerCase().includes(q);
-      const inDiscip = opp.disciplines.some(d => d.toLowerCase().includes(q));
-      const inDesc = opp.description.toLowerCase().includes(q);
+      const matchTitle = item.title.toLowerCase().includes(q);
+      const matchSource = item.source_name.toLowerCase().includes(q);
+      const matchCity = item.city.toLowerCase().includes(q);
+      const matchDiscipline = item.discipline.toLowerCase().includes(q);
+      const matchType = item.type.toLowerCase().includes(q);
+      const matchDesc = item.description ? item.description.toLowerCase().includes(q) : false;
 
-      if (!inTitle && !inInst && !inCity && !inDiscip && !inDesc) {
+      if (!matchTitle && !matchSource && !matchCity && !matchDiscipline && !matchType && !matchDesc) {
         return false;
       }
     }
@@ -125,705 +229,1285 @@ function getFilteredOpportunities() {
     return true;
   });
 
-  // 4. Sorting
-  if (state.sortBy === "deadline-asc") {
-    list.sort((a, b) => a.daysRemaining - b.daysRemaining);
-  } else if (state.sortBy === "deadline-desc") {
-    list.sort((a, b) => b.daysRemaining - a.daysRemaining);
-  } else if (state.sortBy === "title-asc") {
-    list.sort((a, b) => a.title.localeCompare(b.title));
-  }
+  // Sorting
+  filtered.sort((a, b) => {
+    if (state.sortBy === "deadline-asc") {
+      return a.daysRemaining - b.daysRemaining;
+    }
+    if (state.sortBy === "deadline-desc") {
+      return b.daysRemaining - a.daysRemaining;
+    }
+    if (state.sortBy === "title-asc") {
+      return a.title.localeCompare(b.title);
+    }
+    return 0;
+  });
 
-  return list;
+  return filtered;
 }
 
 // ============================================================================
-// 3. RENDERING ENGINE: CARDS & GRIDS
+// 4. CARD RENDERING — MOBILE FIRST CARD HIERARCHY
 // ============================================================================
+/**
+ * Generates an HTML card element conforming strictly to PART 3:
+ * 1. Top row: Institution Name & City (DM Sans, small, light grey)
+ * 2. Title: Space Grotesk, large, pure white, prominent
+ * 3. Tags: Discipline & Type tags aligned horizontally (DM Sans, small)
+ * 4. Compensation details: clear secondary line
+ * 5. Footer: Countdown badge on left ("Ends in X days"), Pill Save button on right
+ */
+function createOpportunityCardHTML(item) {
+  const isSaved = state.savedIds.has(item.opp_id);
+  const days = item.daysRemaining;
 
-function createOpportunityCardHTML(opp) {
-  const isSaved = state.savedIds.has(opp.id);
-  const isUrgent = opp.daysRemaining <= 7;
-
-  const tagsHTML = opp.disciplines
-    .map(tag => `<span class="discipline-tag">${escapeHTML(tag)}</span>`)
-    .join("");
-
-  const countdownText = opp.daysRemaining === 1 
-    ? "ENDS IN 1 DAY" 
-    : `ENDS IN ${opp.daysRemaining} DAYS`;
+  // Countdown text formatting
+  let countdownText = "";
+  if (days < 0) {
+    countdownText = "Call Closed";
+  } else if (days === 0) {
+    countdownText = "Ends Today";
+  } else if (days === 1) {
+    countdownText = "Ends in 1 day";
+  } else {
+    countdownText = `Ends in ${days} days`;
+  }
 
   return `
     <article 
-      class="opportunity-card ticket-card ${isUrgent ? 'urgent' : ''} ${isSaved ? 'is-saved' : ''}" 
-      id="card-${opp.id}"
-      data-id="${opp.id}"
+      class="opportunity-card" 
+      data-opp-id="${escapeHtml(item.opp_id)}"
+      tabindex="0"
+      role="button"
+      aria-label="${escapeHtml(item.title)} by ${escapeHtml(item.source_name)}"
     >
-      <!-- Ticket Top Header / Stub Info -->
-      <header class="card-header ticket-header">
-        <div class="institution-group">
-          <span class="region-badge">${escapeHTML(opp.city).toUpperCase()} // ${escapeHTML(opp.region).toUpperCase()}</span>
-          <span class="institution-tag">${escapeHTML(opp.institution)}</span>
+      <!-- 1. Header Line: Institution Name + City (DM Sans, small, light grey) -->
+      <div class="card-header-line">
+        <div class="card-institution-wrap">
+          <span class="card-institution-name">${escapeHtml(item.source_name)}</span>
+          <span class="card-bullet" aria-hidden="true">·</span>
+          <span class="card-city-name">${escapeHtml(item.city)}</span>
         </div>
-        <div class="ticket-header-meta">
-          <span class="status-badge ${isUrgent ? 'urgent' : 'open'}">
-            ${isUrgent ? '● CLOSING SOON' : '● OPEN CALL'}
-          </span>
-          <span class="ticket-index">TICKET #0${opp.id}</span>
-        </div>
-      </header>
-
-      <!-- Ticket Main Body: Title, Tags & Support Info -->
-      <div class="card-body ticket-body">
-        <h3 class="card-title ticket-title" data-action="view-details" data-id="${opp.id}">
-          ${escapeHTML(opp.title)}
-        </h3>
-
-        <div class="tags-list ticket-tags">
-          ${tagsHTML}
-        </div>
-
-        <div class="card-meta-rows ticket-meta-rows">
-          <div class="meta-item">
-            <span class="meta-label">GRANT / SUPPORT:</span>
-            <span class="meta-value grant">${escapeHTML(opp.grantAmount)}</span>
-          </div>
-          <div class="meta-item">
-            <span class="meta-label">DEADLINE:</span>
-            <span class="meta-value">${escapeHTML(opp.deadlineFormatted)}</span>
-          </div>
-        </div>
+        <span class="card-country-tag">${escapeHtml(item.country)}</span>
       </div>
 
-      <!-- Ticket Perforation Divider & Side Cutout Notches (DICE / RA event ticket style) -->
-      <div class="ticket-perforation" aria-hidden="true">
-        <span class="ticket-notch ticket-notch-left"></span>
-        <div class="ticket-perforation-line"></div>
-        <span class="ticket-notch ticket-notch-right"></span>
+      <!-- 2. Opportunity Title: Space Grotesk, large, pure white, prominent -->
+      <h2 class="card-title">${escapeHtml(item.title)}</h2>
+
+      <!-- 3. Tags: Discipline and Type tags aligned horizontally (DM Sans, small) -->
+      <div class="card-tags-row">
+        <span class="card-discipline-pill">${escapeHtml(item.discipline)}</span>
+        <span class="card-type-pill">${escapeHtml(item.type)}</span>
       </div>
 
-      <!-- Ticket Footer: Clear, Highly Visible Foundation / DICE Countdown & Actions -->
-      <footer class="card-footer ticket-footer">
-        <div class="countdown-box ticket-countdown ${isUrgent ? 'urgent' : ''}" aria-label="Deadline Countdown">
-          <div class="countdown-label-group">
-            <span class="countdown-live-dot" aria-hidden="true"></span>
-            <span>COUNTDOWN TIMER</span>
-          </div>
-          <div class="countdown-timer-value">${countdownText}</div>
+      <!-- Compensation Details Line -->
+      ${
+        item.compensation_details
+          ? `<div class="card-compensation-line">
+              <span class="compensation-label">Grant:</span>
+              <span class="compensation-val">${escapeHtml(item.compensation_details)}</span>
+            </div>`
+          : ""
+      }
+
+      <!-- 4. Footer / Action Bar: Vermilion Countdown on left, Save pill on right -->
+      <div class="card-footer-action-bar">
+        <div class="countdown-badge">
+          <span class="countdown-dot" aria-hidden="true"></span>
+          <span>${escapeHtml(countdownText)}</span>
         </div>
 
-        <div class="card-actions-row ticket-actions-row">
-          <button 
-            type="button" 
-            class="btn-details btn-ticket-call" 
-            data-action="view-details" 
-            data-id="${opp.id}"
-            aria-label="View guidelines for ${escapeHTML(opp.title)}"
-          >
-            <span>VIEW CALL</span>
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5">
-              <line x1="7" y1="17" x2="17" y2="7"></line>
-              <polyline points="7 7 17 7 17 17"></polyline>
-            </svg>
-          </button>
-
-          <button 
-            type="button" 
-            class="btn-save ${isSaved ? 'saved' : ''}" 
-            data-action="toggle-save" 
-            data-id="${opp.id}"
-            aria-pressed="${isSaved}"
-            aria-label="${isSaved ? 'Remove from saved' : 'Save opportunity'}"
-          >
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="${isSaved ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2.5">
-              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
-            </svg>
-            <span class="save-label">${isSaved ? 'SAVED' : 'SAVE'}</span>
-          </button>
-
-          <button 
-            type="button" 
-            class="btn-card-drive-sync" 
-            data-action="sync-card-to-drive" 
-            data-id="${opp.id}"
-            title="Create Application Folder in Google Drive"
-            aria-label="Create application folder in Google Drive"
-          >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"></path>
-              <line x1="12" y1="11" x2="12" y2="17"></line>
-              <line x1="9" y1="14" x2="15" y2="14"></line>
-            </svg>
-          </button>
-        </div>
-      </footer>
+        <button 
+          type="button" 
+          class="btn-save-pill ${isSaved ? "saved" : ""}" 
+          data-action="save"
+          data-opp-id="${escapeHtml(item.opp_id)}"
+          aria-pressed="${isSaved}"
+          aria-label="${isSaved ? "Remove from saved" : "Save opportunity"}"
+        >
+          <span class="save-pill-star" aria-hidden="true">★</span>
+          <span class="save-pill-label">${isSaved ? "Saved" : "Save"}</span>
+        </button>
+      </div>
     </article>
   `;
 }
 
-function renderGrid() {
-  const gridContainer = document.getElementById("opportunities-grid");
-  const emptyState = document.getElementById("empty-state");
-  const countIndicator = document.getElementById("active-count-indicator");
-  
-  if (!gridContainer) return;
-
-  const filtered = getFilteredOpportunities();
-
-  if (filtered.length === 0) {
-    gridContainer.innerHTML = "";
-    if (emptyState) emptyState.classList.add("visible");
-  } else {
-    if (emptyState) emptyState.classList.remove("visible");
-    gridContainer.innerHTML = filtered.map(opp => createOpportunityCardHTML(opp)).join("");
-  }
-
-  if (countIndicator) {
-    const total = state.opportunities.length;
-    countIndicator.innerHTML = `Showing <span class="active-count-highlight">${filtered.length}</span> of ${total} Opportunities`;
-  }
-}
-
-function updateUI() {
-  renderGrid();
-
-  // Update Bookmark Counters
-  const navBadge = document.getElementById("nav-saved-count");
-  const chipBadge = document.getElementById("chip-saved-count");
-  const navSavedBtn = document.getElementById("nav-saved-btn");
-  const savedCount = state.savedIds.size;
-
-  if (navBadge) navBadge.textContent = String(savedCount);
-  if (chipBadge) chipBadge.textContent = String(savedCount);
-
-  if (navSavedBtn) {
-    navSavedBtn.classList.toggle("active", state.activeCategory === "Saved");
-  }
-
-  // Update Region Tabs active styling
-  document.querySelectorAll(".region-tab").forEach(tab => {
-    const region = tab.getAttribute("data-region");
-    tab.classList.toggle("active", region === state.activeRegion);
-  });
-
-  // Update Category Chips active styling
-  document.querySelectorAll(".filter-chip").forEach(chip => {
-    const cat = chip.getAttribute("data-filter");
-    chip.classList.toggle("active", cat === state.activeCategory);
-  });
-}
-
 // ============================================================================
-// 4. GOOGLE DRIVE INTEGRATION & VAULT MODAL
+// 5. VIEW RENDERING (THE HUB & ARTIST PROFILE)
 // ============================================================================
 
 /**
- * Handle Google Auth state changes
+ * Render the Opportunities Feed in The Hub
  */
-function handleAuthStateChange(user, token) {
-  state.user = user;
-  state.accessToken = token;
+function renderFeed() {
+  const container = document.getElementById("opportunities-grid");
+  const emptyBox = document.getElementById("empty-feed-box");
+  const countDisplay = document.getElementById("feed-count-indicator");
 
-  const signInBtn = document.getElementById("gsi-signin-btn");
-  const userPill = document.getElementById("drive-user-pill");
-  const userName = document.getElementById("drive-user-name");
-  const userAvatar = document.getElementById("drive-user-avatar");
-
-  if (user && token) {
-    if (signInBtn) signInBtn.style.display = "none";
-    if (userPill) userPill.classList.add("connected");
-    if (userName) userName.textContent = user.displayName || user.email || "Artist";
-    if (userAvatar) userAvatar.src = user.photoURL || "https://www.gstatic.com/images/branding/product/1x/drive_2020q4_32dp.png";
-  } else {
-    if (signInBtn) signInBtn.style.display = "inline-flex";
-    if (userPill) userPill.classList.remove("connected");
-  }
-}
-
-/**
- * Open the Google Drive Artist Vault Modal
- */
-async function openDriveVaultModal() {
-  const modal = document.getElementById("general-modal");
-  const modalContainer = document.getElementById("modal-content-container");
-  if (!modal || !modalContainer) return;
-
-  state.activeModal = "drive-vault";
-
-  const user = state.user;
-  const token = state.accessToken;
-
-  if (!token) {
-    modalContainer.innerHTML = `
-      <div class="modal-header">
-        <div>
-          <div class="modal-subtitle">GOOGLE DRIVE INTEGRATION // OAUTH REQUIRED</div>
-          <h2 class="modal-title">Artist Dossier &amp; Portfolio Vault</h2>
-        </div>
-        <button class="modal-close-btn" id="modal-close-btn" aria-label="Close modal">
-          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-        </button>
-      </div>
-      <div class="modal-body">
-        <p class="modal-desc-text">
-          Connect your Google Drive account to sync tracked open call deadlines, export artist application dossiers, and organize portfolio attachments directly from your Drive.
-        </p>
-        <div style="display: flex; justify-content: center; padding: 1.5rem 0;">
-          <button id="modal-gsi-btn" class="gsi-material-button">
-            <div class="gsi-material-button-icon">
-              <svg viewBox="0 0 48 48" style="display: block; width: 18px; height: 18px;">
-                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
-                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path>
-                <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path>
-                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path>
-              </svg>
-            </div>
-            <span>Sign in with Google to Connect Drive</span>
-          </button>
-        </div>
-      </div>
-    `;
-    modal.classList.add("active");
-    document.getElementById("modal-gsi-btn")?.addEventListener("click", async () => {
-      await handleGoogleSignInFlow();
-      openDriveVaultModal();
-    });
-    return;
-  }
-
-  // User is connected to Google Drive
-  const savedCount = state.savedIds.size;
-  modalContainer.innerHTML = `
-    <div class="modal-header">
-      <div>
-        <div class="modal-subtitle">GOOGLE DRIVE CONNECTED // ${escapeHTML(user.email || "")}</div>
-        <h2 class="modal-title">Artist Dossier &amp; Drive Vault</h2>
-      </div>
-      <button class="modal-close-btn" id="modal-close-btn" aria-label="Close modal">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-      </button>
-    </div>
-
-    <div class="modal-body">
-      <!-- Top Action Banner -->
-      <div class="drive-vault-hero">
-        <div>
-          <div style="font-family: var(--font-mono); font-size: 0.75rem; color: var(--neon-green); margin-bottom: 0.25rem;">
-            SYNC RADAR TO DRIVE
-          </div>
-          <p class="vault-lead">
-            Export all ${savedCount > 0 ? savedCount + ' bookmarked' : 'active'} open calls into a master Markdown Dossier in your Google Drive with full deadlines and portal links.
-          </p>
-        </div>
-        <button type="button" class="btn-export-drive" id="btn-do-export-drive">
-          <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="7 10 12 15 17 10"></polyline>
-            <line x1="12" y1="15" x2="12" y2="3"></line>
-          </svg>
-          <span>Export Dossier to Drive</span>
-        </button>
-      </div>
-
-      <!-- Drive File Browser -->
-      <div>
-        <div style="display: flex; align-items: center; justify-content: space-between; margin-bottom: 0.5rem;">
-          <h4 style="font-family: var(--font-mono); font-size: 0.75rem; text-transform: uppercase; color: var(--text-muted);">
-            Recent Artist Files &amp; Dossiers in Google Drive
-          </h4>
-          <span id="drive-files-count" style="font-family: var(--font-mono); font-size: 0.6875rem; color: var(--text-muted);">Loading...</span>
-        </div>
-
-        <div class="drive-files-search" style="margin-bottom: 0.75rem;">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <circle cx="11" cy="11" r="8"></circle>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-          </svg>
-          <input type="text" id="drive-search-input" class="drive-search-input" placeholder="Filter files in your Google Drive..." />
-        </div>
-
-        <div class="drive-files-list" id="drive-files-list">
-          <div style="padding: 1.5rem; text-align: center; color: var(--text-muted); font-family: var(--font-mono); font-size: 0.75rem;">
-            Connecting to Drive v3 API...
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="modal-footer">
-      <button type="button" class="nav-btn" id="btn-drive-signout" style="border-color: rgba(255,85,0,0.4); color: var(--neon-orange);">
-        <span>Disconnect Drive</span>
-      </button>
-      <a href="https://drive.google.com" target="_blank" rel="noopener noreferrer" class="nav-btn" style="text-decoration: none;">
-        <span>Open drive.google.com</span>
-      </a>
-    </div>
-  `;
-
-  modal.classList.add("active");
-  document.body.style.overflow = "hidden";
-
-  // Bind Export button
-  document.getElementById("btn-do-export-drive")?.addEventListener("click", async (e) => {
-    const btn = e.currentTarget;
-    btn.disabled = true;
-    btn.innerHTML = `<span>Exporting to Drive...</span>`;
-    try {
-      const itemsToExport = state.savedIds.size > 0 
-        ? state.opportunities.filter(o => state.savedIds.has(o.id))
-        : state.opportunities;
-
-      const createdFile = await exportDossierToDrive(token, itemsToExport);
-      showToast("Artist dossier exported to Google Drive!", "drive");
-      btn.innerHTML = `<span>✓ Exported Successfully</span>`;
-      setTimeout(() => {
-        btn.disabled = false;
-        btn.innerHTML = `<span>Export Dossier to Drive</span>`;
-      }, 2500);
-
-      // Refresh list
-      loadDriveFileList();
-    } catch (err) {
-      console.error(err);
-      alert("Failed to export to Google Drive: " + err.message);
-      btn.disabled = false;
-      btn.innerHTML = `<span>Export Dossier to Drive</span>`;
-    }
-  });
-
-  // Bind Sign-out
-  document.getElementById("btn-drive-signout")?.addEventListener("click", async () => {
-    if (confirm("Disconnect Google Drive from CUE RADAR?")) {
-      await signOutUser();
-      closeModal();
-      showToast("Google Drive disconnected", "removed");
-    }
-  });
-
-  // Load files from Drive
-  loadDriveFileList();
-
-  // Search input in Drive
-  document.getElementById("drive-search-input")?.addEventListener("input", (e) => {
-    const q = e.target.value.toLowerCase();
-    renderDriveFiles(q);
-  });
-}
-
-/**
- * Fetch and render file list from Google Drive
- */
-async function loadDriveFileList() {
-  const container = document.getElementById("drive-files-list");
-  const countSpan = document.getElementById("drive-files-count");
-  if (!container || !state.accessToken) return;
-
-  try {
-    const files = await listDriveFiles(state.accessToken);
-    state.driveFiles = files;
-    if (countSpan) countSpan.textContent = `${files.length} files found`;
-    renderDriveFiles();
-  } catch (err) {
-    console.error("[CUE RADAR Drive] Error fetching files:", err);
-    if (container) {
-      container.innerHTML = `
-        <div style="padding: 1rem; color: var(--neon-orange); font-size: 0.75rem; font-family: var(--font-mono);">
-          Unable to fetch Drive files: ${escapeHTML(err.message)}
-        </div>
-      `;
-    }
-  }
-}
-
-function renderDriveFiles(filterQuery = "") {
-  const container = document.getElementById("drive-files-list");
   if (!container) return;
 
-  let list = state.driveFiles;
-  if (filterQuery) {
-    list = list.filter(f => f.name.toLowerCase().includes(filterQuery));
+  const items = getFilteredOpportunities();
+
+  // Update count indicator
+  if (countDisplay) {
+    const total = state.opportunities.length;
+    if (items.length === total) {
+      countDisplay.textContent = `Showing all ${total} opportunities`;
+    } else {
+      countDisplay.textContent = `Showing ${items.length} of ${total} opportunities`;
+    }
   }
 
-  if (list.length === 0) {
-    container.innerHTML = `
-      <div style="padding: 1.5rem; text-align: center; color: var(--text-muted); font-size: 0.75rem; font-family: var(--font-mono);">
-        No files matched in Google Drive.
-      </div>
-    `;
-    return;
+  if (items.length === 0) {
+    container.innerHTML = "";
+    if (emptyBox) emptyBox.style.display = "flex";
+  } else {
+    if (emptyBox) emptyBox.style.display = "none";
+    container.innerHTML = items.map((item) => createOpportunityCardHTML(item)).join("");
   }
 
-  container.innerHTML = list.map(f => {
-    const isFolder = f.mimeType === "application/vnd.google-apps.folder";
-    const icon = isFolder ? "📁" : "📄";
-    return `
-      <div class="drive-file-item">
-        <div class="drive-file-main">
-          <span>${icon}</span>
-          <div style="min-width: 0;">
-            <div class="drive-file-name" title="${escapeHTML(f.name)}">${escapeHTML(f.name)}</div>
-            <div class="drive-file-meta">${isFolder ? 'Folder' : (f.mimeType ? f.mimeType.split('/').pop() : 'file')}</div>
-          </div>
-        </div>
-        ${f.webViewLink ? `
-          <a href="${f.webViewLink}" target="_blank" rel="noopener noreferrer" class="drive-file-link">
-            View in Drive ↗
-          </a>
-        ` : ''}
-      </div>
-    `;
-  }).join("");
+  // Update floating quick-filter pill label
+  updateFloatingPill(items.length);
 }
 
 /**
- * Handle quick creation of an application folder in Drive for a specific opportunity
+ * Updates floating quick-filter pill label with active criteria
  */
-async function handleQuickDriveFolder(oppId) {
-  if (!state.accessToken) {
-    const proceed = confirm("Google Drive connection required to create an application dossier folder. Would you like to sign in with Google now?");
-    if (proceed) {
-      await handleGoogleSignInFlow();
-      if (state.accessToken) {
-        handleQuickDriveFolder(oppId);
-      }
-    }
-    return;
-  }
+function updateFloatingPill(count) {
+  const label = document.getElementById("floating-pill-label");
+  if (!label) return;
 
-  const opp = state.opportunities.find(o => o.id === oppId);
-  if (!opp) return;
+  const activeParts = [];
+  if (state.activeCity !== "All") activeParts.push(state.activeCity);
+  if (state.activeDiscipline !== "All") activeParts.push(state.activeDiscipline);
+  if (state.activeType !== "All") activeParts.push(state.activeType);
+  if (state.savedOnly) activeParts.push("Saved");
 
-  const folderName = `[CUE RADAR] ${opp.institution} - ${opp.title.slice(0, 30)}`;
-
-  try {
-    showToast(`Creating Drive folder: "${folderName}"...`, "drive");
-    const folder = await createDriveFolder(state.accessToken, folderName);
-    showToast(`Folder created in Google Drive!`, "drive");
-    if (folder.id) {
-      window.open(`https://drive.google.com/drive/folders/${folder.id}`, "_blank");
-    }
-  } catch (err) {
-    alert("Error creating folder in Google Drive: " + err.message);
+  if (activeParts.length > 0) {
+    label.textContent = `Filters (${activeParts.join(" · ")}) · ${count}`;
+  } else {
+    label.textContent = `Filters · ${count} Calls`;
   }
 }
 
+/**
+ * Render Artist Profile View (Part 4)
+ */
+function renderProfileView() {
+  // 1. Saved Opportunities tab
+  const savedContainer = document.getElementById("profile-saved-list");
+  const emptySaved = document.getElementById("profile-empty-saved");
+  const savedCounter = document.getElementById("tab-counter-saved");
+
+  const savedList = state.opportunities
+    .filter((o) => state.savedIds.has(o.opp_id))
+    .map((o) => getOpportunityWithSource(o));
+
+  if (savedCounter) {
+    savedCounter.textContent = savedList.length.toString();
+  }
+
+  if (savedContainer) {
+    if (savedList.length === 0) {
+      savedContainer.innerHTML = "";
+      if (emptySaved) emptySaved.style.display = "flex";
+    } else {
+      if (emptySaved) emptySaved.style.display = "none";
+      savedContainer.innerHTML = savedList
+        .map((item) => createOpportunityCardHTML(item))
+        .join("");
+    }
+  }
+
+  // 2. Portfolio / Media Tab (4 placeholder image cards for past works/gigs)
+  const portfolioContainer = document.getElementById("portfolio-media-grid");
+  const portfolioCounter = document.getElementById("tab-counter-portfolio");
+
+  if (portfolioCounter) {
+    portfolioCounter.textContent = artistPortfolio.length.toString();
+  }
+
+  if (portfolioContainer) {
+    portfolioContainer.innerHTML = artistPortfolio
+      .map((item) => `
+        <div class="portfolio-media-card" data-portfolio-id="${escapeHtml(item.id)}">
+          <div class="portfolio-img-aspect">
+            <img 
+              src="${escapeHtml(item.image)}" 
+              alt="${escapeHtml(item.title)}" 
+              class="portfolio-img" 
+              loading="lazy" 
+              referrerpolicy="no-referrer"
+            />
+          </div>
+          <div class="portfolio-card-body">
+            <div class="portfolio-card-top">
+              <span class="portfolio-card-venue">${escapeHtml(item.venue)} · ${escapeHtml(item.city)}</span>
+              <span>${escapeHtml(item.year)}</span>
+            </div>
+            <h3 class="portfolio-card-title">${escapeHtml(item.title)}</h3>
+            <p class="portfolio-card-desc">${escapeHtml(item.description)}</p>
+            <div class="portfolio-card-tags">
+              ${item.disciplines.map((d) => `<span class="portfolio-card-tag">${escapeHtml(d)}</span>`).join("")}
+            </div>
+          </div>
+        </div>
+      `)
+      .join("");
+  }
+}
+
+/**
+ * Update global UI elements (Counters, active filter indicators, view toggles)
+ */
+function updateUI() {
+  const savedCount = state.savedIds.size;
+
+  // Header & filter badges (desktop and mobile)
+  const navSavedBadge = document.getElementById("nav-saved-count");
+  if (navSavedBadge) navSavedBadge.textContent = savedCount.toString();
+
+  const navMobileSavedBadge = document.getElementById("nav-mobile-saved-count");
+  if (navMobileSavedBadge) navMobileSavedBadge.textContent = savedCount.toString();
+
+  const navDbLabel = document.getElementById("nav-db-label");
+  if (navDbLabel) navDbLabel.textContent = `Master DB · ${state.sources.length}`;
+
+  const navMobileDbLabel = document.getElementById("nav-mobile-db-label");
+  if (navMobileDbLabel) navMobileDbLabel.textContent = state.sources.length.toString();
+
+  const drawerDbStats = document.getElementById("drawer-db-stats");
+  if (drawerDbStats) drawerDbStats.textContent = `${state.sources.length} Sources · 23 Markets · Live Sync`;
+
+  const filterSavedBadge = document.getElementById("filter-saved-count");
+  if (filterSavedBadge) filterSavedBadge.textContent = savedCount.toString();
+
+  const navSavedBtn = document.getElementById("nav-saved-btn");
+  if (navSavedBtn) {
+    navSavedBtn.classList.toggle("active", state.savedOnly);
+  }
+
+  const btnMobileSaved = document.getElementById("btn-mobile-saved");
+  if (btnMobileSaved) {
+    btnMobileSaved.classList.toggle("active", state.savedOnly);
+  }
+
+  const btnFilterSaved = document.getElementById("btn-filter-saved");
+  if (btnFilterSaved) {
+    btnFilterSaved.classList.toggle("active", state.savedOnly);
+  }
+
+  // Update view navigation tabs (desktop and mobile drawer)
+  const hubView = document.getElementById("view-hub");
+  const profileView = document.getElementById("view-profile");
+  const navViewHub = document.getElementById("nav-view-hub");
+  const navViewProfile = document.getElementById("nav-view-profile");
+  const drawerViewHub = document.getElementById("drawer-view-hub");
+  const drawerViewProfile = document.getElementById("drawer-view-profile");
+
+  if (state.activeView === "hub") {
+    if (hubView) hubView.style.display = "block";
+    if (profileView) profileView.style.display = "none";
+    if (navViewHub) {
+      navViewHub.classList.add("active");
+      navViewHub.setAttribute("aria-pressed", "true");
+    }
+    if (navViewProfile) {
+      navViewProfile.classList.remove("active");
+      navViewProfile.setAttribute("aria-pressed", "false");
+    }
+    if (drawerViewHub) drawerViewHub.classList.add("active");
+    if (drawerViewProfile) drawerViewProfile.classList.remove("active");
+    renderFeed();
+  } else {
+    if (hubView) hubView.style.display = "none";
+    if (profileView) profileView.style.display = "block";
+    if (navViewHub) {
+      navViewHub.classList.remove("active");
+      navViewHub.setAttribute("aria-pressed", "false");
+    }
+    if (navViewProfile) {
+      navViewProfile.classList.add("active");
+      navViewProfile.setAttribute("aria-pressed", "true");
+    }
+    if (drawerViewHub) drawerViewHub.classList.remove("active");
+    if (drawerViewProfile) drawerViewProfile.classList.add("active");
+    renderProfileView();
+  }
+
+  // Update active chips across the 3 filter rows
+  updateFilterChipsUI();
+
+  // Update clear all button visibility
+  const hasActiveFilters =
+    state.activeCity !== "All" ||
+    state.activeDiscipline !== "All" ||
+    state.activeType !== "All" ||
+    state.savedOnly ||
+    state.searchQuery.trim().length > 0;
+
+  const btnClearAll = document.getElementById("btn-clear-all-filters");
+  if (btnClearAll) {
+    btnClearAll.style.display = hasActiveFilters ? "inline-block" : "none";
+  }
+
+  const searchClearBtn = document.getElementById("search-clear-btn");
+  if (searchClearBtn) {
+    searchClearBtn.classList.toggle("visible", state.searchQuery.trim().length > 0);
+  }
+}
+
+/**
+ * Sync active classes on filter chips across all 3 rows
+ */
+function updateFilterChipsUI() {
+  // Row 1: City
+  document.querySelectorAll('[data-filter-group="city"]').forEach((btn) => {
+    const val = btn.getAttribute("data-filter");
+    btn.classList.toggle("active", val === state.activeCity);
+  });
+
+  // Row 2: Discipline
+  document.querySelectorAll('[data-filter-group="discipline"]').forEach((btn) => {
+    const val = btn.getAttribute("data-filter");
+    btn.classList.toggle("active", val === state.activeDiscipline);
+  });
+
+  // Row 3: Type
+  document.querySelectorAll('[data-filter-group="type"]').forEach((btn) => {
+    const val = btn.getAttribute("data-filter");
+    btn.classList.toggle("active", val === state.activeType);
+  });
+}
+
 // ============================================================================
-// 5. OPPORTUNITY DETAILS MODAL & INSTITUTIONS DIRECTORY
+// 6. MODALS (Opportunity Detail, Institutions Directory)
 // ============================================================================
 
-function openDetailsModal(oppId) {
-  const opp = state.opportunities.find(o => o.id === oppId);
+/**
+ * Open Opportunity Details Modal
+ */
+function openOpportunityModal(oppId) {
+  const opp = state.opportunities.find((o) => o.opp_id === oppId);
   if (!opp) return;
 
-  const modal = document.getElementById("general-modal");
-  const modalContainer = document.getElementById("modal-content-container");
-  if (!modal || !modalContainer) return;
+  const item = getOpportunityWithSource(opp);
+  const isSaved = state.savedIds.has(item.opp_id);
+  const days = item.daysRemaining;
 
-  state.activeModal = "details";
-  const isSaved = state.savedIds.has(opp.id);
+  const modalContainer = document.getElementById("modal-content-container");
+  const modalOverlay = document.getElementById("general-modal");
+
+  if (!modalContainer || !modalOverlay) return;
 
   modalContainer.innerHTML = `
-    <div class="modal-header">
-      <div>
-        <div class="modal-subtitle">${escapeHTML(opp.institution)} // ${escapeHTML(opp.city)}, ${escapeHTML(opp.country)}</div>
-        <h2 class="modal-title">${escapeHTML(opp.title)}</h2>
-      </div>
-      <button class="modal-close-btn" id="modal-close-btn" aria-label="Close modal">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
-      </button>
-    </div>
+    <button type="button" class="modal-close-btn" id="btn-modal-close" aria-label="Close dialog">✕ Close</button>
+    <div class="modal-kicker">${escapeHtml(item.discipline)} · ${escapeHtml(item.type)}</div>
+    <h2 class="modal-title">${escapeHtml(item.title)}</h2>
 
-    <div class="modal-body">
-      <!-- High-contrast highlight box -->
-      <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.75rem; background-color: var(--bg-black); border: 1px solid var(--border-medium); border-radius: var(--radius-sm); padding: 0.85rem;">
-        <div>
-          <div style="font-family: var(--font-mono); font-size: 0.625rem; color: var(--text-muted); text-transform: uppercase;">Grant / Support</div>
-          <div style="font-family: var(--font-mono); font-size: 0.875rem; font-weight: 700; color: var(--neon-green);">${escapeHTML(opp.grantAmount)}</div>
-        </div>
-        <div>
-          <div style="font-family: var(--font-mono); font-size: 0.625rem; color: var(--text-muted); text-transform: uppercase;">Deadline</div>
-          <div style="font-family: var(--font-mono); font-size: 0.8125rem; font-weight: 600; color: var(--text-primary);">${escapeHTML(opp.deadlineFormatted)} (in ${opp.daysRemaining} days)</div>
-        </div>
-        <div>
-          <div style="font-family: var(--font-mono); font-size: 0.625rem; color: var(--text-muted); text-transform: uppercase;">Region & City</div>
-          <div style="font-family: var(--font-mono); font-size: 0.8125rem; font-weight: 600; color: var(--text-primary);">${escapeHTML(opp.city)}, ${escapeHTML(opp.region)}</div>
-        </div>
-        <div>
-          <div style="font-family: var(--font-mono); font-size: 0.625rem; color: var(--text-muted); text-transform: uppercase;">Fee</div>
-          <div style="font-family: var(--font-mono); font-size: 0.8125rem; font-weight: 600; color: var(--text-primary);">${escapeHTML(opp.applicationFee)}</div>
-        </div>
+    <div class="modal-meta-grid">
+      <div class="modal-meta-item">
+        <span class="modal-meta-label">Institution</span>
+        <span class="modal-meta-value">${escapeHtml(item.source_name)}</span>
       </div>
-
-      <!-- Description -->
-      <div>
-        <h4 style="font-family: var(--font-mono); font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 0.35rem;">
-          // Open Call Synopsis
-        </h4>
-        <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.6;">${escapeHTML(opp.description)}</p>
+      <div class="modal-meta-item">
+        <span class="modal-meta-label">City &amp; Country</span>
+        <span class="modal-meta-value">${escapeHtml(item.city)}, ${escapeHtml(item.country)}</span>
       </div>
-
-      <!-- Eligibility -->
-      <div>
-        <h4 style="font-family: var(--font-mono); font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 0.35rem;">
-          // Eligibility & Artist Profile
-        </h4>
-        <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.6;">${escapeHTML(opp.eligibility)}</p>
+      <div class="modal-meta-item">
+        <span class="modal-meta-label">Application Deadline</span>
+        <span class="modal-meta-value" style="color: var(--vermilion);">${formatDeadlineDate(item.deadline)} (${days >= 0 ? `Ends in ${days} days` : "Closed"})</span>
       </div>
-
-      <!-- Disciplines -->
-      <div>
-        <h4 style="font-family: var(--font-mono); font-size: 0.6875rem; text-transform: uppercase; letter-spacing: 0.1em; color: var(--text-muted); margin-bottom: 0.35rem;">
-          // Curated Disciplines
-        </h4>
-        <div class="tags-list">
-          ${opp.disciplines.map(t => `<span class="discipline-tag">${escapeHTML(t)}</span>`).join("")}
-        </div>
+      <div class="modal-meta-item">
+        <span class="modal-meta-label">Compensation / Support</span>
+        <span class="modal-meta-value">${escapeHtml(item.compensation_details || "See official guidelines")}</span>
       </div>
     </div>
 
-    <div class="modal-footer">
-      <button 
-        type="button" 
-        class="btn-save ${isSaved ? 'saved' : ''}" 
-        id="modal-toggle-save-btn" 
-        data-id="${opp.id}"
-      >
-        <svg width="13" height="13" viewBox="0 0 24 24" fill="${isSaved ? 'currentColor' : 'none'}" stroke="currentColor" stroke-width="2">
-          <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
-        </svg>
-        <span>${isSaved ? 'Saved to Radar' : 'Save to Radar'}</span>
-      </button>
+    <div class="modal-section-title">Overview &amp; Scope</div>
+    <p class="modal-body-text">${escapeHtml(item.description || "No detailed description available.")}</p>
 
+    ${
+      item.eligibility
+        ? `<div class="modal-section-title">Eligibility Criteria</div>
+           <p class="modal-body-text">${escapeHtml(item.eligibility)}</p>`
+        : ""
+    }
+
+    <div class="modal-section-title">About the Institution</div>
+    <p class="modal-body-text">${escapeHtml(item.source.description || "")}</p>
+
+    <div class="modal-actions-row">
       <button 
         type="button" 
-        class="nav-btn" 
-        id="modal-create-drive-folder-btn"
-        data-id="${opp.id}"
-        style="border-color: var(--drive-blue); color: var(--drive-blue);"
+        class="btn-save-pill ${isSaved ? "saved" : ""}" 
+        id="modal-btn-save"
+        data-opp-id="${escapeHtml(item.opp_id)}"
       >
-        <span>📁 Folder in Drive</span>
+        <span class="save-pill-star">★</span>
+        <span>${isSaved ? "Saved to Radar" : "Save Opportunity"}</span>
       </button>
 
       <a 
-        href="${opp.applyUrl}" 
+        href="${escapeHtml(item.application_url)}" 
         target="_blank" 
         rel="noopener noreferrer" 
-        class="btn-export-drive"
-        style="text-decoration: none;"
+        class="btn-primary-action"
       >
-        <span>Open Application Portal ↗</span>
+        <span>Apply via Official Portal</span>
+        <span aria-hidden="true">↗</span>
       </a>
     </div>
   `;
 
-  modal.classList.add("active");
-  document.body.style.overflow = "hidden";
+  modalOverlay.classList.add("active");
+  modalOverlay.setAttribute("aria-hidden", "false");
 
-  // Bind modal buttons
-  document.getElementById("modal-toggle-save-btn")?.addEventListener("click", () => {
-    toggleSaveOpportunity(opp.id);
-    openDetailsModal(opp.id);
-  });
+  // Bind close button
+  document.getElementById("btn-modal-close")?.addEventListener("click", closeModal);
 
-  document.getElementById("modal-create-drive-folder-btn")?.addEventListener("click", () => {
-    handleQuickDriveFolder(opp.id);
+  // Bind modal save button
+  document.getElementById("modal-btn-save")?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    toggleSaveOpportunity(item.opp_id);
+    const updatedSaved = state.savedIds.has(item.opp_id);
+    const btn = document.getElementById("modal-btn-save");
+    if (btn) {
+      btn.classList.toggle("saved", updatedSaved);
+      btn.querySelector("span:last-child").textContent = updatedSaved ? "Saved to Radar" : "Save Opportunity";
+    }
   });
 }
 
 /**
- * Open the Permanent Institutions Directory Modal
+ * Open Institutions Directory Modal with Search & Market Filter
  */
-function openInstitutionsModal() {
-  const modal = document.getElementById("general-modal");
+function openInstitutionsModal(selectedMarket = "All") {
   const modalContainer = document.getElementById("modal-content-container");
-  if (!modal || !modalContainer) return;
+  const modalOverlay = document.getElementById("general-modal");
 
-  state.activeModal = "institutions";
+  if (!modalContainer || !modalOverlay) return;
+
+  const totalSources = state.sources.length;
+  const verifiedCount = state.sources.filter(s => !s.needs_verification).length;
+  const flaggedCount = state.sources.filter(s => s.needs_verification).length;
+
+  const uniqueMarkets = ["All", ...Array.from(new Set(state.sources.map(s => s.market || s.city).filter(Boolean))).sort()];
+
+  function renderDirectoryList(filterQuery = "", marketFilter = selectedMarket) {
+    const listContainer = document.getElementById("inst-directory-list");
+    if (!listContainer) return;
+
+    const q = filterQuery.toLowerCase().trim();
+    const filtered = state.sources.filter(src => {
+      if (marketFilter !== "All") {
+        const sm = (src.market || src.city || "").toLowerCase();
+        if (!sm.includes(marketFilter.toLowerCase())) return false;
+      }
+      if (q) {
+        const name = (src.source_name || "").toLowerCase();
+        const city = (src.city || "").toLowerCase();
+        const disc = (src.discipline_focus || "").toLowerCase();
+        const desc = (src.description || "").toLowerCase();
+        return name.includes(q) || city.includes(q) || disc.includes(q) || desc.includes(q);
+      }
+      return true;
+    });
+
+    if (filtered.length === 0) {
+      listContainer.innerHTML = `
+        <div style="padding: 2.5rem 1rem; text-align: center; color: var(--text-muted);">
+          <p>No institutions match your search criteria.</p>
+        </div>
+      `;
+      return;
+    }
+
+    listContainer.innerHTML = filtered.map(src => {
+      const isFlagged = src.needs_verification;
+      return `
+        <div style="border-bottom: 1px solid var(--border-line); padding: 1.25rem 0;">
+          <div style="display: flex; justify-content: space-between; align-items: flex-start; gap: 1rem; margin-bottom: 0.4rem;">
+            <div>
+              <div style="display: flex; align-items: center; gap: 0.6rem; flex-wrap: wrap;">
+                <span style="font-family: monospace; font-size: 0.75rem; color: var(--text-muted); background: #1F1F1F; padding: 0.1rem 0.4rem; border-radius: 2px;">
+                  ${escapeHtml(src.source_id)}
+                </span>
+                <h3 style="font-family: var(--font-display); font-size: 1.2rem; font-weight: 700; color: var(--text-primary); margin: 0;">
+                  ${escapeHtml(src.source_name)}
+                </h3>
+                ${isFlagged ? `
+                  <span class="badge-verification-warning" title="Flagged in Master Intake">
+                    ⚠️ Needs URL Verification
+                  </span>
+                ` : ""}
+              </div>
+              <div style="display: flex; gap: 0.5rem; align-items: center; margin-top: 0.35rem; flex-wrap: wrap;">
+                <span style="font-size: 0.8rem; color: var(--vermilion); font-weight: 600;">${escapeHtml(src.market || src.city)}</span>
+                <span style="color: var(--text-muted);">·</span>
+                <span style="font-size: 0.8rem; color: var(--text-muted);">${escapeHtml(src.city)}, ${escapeHtml(src.country)}</span>
+                <span style="color: var(--text-muted);">·</span>
+                <span style="font-size: 0.75rem; background: #222; color: #AAA; padding: 0.1rem 0.5rem; border-radius: 9999px;">
+                  ${escapeHtml(src.discipline_focus || "Multidisciplinary")}
+                </span>
+                <span style="font-size: 0.75rem; background: #222; color: #888; padding: 0.1rem 0.5rem; border-radius: 9999px;">
+                  ${escapeHtml(src.source_type || "Production House")}
+                </span>
+              </div>
+            </div>
+          </div>
+
+          <p style="font-size: 0.92rem; color: var(--text-secondary); line-height: 1.5; margin: 0.65rem 0;">
+            ${escapeHtml(src.description || "Verified cultural institution and residency producer.")}
+          </p>
+
+          ${isFlagged && src.verification_note ? `
+            <div style="font-size: 0.8rem; color: #FBBF24; margin-bottom: 0.6rem; font-style: italic;">
+              Note: ${escapeHtml(src.verification_note)}
+            </div>
+          ` : ""}
+
+          <div style="display: flex; gap: 1.25rem; align-items: center; font-size: 0.85rem; margin-top: 0.4rem;">
+            ${src.website_url ? `
+              <a href="${escapeHtml(src.website_url)}" target="_blank" rel="noopener noreferrer" style="color: var(--text-primary); text-decoration: underline; font-weight: 500;">
+                Official Website ↗
+              </a>
+            ` : `
+              <span style="color: var(--text-muted); font-style: italic;">No official website URL confirmed</span>
+            `}
+            ${src.instagram_url ? `
+              <a href="${escapeHtml(src.instagram_url)}" target="_blank" rel="noopener noreferrer" style="color: var(--text-muted); text-decoration: underline;">
+                Instagram ↗
+              </a>
+            ` : ""}
+          </div>
+        </div>
+      `;
+    }).join("");
+  }
 
   modalContainer.innerHTML = `
-    <div class="modal-header">
-      <div>
-        <div class="modal-subtitle">PERMANENT RELATIONAL DATABASE // BEACHHEAD DIRECTORY</div>
-        <h2 class="modal-title">Institutions Radar: Cologne, Berlin, Brussels &amp; Israel</h2>
-      </div>
-      <button class="modal-close-btn" id="modal-close-btn" aria-label="Close modal">
-        <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>
+    <button type="button" class="modal-close-btn" id="btn-modal-close" aria-label="Close dialog">✕ Close</button>
+    <div class="modal-kicker">CUE RADAR · Master Brain Directory</div>
+    <h2 class="modal-title">Verified Cultural Sources (${totalSources})</h2>
+    <p class="modal-body-text" style="margin-bottom: 1.25rem;">
+      Curated network of 268 independent institutions, choreographic production houses, electroacoustic studios, and public funding councils across 23 international markets.
+    </p>
+
+    <div style="display: flex; gap: 0.75rem; margin-bottom: 1.25rem; flex-wrap: wrap;">
+      <button type="button" class="btn-primary-action" id="btn-open-sync-from-directory" style="padding: 0.45rem 0.9rem; font-size: 0.8rem; background-color: #222; border: 1px solid #444; color: #fff;">
+        ⚙ Master Database Brain &amp; Live Sync
+      </button>
+      <button type="button" class="nav-text-btn" id="btn-export-sources-csv" style="padding: 0.45rem 0.9rem; font-size: 0.8rem; border: 1px solid #333;">
+        Export Sources CSV ⤓
       </button>
     </div>
 
-    <div class="modal-body">
-      <p style="font-size: 0.875rem; color: var(--text-secondary); line-height: 1.5; margin-bottom: 0.5rem;">
-        CUE RADAR tracks both dynamic open calls and permanent institutional anchors across contemporary dance, experimental sound, and alternative spaces.
-      </p>
-
-      <div class="institutions-grid">
-        ${state.institutions.map(inst => `
-          <div class="institution-card">
-            <div>
-              <div class="inst-card-header">
-                <h4 class="inst-name">${escapeHTML(inst.name)}</h4>
-                <span class="inst-location">${escapeHTML(inst.city)} // ${escapeHTML(inst.region)}</span>
-              </div>
-              <p class="inst-desc">${escapeHTML(inst.description)}</p>
-            </div>
-            <div>
-              <div class="tags-list">
-                ${inst.focus.map(f => `<span class="discipline-tag">${escapeHTML(f)}</span>`).join("")}
-              </div>
-              <a href="${inst.website}" target="_blank" rel="noopener noreferrer" class="inst-website-link">
-                <span>Official Institution Portal ↗</span>
-              </a>
-            </div>
-          </div>
-        `).join("")}
-      </div>
+    <!-- Filter Bar -->
+    <div style="display: flex; gap: 0.75rem; margin-bottom: 1.25rem; flex-wrap: wrap;">
+      <input 
+        type="text" 
+        id="inst-search-input" 
+        class="db-source-search-input" 
+        placeholder="Filter by name, city, discipline, keyword..." 
+        style="flex: 2; min-width: 220px;"
+      />
+      <select id="inst-market-select" class="db-source-search-input" style="flex: 1; min-width: 160px; background-color: #181818;">
+        ${uniqueMarkets.map(m => `<option value="${escapeHtml(m)}" ${m === selectedMarket ? "selected" : ""}>${escapeHtml(m)}</option>`).join("")}
+      </select>
     </div>
 
-    <div class="modal-footer">
-      <button type="button" class="nav-btn" id="modal-inst-close-btn">Close Directory</button>
-    </div>
+    <div id="inst-directory-list" style="display: flex; flex-direction: column; max-height: 520px; overflow-y: auto; padding-right: 0.5rem;"></div>
   `;
 
-  modal.classList.add("active");
-  document.body.style.overflow = "hidden";
-  document.getElementById("modal-inst-close-btn")?.addEventListener("click", closeModal);
-}
+  modalOverlay.classList.add("active");
+  modalOverlay.setAttribute("aria-hidden", "false");
 
-function closeModal() {
-  const modal = document.getElementById("general-modal");
-  if (modal) modal.classList.remove("active");
-  document.body.style.overflow = "";
-  state.activeModal = null;
+  // Render initial list
+  renderDirectoryList("", selectedMarket);
+
+  // Bind search & select
+  const searchInput = document.getElementById("inst-search-input");
+  const marketSelect = document.getElementById("inst-market-select");
+
+  searchInput?.addEventListener("input", (e) => {
+    renderDirectoryList(e.target.value, marketSelect ? marketSelect.value : "All");
+  });
+
+  marketSelect?.addEventListener("change", (e) => {
+    renderDirectoryList(searchInput ? searchInput.value : "", e.target.value);
+  });
+
+  document.getElementById("btn-open-sync-from-directory")?.addEventListener("click", () => {
+    openDatabaseSyncModal();
+  });
+
+  document.getElementById("btn-export-sources-csv")?.addEventListener("click", () => {
+    downloadCSV("cue_radar_sources_master.csv", exportSourcesToCSV(state.sources));
+    showToast("Downloaded master sources CSV");
+  });
+
+  document.getElementById("btn-modal-close")?.addEventListener("click", closeModal);
 }
 
 /**
- * Toast Notifications
+ * Open Master Database Brain & Live Sync Modal
  */
-function showToast(message, type = "saved") {
+function openDatabaseSyncModal() {
+  const modalContainer = document.getElementById("modal-content-container");
+  const modalOverlay = document.getElementById("general-modal");
+
+  if (!modalContainer || !modalOverlay) return;
+
+  const totalSources = state.sources.length;
+  const totalMarkets = 23;
+  const totalCountries = 18;
+  const activeOppsCount = state.opportunities.length;
+
+  function renderActiveTab(tabName) {
+    state.activeSyncTab = tabName;
+
+    // Update tab button classes
+    document.querySelectorAll(".db-modal-tab-btn").forEach(btn => {
+      btn.classList.toggle("active", btn.getAttribute("data-tab") === tabName);
+    });
+
+    const contentArea = document.getElementById("db-tab-content-area");
+    if (!contentArea) return;
+
+    if (tabName === "overview") {
+      contentArea.innerHTML = `
+        <div class="db-stats-grid">
+          <div class="db-stat-card">
+            <span class="db-stat-num">${totalSources}</span>
+            <span class="db-stat-label">Master Sources</span>
+          </div>
+          <div class="db-stat-card">
+            <span class="db-stat-num">${totalMarkets}</span>
+            <span class="db-stat-label">Key Markets</span>
+          </div>
+          <div class="db-stat-card">
+            <span class="db-stat-num">${totalCountries}</span>
+            <span class="db-stat-label">Countries</span>
+          </div>
+          <div class="db-stat-card">
+            <span class="db-stat-num">${activeOppsCount}</span>
+            <span class="db-stat-label">Active Calls</span>
+          </div>
+        </div>
+
+        <div class="db-integrity-banner" style="margin-top: 1.25rem;">
+          <div class="db-integrity-title">
+            <span>●</span> Data Integrity &amp; Curatorial Notes (2026-09-08)
+          </div>
+          <ul class="db-integrity-list">
+            <li><strong>SRC015 &amp; SRC154:</strong> Kulturrådet (Sweden) and Body/Mind Festival (Warsaw) flagged for manual verification due to missing official URL in master intake.</li>
+            <li><strong>STEIM Amsterdam:</strong> Deliberately excluded from active research — ceased structural funding and closed at end of 2020.</li>
+            <li><strong>Relational Integrity:</strong> 100% of active open calls and residencies are joined to verified sources via <code>source_id</code>.</li>
+          </ul>
+        </div>
+
+        <div style="margin-top: 1.25rem; display: flex; gap: 0.75rem; flex-wrap: wrap;">
+          <button type="button" class="btn-primary-action" id="btn-browse-inst-now" style="padding: 0.55rem 1.15rem; font-size: 0.85rem;">
+            Browse 268 Verified Institutions ↗
+          </button>
+          <button type="button" class="nav-text-btn" id="btn-reset-master-db" style="padding: 0.55rem 1.15rem; font-size: 0.85rem; border: 1px solid #444; color: #BBB;">
+            Restore Original Master Data
+          </button>
+        </div>
+      `;
+
+      document.getElementById("btn-browse-inst-now")?.addEventListener("click", () => {
+        openInstitutionsModal();
+      });
+
+      document.getElementById("btn-reset-master-db")?.addEventListener("click", () => {
+        if (confirm("Restore database to original master dataset (268 sources)?")) {
+          resetMasterSourcesToDefault();
+          openDatabaseSyncModal();
+        }
+      });
+    } else if (tabName === "import") {
+      contentArea.innerHTML = `
+        <div style="display: flex; flex-direction: column; gap: 1rem; margin-top: 1rem;">
+          <p style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5;">
+            Paste any updated CSV from Google Sheets or Excel below (matching columns: <code>source_id, source_name, market, city, country, website_url, description</code>).
+          </p>
+
+          <textarea 
+            id="csv-import-textarea" 
+            class="db-csv-textarea" 
+            placeholder="source_id,source_name,market,city,country,source_type,discipline_focus,website_url&#10;SRC001,HAU Hebbel am Ufer,Berlin,Berlin,Germany,Production House,Multidisciplinary,https://www.hebbel-am-ufer.de"
+          ></textarea>
+
+          <div style="display: flex; gap: 0.75rem; align-items: center; flex-wrap: wrap;">
+            <input type="file" id="csv-file-input" accept=".csv,.txt" style="display: none;" />
+            <button type="button" class="nav-text-btn" id="btn-trigger-file-upload" style="border: 1px solid #444; padding: 0.5rem 0.9rem; font-size: 0.85rem;">
+              Choose .CSV File
+            </button>
+            <button type="button" class="btn-primary-action" id="btn-parse-csv" style="padding: 0.5rem 1.1rem; font-size: 0.85rem;">
+              Parse &amp; Preview
+            </button>
+          </div>
+
+          <div id="csv-preview-feedback" style="font-size: 0.85rem; color: var(--text-muted);"></div>
+        </div>
+      `;
+
+      const textarea = document.getElementById("csv-import-textarea");
+      const fileInput = document.getElementById("csv-file-input");
+      const triggerBtn = document.getElementById("btn-trigger-file-upload");
+      const parseBtn = document.getElementById("btn-parse-csv");
+      const feedback = document.getElementById("csv-preview-feedback");
+
+      triggerBtn?.addEventListener("click", () => fileInput?.click());
+
+      fileInput?.addEventListener("change", (e) => {
+        const file = e.target.files?.[0];
+        if (file) {
+          const reader = new FileReader();
+          reader.onload = (evt) => {
+            if (textarea && evt.target?.result) {
+              textarea.value = evt.target.result;
+              feedback.innerHTML = `Loaded file: <strong>${file.name}</strong> (${(file.size / 1024).toFixed(1)} KB). Click "Parse &amp; Preview".`;
+            }
+          };
+          reader.readAsText(file);
+        }
+      });
+
+      parseBtn?.addEventListener("click", () => {
+        const text = textarea?.value || "";
+        const parsed = parseMasterCSV(text);
+        if (parsed.length === 0) {
+          feedback.innerHTML = `<span style="color: var(--vermilion);">⚠️ Could not detect valid source rows. Please check headers and commas/semicolons.</span>`;
+          return;
+        }
+
+        feedback.innerHTML = `
+          <div style="background: #1B1B1B; border: 1px solid #333; padding: 1rem; border-radius: 4px; margin-top: 0.5rem;">
+            <div style="font-weight: 700; color: #10B981; margin-bottom: 0.35rem;">
+              ✓ Successfully parsed ${parsed.length} sources across ${new Set(parsed.map(s => s.market)).size} markets!
+            </div>
+            <p style="font-size: 0.82rem; color: var(--text-secondary); margin-bottom: 0.75rem;">
+              Preview sample: "${escapeHtml(parsed[0].source_name)}" (${escapeHtml(parsed[0].city)}, ${escapeHtml(parsed[0].country)})
+            </p>
+            <button type="button" class="btn-primary-action" id="btn-apply-parsed-sources" style="padding: 0.5rem 1rem; font-size: 0.85rem;">
+              Save &amp; Apply to Live Application Now
+            </button>
+          </div>
+        `;
+
+        document.getElementById("btn-apply-parsed-sources")?.addEventListener("click", () => {
+          state.sources = parsed;
+          persistSourcesToStorage(parsed);
+          updateUI();
+          showToast(`Applied ${parsed.length} sources to CUE RADAR!`);
+          openDatabaseSyncModal();
+        });
+      });
+    } else if (tabName === "guide") {
+      contentArea.innerHTML = `
+        <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 1.25rem;">
+          <div style="background: #181818; border: 1px solid var(--border-line); padding: 1.25rem; border-radius: 4px;">
+            <h3 style="font-family: var(--font-display); font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">
+              1. סנכרון רציף עם GitHub וסריקה אוטומטית (Continuous Automation)
+            </h3>
+            <p style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.6; margin-bottom: 0.75rem;">
+              הגדרנו עבור הפרויקט מנוע סריקה מלא וקובץ <strong>GitHub Actions</strong> שרץ אוטומטית:
+            </p>
+            <ul style="list-style: disc; margin-left: 1.25rem; font-size: 0.88rem; color: var(--text-secondary); line-height: 1.6;">
+              <li><strong>קובץ ה-Workflow:</strong> <code>.github/workflows/cue-radar-crawler.yml</code></li>
+              <li><strong>תדירות הריצה:</strong> רץ כל 3 ימים בשעה 06:00 UTC (או בלחיצת כפתור ב-GitHub).</li>
+              <li><strong>פעולת הבוט:</strong> הבוט מריץ את <code>scripts/crawl-opportunities.js</code>, בודק את כל 268 המקורות, מעדכן מועדי הגשה, מסנן קולות קוראים שפגו, ודוחף אוטומטית (Git Commit &amp; Push) חזרה ל-Repository.</li>
+            </ul>
+          </div>
+
+          <div style="background: #181818; border: 1px solid var(--border-line); padding: 1.25rem; border-radius: 4px;">
+            <h3 style="font-family: var(--font-display); font-size: 1.1rem; font-weight: 700; color: var(--text-primary); margin-bottom: 0.5rem;">
+              2. צעד אחר צעד: איך להעלות את הפרויקט לאוויר (Roadmap)
+            </h3>
+            <ol style="margin-left: 1.25rem; font-size: 0.88rem; color: var(--text-secondary); line-height: 1.6; display: flex; flex-direction: column; gap: 0.6rem;">
+              <li>
+                <strong>חיבור ל-GitHub:</strong> פתח Repository חדש ב-GitHub (למשל <code>cue-radar</code>), וחבר אליו את התיקייה הנוכחית עם <code>git push origin main</code>.
+              </li>
+              <li>
+                <strong>הפעלת ה-GitHub Action:</strong> בלשונית Actions ב-GitHub תראה את <em>"CUE RADAR Automated Scanner &amp; Database Syncer"</em>. הוא כבר מוגדר לפעול כל 3 ימים.
+              </li>
+              <li>
+                <strong>פריסה לאוויר (Deployment):</strong> ניתן לפרוס בלחיצה אחת ל-Cloud Run, Vercel או Netlify. בכל פעם שה-Action מעדכן את <code>public/data/opportunities.json</code>, האתר באוויר יתעדכן מיד!
+              </li>
+              <li>
+                <strong>עדכון ידני של הדאטה-בייס:</strong> בכל שלב תוכל להדביק או להעלות CSV מעודכן בלשונית "Import / Paste CSV", או להחליף את <code>public/data/sources.json</code>.
+              </li>
+            </ol>
+          </div>
+        </div>
+      `;
+    } else if (tabName === "export") {
+      contentArea.innerHTML = `
+        <div style="margin-top: 1.25rem; display: flex; flex-direction: column; gap: 1rem;">
+          <p style="font-size: 0.9rem; color: var(--text-secondary); line-height: 1.5;">
+            Export the master dataset in standard formats for backup, analysis in Google Sheets, or publishing:
+          </p>
+
+          <div style="display: flex; gap: 0.75rem; flex-wrap: wrap;">
+            <button type="button" class="btn-primary-action" id="btn-export-full-csv" style="padding: 0.6rem 1.2rem; font-size: 0.85rem;">
+              Download Sources as CSV ⤓
+            </button>
+            <button type="button" class="nav-text-btn" id="btn-export-full-json" style="padding: 0.6rem 1.2rem; font-size: 0.85rem; border: 1px solid #444;">
+              Download Opportunities JSON ⤓
+            </button>
+          </div>
+        </div>
+      `;
+
+      document.getElementById("btn-export-full-csv")?.addEventListener("click", () => {
+        downloadCSV("cue_radar_master_sources.csv", exportSourcesToCSV(state.sources));
+        showToast("Exported sources CSV");
+      });
+
+      document.getElementById("btn-export-full-json")?.addEventListener("click", () => {
+        const jsonStr = JSON.stringify(state.opportunities, null, 2);
+        downloadFile("cue_radar_opportunities.json", jsonStr, "application/json");
+        showToast("Exported opportunities JSON");
+      });
+    }
+  }
+
+  modalContainer.innerHTML = `
+    <button type="button" class="modal-close-btn" id="btn-modal-close" aria-label="Close dialog">✕ Close</button>
+    <div class="modal-kicker">CUE RADAR · Brain Architecture</div>
+    <h2 class="modal-title">Master Database Brain &amp; Live Sync</h2>
+    <p class="modal-body-text">
+      The central operational brain powering CUE RADAR. Synchronized with GitHub Actions and our automated 3-day crawler engine.
+    </p>
+
+    <!-- Tabs Header -->
+    <div class="db-modal-tabs">
+      <button type="button" class="db-modal-tab-btn active" data-tab="overview">Overview &amp; Integrity</button>
+      <button type="button" class="db-modal-tab-btn" data-tab="import">Import / Paste CSV</button>
+      <button type="button" class="db-modal-tab-btn" data-tab="guide">GitHub &amp; Auto-Scan Guide</button>
+      <button type="button" class="db-modal-tab-btn" data-tab="export">Export</button>
+    </div>
+
+    <!-- Tab Content -->
+    <div id="db-tab-content-area"></div>
+  `;
+
+  modalOverlay.classList.add("active");
+  modalOverlay.setAttribute("aria-hidden", "false");
+
+  // Render default tab
+  renderActiveTab("overview");
+
+  // Bind tab buttons
+  document.querySelectorAll(".db-modal-tab-btn").forEach(btn => {
+    btn.addEventListener("click", () => {
+      const tab = btn.getAttribute("data-tab");
+      if (tab) renderActiveTab(tab);
+    });
+  });
+
+  document.getElementById("btn-modal-close")?.addEventListener("click", closeModal);
+}
+
+function downloadCSV(filename, content) {
+  downloadFile(filename, content, "text/csv;charset=utf-8;");
+}
+
+function downloadFile(filename, content, mimeType) {
+  const blob = new Blob([content], { type: mimeType });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = filename;
+  document.body.appendChild(a);
+  a.click();
+  document.body.removeChild(a);
+  URL.revokeObjectURL(url);
+}
+
+function closeModal() {
+  const modalOverlay = document.getElementById("general-modal");
+  if (modalOverlay) {
+    modalOverlay.classList.remove("active");
+    modalOverlay.setAttribute("aria-hidden", "true");
+  }
+}
+
+// ============================================================================
+// 7. SHOWREEL VIDEO PLAYER CONTROLS (PART 4)
+// ============================================================================
+function setupShowreelControls() {
+  const video = document.getElementById("profile-video-element");
+  const playBtn = document.getElementById("btn-showreel-play");
+  const playIcon = document.getElementById("showreel-play-icon");
+  const hud = document.getElementById("showreel-hud");
+  const muteBtn = document.getElementById("btn-showreel-mute");
+  const fsBtn = document.getElementById("btn-showreel-fs");
+  const timeDisplay = document.getElementById("showreel-time-display");
+
+  if (!video) return;
+
+  function togglePlay() {
+    if (video.paused) {
+      video.play().catch((err) => console.log("Autoplay blocked:", err));
+      if (playIcon) playIcon.textContent = "❚❚";
+      if (hud) hud.classList.add("playing");
+      state.isVideoPlaying = true;
+    } else {
+      video.pause();
+      if (playIcon) playIcon.textContent = "▶";
+      if (hud) hud.classList.remove("playing");
+      state.isVideoPlaying = false;
+    }
+  }
+
+  playBtn?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    togglePlay();
+  });
+
+  video.addEventListener("click", togglePlay);
+
+  muteBtn?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    video.muted = !video.muted;
+    muteBtn.textContent = video.muted ? "Unmute" : "Mute";
+  });
+
+  fsBtn?.addEventListener("click", (e) => {
+    e.stopPropagation();
+    if (document.fullscreenElement) {
+      document.exitFullscreen();
+    } else {
+      const container = document.getElementById("showreel-aspect-ratio");
+      if (container?.requestFullscreen) {
+        container.requestFullscreen();
+      }
+    }
+  });
+
+  video.addEventListener("timeupdate", () => {
+    if (timeDisplay && !isNaN(video.duration)) {
+      const curM = Math.floor(video.currentTime / 60);
+      const curS = Math.floor(video.currentTime % 60);
+      const durM = Math.floor(video.duration / 60);
+      const durS = Math.floor(video.duration % 60);
+      timeDisplay.textContent = `${padZero(curM)}:${padZero(curS)} / ${padZero(durM)}:${padZero(durS)}`;
+    }
+  });
+}
+
+// ============================================================================
+// 8. EVENT LISTENERS
+// ============================================================================
+function setupEventListeners() {
+  // 1. Navigation View Switcher (The Hub vs Artist Profile)
+  document.getElementById("nav-view-hub")?.addEventListener("click", () => {
+    state.activeView = "hub";
+    updateUI();
+  });
+
+  document.getElementById("nav-view-profile")?.addEventListener("click", () => {
+    state.activeView = "profile";
+    updateUI();
+  });
+
+  document.getElementById("brand-logo")?.addEventListener("click", (e) => {
+    e.preventDefault();
+    state.activeView = "hub";
+    state.activeCity = "All";
+    state.activeDiscipline = "All";
+    state.activeType = "All";
+    state.savedOnly = false;
+    state.searchQuery = "";
+    const searchInput = document.getElementById("search-input");
+    if (searchInput) searchInput.value = "";
+    updateUI();
+  });
+
+  document.getElementById("btn-goto-hub")?.addEventListener("click", () => {
+    state.activeView = "hub";
+    updateUI();
+  });
+
+  // 2. Master DB Sync & Institutions Directory Shortcuts in Top Nav
+  document.getElementById("btn-db-sync")?.addEventListener("click", () => {
+    openDatabaseSyncModal();
+  });
+
+  document.getElementById("btn-institutions-directory")?.addEventListener("click", () => {
+    openInstitutionsModal();
+  });
+
+  // 3. Saved Filter Shortcut in Top Nav
+  document.getElementById("nav-saved-btn")?.addEventListener("click", () => {
+    state.savedOnly = !state.savedOnly;
+    if (state.activeView !== "hub") {
+      state.activeView = "hub";
+    }
+    updateUI();
+  });
+
+  // 4. Three Filter Rows Delegation
+  // Row 1: City
+  document.querySelectorAll('[data-filter-group="city"]').forEach((btn) => {
+    btn.addEventListener("click", () => {
+      state.activeCity = btn.getAttribute("data-filter") || "All";
+      updateUI();
+    });
+  });
+
+  // Row 2: Discipline
+  document.querySelectorAll('[data-filter-group="discipline"]').forEach((btn) => {
+    btn.addEventListener("click", () => {
+      state.activeDiscipline = btn.getAttribute("data-filter") || "All";
+      updateUI();
+    });
+  });
+
+  // Row 3: Opportunity Type
+  document.querySelectorAll('[data-filter-group="type"]').forEach((btn) => {
+    btn.addEventListener("click", () => {
+      state.activeType = btn.getAttribute("data-filter") || "All";
+      updateUI();
+    });
+  });
+
+  // Auxiliary Saved button in row 3
+  document.getElementById("btn-filter-saved")?.addEventListener("click", () => {
+    state.savedOnly = !state.savedOnly;
+    updateUI();
+  });
+
+  // Reset Filters button
+  document.getElementById("btn-clear-all-filters")?.addEventListener("click", resetAllFilters);
+  document.getElementById("btn-reset-filters")?.addEventListener("click", resetAllFilters);
+
+  // 5. Search Bar Input
+  const searchInput = document.getElementById("search-input");
+  const searchClearBtn = document.getElementById("search-clear-btn");
+
+  searchInput?.addEventListener("input", (e) => {
+    state.searchQuery = e.target.value;
+    updateUI();
+  });
+
+  searchClearBtn?.addEventListener("click", () => {
+    if (searchInput) searchInput.value = "";
+    state.searchQuery = "";
+    updateUI();
+  });
+
+  // 6. Sorting Select
+  const sortSelect = document.getElementById("sort-select");
+  sortSelect?.addEventListener("change", (e) => {
+    state.sortBy = e.target.value;
+    renderFeed();
+  });
+
+  // 7. Opportunity Cards Click & Save (Event Delegation on #opportunities-grid & #profile-saved-list)
+  function handleCardClick(e) {
+    const saveBtn = e.target.closest('[data-action="save"]');
+    if (saveBtn) {
+      e.stopPropagation();
+      const oppId = saveBtn.getAttribute("data-opp-id");
+      if (oppId) {
+        toggleSaveOpportunity(oppId);
+      }
+      return;
+    }
+
+    const card = e.target.closest(".opportunity-card");
+    if (card) {
+      const oppId = card.getAttribute("data-opp-id");
+      if (oppId) {
+        openOpportunityModal(oppId);
+      }
+    }
+  }
+
+  document.getElementById("opportunities-grid")?.addEventListener("click", handleCardClick);
+  document.getElementById("profile-saved-list")?.addEventListener("click", handleCardClick);
+
+  // 8. Profile View Tabs Switcher (Saved Opportunities vs Portfolio / Media)
+  const tabSaved = document.getElementById("btn-tab-saved");
+  const tabPortfolio = document.getElementById("btn-tab-portfolio");
+  const panelSaved = document.getElementById("panel-tab-saved");
+  const panelPortfolio = document.getElementById("panel-tab-portfolio");
+
+  tabSaved?.addEventListener("click", () => {
+    state.activeProfileTab = "saved";
+    tabSaved.classList.add("active");
+    tabSaved.setAttribute("aria-selected", "true");
+    tabPortfolio?.classList.remove("active");
+    tabPortfolio?.setAttribute("aria-selected", "false");
+
+    if (panelSaved) panelSaved.style.display = "block";
+    if (panelPortfolio) panelPortfolio.style.display = "none";
+    renderProfileView();
+  });
+
+  tabPortfolio?.addEventListener("click", () => {
+    state.activeProfileTab = "portfolio";
+    tabPortfolio.classList.add("active");
+    tabPortfolio.setAttribute("aria-selected", "true");
+    tabSaved?.classList.remove("active");
+    tabSaved?.setAttribute("aria-selected", "false");
+
+    if (panelSaved) panelSaved.style.display = "none";
+    if (panelPortfolio) panelPortfolio.style.display = "block";
+    renderProfileView();
+  });
+
+  // 9. Google Sign-In Listeners
+  const googleBtn = document.getElementById("gsi-signin-btn");
+  const profileGoogleBtn = document.getElementById("profile-google-signin-btn");
+  const profileSignoutBtn = document.getElementById("profile-signout-btn");
+
+  async function handleSignIn() {
+    try {
+      const result = await signInWithGoogle();
+      if (result?.user) {
+        state.user = result.user;
+        showToast(`Signed in as ${result.user.displayName || "Artist"}`);
+        syncAuthState();
+      }
+    } catch (err) {
+      console.log("[CUE RADAR] Auth sign-in popup closed or restricted:", err);
+    }
+  }
+
+  googleBtn?.addEventListener("click", handleSignIn);
+  profileGoogleBtn?.addEventListener("click", handleSignIn);
+
+  profileSignoutBtn?.addEventListener("click", async () => {
+    await signOutUser();
+    state.user = null;
+    showToast("Signed out");
+    syncAuthState();
+  });
+
+  // 10. Close modal when clicking outside
+  document.getElementById("general-modal")?.addEventListener("click", (e) => {
+    if (e.target.id === "general-modal") {
+      closeModal();
+    }
+  });
+
+  // Escape key closes modal
+  document.addEventListener("keydown", (e) => {
+    if (e.key === "Escape") {
+      closeModal();
+    }
+  });
+
+  // 11. Floating Quick-Filter Pill (Reveals smoothly when scrolled past filter section)
+  const floatingPill = document.getElementById("btn-floating-filter");
+  const filterDeck = document.getElementById("sticky-filter-wrapper");
+
+  function checkFloatingPill() {
+    if (!floatingPill || !filterDeck) return;
+    if (state.activeView !== "hub") {
+      floatingPill.classList.remove("visible");
+      return;
+    }
+
+    const filterBottom = filterDeck.offsetTop + filterDeck.offsetHeight;
+    if (window.scrollY > filterBottom + 30) {
+      floatingPill.classList.add("visible");
+    } else {
+      floatingPill.classList.remove("visible");
+    }
+  }
+
+  window.addEventListener("scroll", checkFloatingPill, { passive: true });
+
+  floatingPill?.addEventListener("click", () => {
+    if (filterDeck) {
+      const navOffset = 64;
+      const targetY = filterDeck.getBoundingClientRect().top + window.pageYOffset - navOffset;
+      window.scrollTo({ top: Math.max(0, targetY), behavior: "smooth" });
+    }
+  });
+}
+
+function resetAllFilters() {
+  state.activeCity = "All";
+  state.activeDiscipline = "All";
+  state.activeType = "All";
+  state.savedOnly = false;
+  state.searchQuery = "";
+  const searchInput = document.getElementById("search-input");
+  if (searchInput) searchInput.value = "";
+  updateUI();
+}
+
+function syncAuthState() {
+  const loggedBlock = document.getElementById("profile-logged-user");
+  const profileGoogleBtn = document.getElementById("profile-google-signin-btn");
+  const driveUserPill = document.getElementById("drive-user-pill");
+  const gsiBtn = document.getElementById("gsi-signin-btn");
+
+  if (state.user) {
+    if (profileGoogleBtn) profileGoogleBtn.style.display = "none";
+    if (loggedBlock) loggedBlock.style.display = "inline-flex";
+
+    const avatar = document.getElementById("profile-user-avatar");
+    if (avatar && state.user.photoURL) avatar.src = state.user.photoURL;
+
+    const name = document.getElementById("profile-user-name");
+    if (name) name.textContent = state.user.displayName || "Artist User";
+
+    if (gsiBtn) gsiBtn.style.display = "none";
+    if (driveUserPill) {
+      driveUserPill.style.display = "inline-flex";
+      const driveAvatar = document.getElementById("drive-user-avatar");
+      if (driveAvatar && state.user.photoURL) driveAvatar.src = state.user.photoURL;
+      const driveName = document.getElementById("drive-user-name");
+      if (driveName) driveName.textContent = (state.user.displayName || "Drive").split(" ")[0];
+    }
+  } else {
+    if (profileGoogleBtn) profileGoogleBtn.style.display = "inline-flex";
+    if (loggedBlock) loggedBlock.style.display = "none";
+    if (gsiBtn) gsiBtn.style.display = "inline-flex";
+    if (driveUserPill) driveUserPill.style.display = "none";
+  }
+}
+
+// ============================================================================
+// 9. UTILITIES
+// ============================================================================
+function showToast(message) {
   const container = document.getElementById("toast-container");
   if (!container) return;
 
   const toast = document.createElement("div");
-  toast.className = `toast-item ${type}`;
-  toast.innerHTML = `
-    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-      <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
-    </svg>
-    <span>${escapeHTML(message)}</span>
-  `;
-
+  toast.className = "toast";
+  toast.textContent = message;
   container.appendChild(toast);
 
   setTimeout(() => {
-    toast.style.transition = "all 0.2s ease";
     toast.style.opacity = "0";
-    toast.style.transform = "translateY(8px)";
-    setTimeout(() => toast.remove(), 220);
-  }, 2700);
+    toast.style.transition = "opacity 0.2s ease";
+    setTimeout(() => toast.remove(), 200);
+  }, 2200);
 }
 
-function escapeHTML(str) {
+function truncate(str, maxLen = 30) {
   if (!str) return "";
+  return str.length > maxLen ? `${str.slice(0, maxLen)}…` : str;
+}
+
+function padZero(num) {
+  return num < 10 ? `0${num}` : num.toString();
+}
+
+function escapeHtml(str) {
+  if (str === null || str === undefined) return "";
   return String(str)
     .replace(/&/g, "&amp;")
     .replace(/</g, "&lt;")
@@ -832,169 +1516,23 @@ function escapeHTML(str) {
     .replace(/'/g, "&#039;");
 }
 
-function truncate(str, maxLen) {
-  if (!str) return "";
-  if (str.length <= maxLen) return str;
-  return str.slice(0, maxLen) + "…";
-}
-
 // ============================================================================
-// 6. EVENT SETUP & BOOTSTRAP
+// 10. INITIALIZATION
 // ============================================================================
-
-async function handleGoogleSignInFlow() {
-  try {
-    const res = await signInWithGoogle();
-    if (res) {
-      handleAuthStateChange(res.user, res.accessToken);
-      showToast("Google Drive connected to CUE RADAR", "drive");
-    }
-  } catch (err) {
-    console.error("[CUE RADAR] Sign-in failed:", err);
-  }
-}
-
-function setupEventListeners() {
-  // 1. Google Sign-In button
-  document.getElementById("gsi-signin-btn")?.addEventListener("click", handleGoogleSignInFlow);
-
-  // 2. Drive User Pill Click (Opens Drive Vault)
-  document.getElementById("drive-user-pill")?.addEventListener("click", openDriveVaultModal);
-
-  // 3. Drive Sync Shortcut button in grid header
-  document.getElementById("btn-header-drive-vault")?.addEventListener("click", openDriveVaultModal);
-
-  // 4. Institutions Directory toggle button
-  document.getElementById("btn-institutions-directory")?.addEventListener("click", openInstitutionsModal);
-
-  // 5. Region Tabs
-  document.querySelectorAll(".region-tab").forEach(tab => {
-    tab.addEventListener("click", () => {
-      state.activeRegion = tab.getAttribute("data-region") || "All";
-      updateUI();
-    });
-  });
-
-  // 6. Category Filter Chips
-  document.querySelectorAll(".filter-chip").forEach(chip => {
-    chip.addEventListener("click", () => {
-      state.activeCategory = chip.getAttribute("data-filter") || "All";
-      updateUI();
-    });
-  });
-
-  // 7. Saved Nav Button
-  document.getElementById("nav-saved-btn")?.addEventListener("click", () => {
-    if (state.activeCategory === "Saved") {
-      state.activeCategory = "All";
-    } else {
-      state.activeCategory = "Saved";
-    }
-    updateUI();
-  });
-
-  // 8. Search Input
-  const searchInput = document.getElementById("search-input");
-  const searchClear = document.getElementById("search-clear-btn");
-
-  searchInput?.addEventListener("input", (e) => {
-    state.searchQuery = e.target.value;
-    if (searchClear) {
-      searchClear.classList.toggle("visible", state.searchQuery.length > 0);
-    }
-    renderGrid();
-  });
-
-  searchClear?.addEventListener("click", () => {
-    if (searchInput) {
-      searchInput.value = "";
-      searchInput.focus();
-    }
-    state.searchQuery = "";
-    searchClear.classList.remove("visible");
-    renderGrid();
-  });
-
-  // 9. Sort Select
-  document.getElementById("sort-select")?.addEventListener("change", (e) => {
-    state.sortBy = e.target.value;
-    renderGrid();
-  });
-
-  // 10. Reset Filters in Empty State
-  document.getElementById("btn-reset-filters")?.addEventListener("click", () => {
-    state.activeRegion = "All";
-    state.activeCategory = "All";
-    state.searchQuery = "";
-    if (searchInput) searchInput.value = "";
-    if (searchClear) searchClear.classList.remove("visible");
-    updateUI();
-  });
-
-  // 11. Grid Click Delegation (Save, View, Quick Drive sync)
-  const gridContainer = document.getElementById("opportunities-grid");
-  gridContainer?.addEventListener("click", (e) => {
-    const target = e.target;
-
-    // Toggle save
-    const saveBtn = target.closest('[data-action="toggle-save"]');
-    if (saveBtn) {
-      e.stopPropagation();
-      const oppId = saveBtn.getAttribute("data-id");
-      if (oppId) toggleSaveOpportunity(oppId);
-      return;
-    }
-
-    // Quick Drive folder
-    const driveBtn = target.closest('[data-action="sync-card-to-drive"]');
-    if (driveBtn) {
-      e.stopPropagation();
-      const oppId = driveBtn.getAttribute("data-id");
-      if (oppId) handleQuickDriveFolder(oppId);
-      return;
-    }
-
-    // View details
-    const detailsBtn = target.closest('[data-action="view-details"]');
-    if (detailsBtn) {
-      const oppId = detailsBtn.getAttribute("data-id");
-      if (oppId) openDetailsModal(oppId);
-      return;
-    }
-
-    // Fallback card click
-    const card = target.closest(".opportunity-card");
-    if (card && !target.closest("button") && !target.closest("a")) {
-      const oppId = card.getAttribute("data-id");
-      if (oppId) openDetailsModal(oppId);
-    }
-  });
-
-  // 12. Modal backdrop close & close button delegation
-  const modal = document.getElementById("general-modal");
-  modal?.addEventListener("click", (e) => {
-    if (e.target === modal || e.target.closest("#modal-close-btn")) {
-      closeModal();
-    }
-  });
-
-  // 13. Global Keys
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && state.activeModal) {
-      closeModal();
-    }
-    if (e.key === "/" && document.activeElement !== searchInput) {
-      e.preventDefault();
-      searchInput?.focus();
-    }
-  });
-}
-
-// App Initialization
 document.addEventListener("DOMContentLoaded", () => {
   initStorage();
-  initAuth(handleAuthStateChange);
+  setupShowreelControls();
   setupEventListeners();
+
+  // Listen to Firebase auth changes
+  try {
+    initAuth((user) => {
+      state.user = user;
+      syncAuthState();
+    });
+  } catch (err) {
+    console.log("[CUE RADAR] Auth init skipped in sandboxed preview:", err);
+  }
+
   updateUI();
-  console.log("[CUE RADAR] Loaded successfully with Beachhead Markets & Google Drive API.");
 });

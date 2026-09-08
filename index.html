@@ -3,275 +3,686 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>CUE RADAR</title>
-    <meta name="description" content="Digital Career OS and Opportunities Hub for independent artists in contemporary dance, experimental music, and alternative arts." />
-    <meta property="og:title" content="CUE RADAR" />
-    <meta property="og:description" content="Digital Career OS and Opportunities Hub for independent artists in contemporary dance, experimental music, and alternative arts." />
+    <title>CUE RADAR — Opportunities Hub</title>
+    <meta name="description" content="Digital Career OS and Opportunities Hub for independent performing and sonic artists. Aggregating open calls, funding opportunities, and residencies." />
+    <meta property="og:title" content="CUE RADAR — Opportunities Hub" />
+    <meta property="og:description" content="Curated opportunities for alternative performing and sonic artists across Cologne, Berlin, Brussels, and Tel Aviv." />
     <meta property="og:type" content="website" />
     <meta name="twitter:card" content="summary_large_image" />
 
-    <!-- Typography: Space Grotesk (Display Bold Geometric), Inter (Body), JetBrains Mono (Telemetry/Data) -->
+    <!-- Google Fonts: Space Grotesk (Headings) & DM Sans (Body/UI) -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700;800&family=Space+Grotesk:wght@600;700;800;900&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Sans:ital,opsz,wght@0,9..40,300..800;1,9..40,400..700&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet" />
 
-    <!-- CUE RADAR Stylesheet -->
+    <!-- CUE RADAR Stylesheet (Japanese Minimalism & RA Architecture) -->
     <link rel="stylesheet" href="/src/style.css" />
   </head>
   <body>
-    <!-- 1. TOP NAVIGATION BAR -->
+    <!-- 1. MINIMALIST TOP NAVIGATION BAR (DESKTOP & MOBILE FIT SAFE) -->
     <header class="top-nav" id="top-nav">
       <div class="nav-container">
-        <!-- Logo & Underground Vibe Branding -->
+        <!-- Minimalist Brand with Hanko Stamp mark -->
         <a href="#" class="brand" id="brand-logo" aria-label="CUE RADAR Home">
-          <div class="radar-logo-icon" aria-hidden="true">
-            <div class="radar-sweep"></div>
-            <div class="radar-blip"></div>
-          </div>
+          <span class="brand-hanko" aria-hidden="true">間</span>
           <div class="brand-text">
-            <h1 class="brand-title">CUE<span>RADAR</span></h1>
-            <span class="brand-sub">CAREER OS // INDIE SCENE</span>
+            <span class="brand-title">CUE RADAR</span>
+            <span class="brand-sub">Career OS</span>
           </div>
         </a>
 
-        <!-- Navigation Actions & Telemetry -->
-        <div class="nav-actions">
-          <div class="telemetry-status" title="Active radar feed connected">
-            <span class="status-pulse" aria-hidden="true"></span>
-            <span>FEED // LIVE</span>
-          </div>
-
-          <!-- Permanent Institutions Directory button -->
+        <!-- Desktop View Switcher: The Hub (List Feed) vs Artist Profile -->
+        <nav class="view-switcher-nav" aria-label="Main navigation">
           <button 
             type="button" 
-            class="nav-btn" 
+            class="view-nav-btn active" 
+            id="nav-view-hub" 
+            data-target-view="hub"
+            aria-pressed="true"
+          >
+            <span class="nav-btn-dot" aria-hidden="true"></span>
+            <span>The Hub</span>
+          </button>
+          <button 
+            type="button" 
+            class="view-nav-btn" 
+            id="nav-view-profile" 
+            data-target-view="profile"
+            aria-pressed="false"
+          >
+            <span class="nav-btn-dot" aria-hidden="true"></span>
+            <span>Artist Profile</span>
+          </button>
+        </nav>
+
+        <!-- Desktop Right Side Nav Actions -->
+        <div class="nav-actions nav-actions-desktop">
+          <!-- Master Database Brain & Live Sync Shortcut -->
+          <button 
+            type="button" 
+            class="nav-text-btn nav-db-sync-btn" 
+            id="btn-db-sync"
+            title="Master Database Brain & Live Sync Status"
+          >
+            <span class="db-sync-pulse" aria-hidden="true">●</span>
+            <span id="nav-db-label">Master DB · 268</span>
+          </button>
+
+          <!-- Institutions Directory Shortcut -->
+          <button 
+            type="button" 
+            class="nav-text-btn" 
             id="btn-institutions-directory"
-            title="Browse permanent cultural institutions in Cologne, Berlin, Brussels & Israel"
+            title="Browse verified cultural sources across 23 markets"
           >
             <span>Institutions</span>
           </button>
 
-          <!-- Saved Opportunities Shortcut -->
+          <!-- Saved Filter Shortcut -->
           <button 
             type="button" 
-            class="nav-btn" 
+            class="nav-saved-btn" 
             id="nav-saved-btn" 
-            aria-label="Filter saved opportunities"
+            aria-label="View saved opportunities"
           >
-            <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-              <path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"></path>
-            </svg>
-            <span>SAVED</span>
-            <span class="counter-badge" id="nav-saved-count">0</span>
+            <span>Saved</span>
+            <span class="saved-counter-badge" id="nav-saved-count">0</span>
           </button>
 
-          <!-- Google Drive Authentication & User Profile -->
-          <div class="drive-auth-wrapper" id="drive-auth-wrapper">
-            <!-- Official GSI Sign In Button (When signed out) -->
+          <!-- Google Drive / Sign In Pill -->
+          <div class="drive-auth-wrapper">
             <button 
               type="button" 
-              class="gsi-material-button" 
+              class="google-auth-btn" 
               id="gsi-signin-btn" 
-              aria-label="Sign in with Google to connect Google Drive"
+              aria-label="Sign in with Google"
             >
-              <div class="gsi-material-button-icon">
-                <svg viewBox="0 0 48 48" style="display: block; width: 18px; height: 18px;">
+              <svg class="google-svg" viewBox="0 0 48 48" aria-hidden="true">
+                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
+                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path>
+                <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path>
+                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path>
+              </svg>
+              <span>Sign In</span>
+            </button>
+
+            <button 
+              type="button" 
+              class="drive-user-pill" 
+              id="drive-user-pill" 
+              title="Google Drive Vault" 
+              style="display: none;"
+            >
+              <img id="drive-user-avatar" class="drive-user-avatar" src="" alt="Avatar" />
+              <span id="drive-user-name" class="drive-user-name">Drive</span>
+            </button>
+          </div>
+        </div>
+
+        <!-- Mobile Right Side Quick Actions (Fit-safe, zero horizontal overflow) -->
+        <div class="nav-actions-mobile">
+          <!-- Quick Saved Button -->
+          <button 
+            type="button" 
+            class="mobile-quick-btn mobile-quick-saved" 
+            id="btn-mobile-saved" 
+            aria-label="Filter saved opportunities"
+            title="Saved Calls"
+          >
+            <span class="mobile-saved-star" aria-hidden="true">★</span>
+            <span class="saved-counter-badge" id="nav-mobile-saved-count">0</span>
+          </button>
+
+          <!-- Quick Master DB Pill -->
+          <button 
+            type="button" 
+            class="mobile-quick-btn mobile-quick-db" 
+            id="btn-mobile-db-sync" 
+            title="Master Database Brain"
+            aria-label="Master Database"
+          >
+            <span class="db-sync-pulse" aria-hidden="true">●</span>
+            <span id="nav-mobile-db-label">268</span>
+          </button>
+
+          <!-- Mobile Menu Drawer Toggle -->
+          <button 
+            type="button" 
+            class="mobile-menu-toggle" 
+            id="btn-mobile-menu-toggle" 
+            aria-label="Toggle navigation menu"
+            aria-expanded="false"
+          >
+            <span class="menu-icon-line"></span>
+            <span class="menu-icon-line"></span>
+          </button>
+        </div>
+      </div>
+
+      <!-- Mobile Navigation Drawer Dropdown -->
+      <div class="mobile-drawer" id="mobile-drawer" aria-hidden="true">
+        <div class="mobile-drawer-backdrop" id="mobile-drawer-backdrop"></div>
+        <div class="mobile-drawer-content">
+          <!-- Drawer Section: View Switcher -->
+          <div class="drawer-section">
+            <div class="drawer-section-label">WORKSPACE VIEW</div>
+            <div class="drawer-view-switch">
+              <button 
+                type="button" 
+                class="drawer-view-btn active" 
+                id="drawer-view-hub" 
+                data-target-view="hub"
+              >
+                <span class="nav-btn-dot" aria-hidden="true"></span>
+                <span>The Hub (Feed)</span>
+              </button>
+              <button 
+                type="button" 
+                class="drawer-view-btn" 
+                id="drawer-view-profile" 
+                data-target-view="profile"
+              >
+                <span class="nav-btn-dot" aria-hidden="true"></span>
+                <span>Artist Profile</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Drawer Section: Cultural Database -->
+          <div class="drawer-section">
+            <div class="drawer-section-label">CULTURAL DATABASE</div>
+            <button type="button" class="drawer-item-btn" id="drawer-btn-db">
+              <div class="drawer-item-left">
+                <span class="db-sync-pulse">●</span>
+                <div>
+                  <div class="drawer-item-title">Master Database Brain</div>
+                  <div class="drawer-item-desc" id="drawer-db-stats">268 Sources · 23 Markets · Live Sync</div>
+                </div>
+              </div>
+              <span class="drawer-item-arrow">→</span>
+            </button>
+
+            <button type="button" class="drawer-item-btn" id="drawer-btn-institutions">
+              <div class="drawer-item-left">
+                <span class="drawer-icon">🏛</span>
+                <div>
+                  <div class="drawer-item-title">Institutions Directory</div>
+                  <div class="drawer-item-desc">Berlin, Cologne, Tel Aviv, Brussels & more</div>
+                </div>
+              </div>
+              <span class="drawer-item-arrow">→</span>
+            </button>
+          </div>
+
+          <!-- Drawer Section: Cloud Storage -->
+          <div class="drawer-section">
+            <div class="drawer-section-label">CLOUD STORAGE</div>
+            <div class="drawer-auth-box">
+              <div id="drawer-logged-user" style="display: none;" class="drawer-user-row">
+                <img id="drawer-user-avatar" class="drive-user-avatar" src="" alt="Avatar" />
+                <div>
+                  <div id="drawer-user-name" class="drawer-user-name">Artist</div>
+                  <div class="drawer-user-status">Google Drive Connected</div>
+                </div>
+              </div>
+              <button 
+                type="button" 
+                class="google-auth-btn drawer-auth-btn" 
+                id="drawer-gsi-signin-btn"
+              >
+                <svg class="google-svg" viewBox="0 0 48 48" aria-hidden="true">
                   <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
                   <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path>
                   <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path>
                   <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path>
                 </svg>
-              </div>
-              <span>Sign in with Google</span>
-            </button>
-
-            <!-- Connected User Avatar Pill (When signed in) -->
-            <button 
-              type="button" 
-              class="drive-user-pill" 
-              id="drive-user-pill" 
-              title="Open Google Drive Portfolio &amp; Dossier Vault"
-              aria-label="Google Drive Connected"
-            >
-              <img 
-                id="drive-user-avatar" 
-                class="drive-user-avatar" 
-                src="https://www.gstatic.com/images/branding/product/1x/drive_2020q4_32dp.png" 
-                alt="Artist avatar" 
-              />
-              <div class="drive-user-info">
-                <span class="drive-user-name" id="drive-user-name">Artist</span>
-                <span class="drive-status-badge">Drive Synced</span>
-              </div>
-            </button>
+                <span>Connect Google Drive</span>
+              </button>
+            </div>
           </div>
         </div>
       </div>
     </header>
 
-    <!-- 2. HERO SECTION WITH REGION TABS, SEARCH & FILTER CHIPS -->
-    <section class="hero-section" id="hero-section">
-      <div class="hero-meta">BEACHHEAD HUBS // COLOGNE (NRW) · BERLIN · BRUSSELS · ISRAEL</div>
-      <h2 class="hero-title">
-        The Career OS for <span>Autonomous Performing &amp; Sonic Artists</span>.
-      </h2>
-      <p class="hero-description">
-        Curated open calls, production grants, and residency labs across contemporary dance, experimental acoustics, and indie electronic culture. Connect your Google Drive to sync application dossiers and manage portfolio attachments.
-      </p>
+    <!-- ======================================================================
+         VIEW 1: THE HUB (OPPORTUNITIES LIST FEED)
+         ====================================================================== -->
+    <div class="view-panel active" id="view-hub" role="region" aria-label="The Hub Opportunities">
+      <!-- Quiet Editorial Header (Embracing "Ma" — Purposeful Negative Space) -->
+      <section class="hero-section">
+        <div class="hero-inner">
+          <div class="hero-kicker">CUE RADAR · Master Database Brain (268 Verified Sources · 23 Markets)</div>
+          <h1 class="hero-title">
+            Open calls, residencies &amp; funding for independent artists.
+          </h1>
+          <p class="hero-subtext">
+            Autonomous career infrastructure for contemporary dance and experimental sound across 23 international alternative scenes — including Berlin, Cologne, Tel Aviv, Brussels, Vienna, Zurich, Amsterdam, Paris, and Stockholm.
+          </p>
 
-      <!-- Geographic Region Tabs (Beachhead Market) -->
-      <div class="region-tabs-container" id="region-tabs-container" role="tablist" aria-label="Geographic hubs">
-        <span class="region-tab-label">Territories:</span>
-        <button type="button" class="region-tab active" data-region="All" id="region-all">
-          <span class="region-dot"></span>
-          <span>All Hubs</span>
-        </button>
-        <button type="button" class="region-tab" data-region="Cologne / NRW" id="region-nrw">
-          <span class="region-dot"></span>
-          <span>Cologne / NRW</span>
-        </button>
-        <button type="button" class="region-tab" data-region="Berlin" id="region-berlin">
-          <span class="region-dot"></span>
-          <span>Berlin</span>
-        </button>
-        <button type="button" class="region-tab" data-region="Brussels" id="region-brussels">
-          <span class="region-dot"></span>
-          <span>Brussels</span>
-        </button>
-        <button type="button" class="region-tab" data-region="Israel" id="region-israel">
-          <span class="region-dot"></span>
-          <span>Israel</span>
-        </button>
-      </div>
+          <!-- Minimalist Search Input -->
+          <div class="search-container">
+            <div class="search-bar">
+              <span class="search-symbol" aria-hidden="true">/</span>
+              <input 
+                type="text" 
+                class="search-input" 
+                id="search-input" 
+                placeholder="Search by institution, discipline, city, or keyword..." 
+                aria-label="Search opportunities"
+              />
+              <button 
+                type="button" 
+                class="search-clear-btn" 
+                id="search-clear-btn" 
+                aria-label="Clear search"
+              >
+                Clear
+              </button>
+            </div>
+          </div>
+        </div>
+      </section>
 
-      <!-- Search & Controls Bar -->
-      <div class="controls-container" id="controls-container">
-        <div class="search-row">
-          <!-- Real-time Search Input -->
-          <div class="search-input-wrapper">
-            <span class="search-icon" aria-hidden="true">
-              <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <circle cx="11" cy="11" r="8"></circle>
-                <line x1="21" y1="21" x2="16.65" y2="16.65"></line>
-              </svg>
-            </span>
-            <input 
-              type="text" 
-              class="search-input" 
-              id="search-input" 
-              placeholder="Search by discipline, open call, institution, or city... (Press '/' to focus)" 
-              aria-label="Search opportunities"
-            />
-            <button 
-              type="button" 
-              class="search-clear-btn" 
-              id="search-clear-btn" 
-              aria-label="Clear search"
-            >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <line x1="18" y1="6" x2="6" y2="18"></line>
-                <line x1="6" y1="6" x2="18" y2="18"></line>
-              </svg>
-            </button>
+      <!-- 2. STICKY FILTER ARCHITECTURE (PART 3: THREE DEDICATED ROWS) -->
+      <div class="sticky-filter-wrapper" id="sticky-filter-wrapper">
+        <div class="filters-container">
+          <!-- Row 1: Location (Horizontal scrollable list for Cities) -->
+          <div class="filter-row filter-row-location">
+            <span class="filter-row-label">Location:</span>
+            <div class="filter-chips-scroll" role="group" aria-label="Filter by City or Market">
+              <button type="button" class="filter-chip active" data-filter-group="city" data-filter="All">
+                <span class="filter-chip-dot" aria-hidden="true"></span>
+                <span class="filter-chip-text">All Markets</span>
+              </button>
+              <button type="button" class="filter-chip" data-filter-group="city" data-filter="Berlin">
+                <span class="filter-chip-dot" aria-hidden="true"></span>
+                <span class="filter-chip-text">Berlin</span>
+              </button>
+              <button type="button" class="filter-chip" data-filter-group="city" data-filter="Cologne">
+                <span class="filter-chip-dot" aria-hidden="true"></span>
+                <span class="filter-chip-text">Köln / Cologne</span>
+              </button>
+              <button type="button" class="filter-chip" data-filter-group="city" data-filter="Tel Aviv">
+                <span class="filter-chip-dot" aria-hidden="true"></span>
+                <span class="filter-chip-text">Tel Aviv</span>
+              </button>
+              <button type="button" class="filter-chip" data-filter-group="city" data-filter="Brussels">
+                <span class="filter-chip-dot" aria-hidden="true"></span>
+                <span class="filter-chip-text">Brussels</span>
+              </button>
+              <button type="button" class="filter-chip" data-filter-group="city" data-filter="Vienna">
+                <span class="filter-chip-dot" aria-hidden="true"></span>
+                <span class="filter-chip-text">Vienna</span>
+              </button>
+              <button type="button" class="filter-chip" data-filter-group="city" data-filter="Zurich">
+                <span class="filter-chip-dot" aria-hidden="true"></span>
+                <span class="filter-chip-text">Zurich</span>
+              </button>
+              <button type="button" class="filter-chip" data-filter-group="city" data-filter="Amsterdam">
+                <span class="filter-chip-dot" aria-hidden="true"></span>
+                <span class="filter-chip-text">Amsterdam</span>
+              </button>
+              <button type="button" class="filter-chip" data-filter-group="city" data-filter="Paris">
+                <span class="filter-chip-dot" aria-hidden="true"></span>
+                <span class="filter-chip-text">Paris</span>
+              </button>
+              <button type="button" class="filter-chip" data-filter-group="city" data-filter="Stockholm">
+                <span class="filter-chip-dot" aria-hidden="true"></span>
+                <span class="filter-chip-text">Stockholm</span>
+              </button>
+              <button type="button" class="filter-chip" data-filter-group="city" data-filter="Oslo">
+                <span class="filter-chip-dot" aria-hidden="true"></span>
+                <span class="filter-chip-text">Oslo</span>
+              </button>
+              <button type="button" class="filter-chip" data-filter-group="city" data-filter="Copenhagen">
+                <span class="filter-chip-dot" aria-hidden="true"></span>
+                <span class="filter-chip-text">Copenhagen</span>
+              </button>
+              <button type="button" class="filter-chip" data-filter-group="city" data-filter="Athens">
+                <span class="filter-chip-dot" aria-hidden="true"></span>
+                <span class="filter-chip-text">Athens</span>
+              </button>
+              <button type="button" class="filter-chip" data-filter-group="city" data-filter="Tbilisi">
+                <span class="filter-chip-dot" aria-hidden="true"></span>
+                <span class="filter-chip-text">Tbilisi</span>
+              </button>
+              <button type="button" class="filter-chip" data-filter-group="city" data-filter="Tokyo">
+                <span class="filter-chip-dot" aria-hidden="true"></span>
+                <span class="filter-chip-text">Tokyo</span>
+              </button>
+              <button type="button" class="filter-chip" data-filter-group="city" data-filter="Seoul">
+                <span class="filter-chip-dot" aria-hidden="true"></span>
+                <span class="filter-chip-text">Seoul</span>
+              </button>
+              <button type="button" class="filter-chip" data-filter-group="city" data-filter="Warsaw">
+                <span class="filter-chip-dot" aria-hidden="true"></span>
+                <span class="filter-chip-text">Warsaw</span>
+              </button>
+              <button type="button" class="filter-chip" data-filter-group="city" data-filter="Kraków">
+                <span class="filter-chip-dot" aria-hidden="true"></span>
+                <span class="filter-chip-text">Kraków</span>
+              </button>
+              <button type="button" class="filter-chip" data-filter-group="city" data-filter="Prague">
+                <span class="filter-chip-dot" aria-hidden="true"></span>
+                <span class="filter-chip-text">Prague</span>
+              </button>
+              <button type="button" class="filter-chip" data-filter-group="city" data-filter="Lisbon">
+                <span class="filter-chip-dot" aria-hidden="true"></span>
+                <span class="filter-chip-text">Lisbon</span>
+              </button>
+              <button type="button" class="filter-chip" data-filter-group="city" data-filter="Barcelona">
+                <span class="filter-chip-dot" aria-hidden="true"></span>
+                <span class="filter-chip-text">Barcelona</span>
+              </button>
+              <button type="button" class="filter-chip" data-filter-group="city" data-filter="Lyon">
+                <span class="filter-chip-dot" aria-hidden="true"></span>
+                <span class="filter-chip-text">Lyon</span>
+              </button>
+              <button type="button" class="filter-chip" data-filter-group="city" data-filter="Turin">
+                <span class="filter-chip-dot" aria-hidden="true"></span>
+                <span class="filter-chip-text">Turin</span>
+              </button>
+            </div>
           </div>
 
-          <!-- Sort Select -->
-          <div class="sort-wrapper">
-            <span class="sort-label">Sort:</span>
+          <!-- Row 2: Discipline (Filter chips: All, Dance, Sound, Multidisciplinary) -->
+          <div class="filter-row filter-row-discipline">
+            <span class="filter-row-label">Discipline:</span>
+            <div class="filter-chips-scroll" role="group" aria-label="Filter by Discipline">
+              <button type="button" class="filter-chip active" data-filter-group="discipline" data-filter="All">
+                <span class="filter-chip-dot" aria-hidden="true"></span>
+                <span class="filter-chip-text">All Disciplines</span>
+              </button>
+              <button type="button" class="filter-chip" data-filter-group="discipline" data-filter="Dance">
+                <span class="filter-chip-dot" aria-hidden="true"></span>
+                <span class="filter-chip-text">Dance</span>
+              </button>
+              <button type="button" class="filter-chip" data-filter-group="discipline" data-filter="Sound">
+                <span class="filter-chip-dot" aria-hidden="true"></span>
+                <span class="filter-chip-text">Sound</span>
+              </button>
+              <button type="button" class="filter-chip" data-filter-group="discipline" data-filter="Multidisciplinary">
+                <span class="filter-chip-dot" aria-hidden="true"></span>
+                <span class="filter-chip-text">Multidisciplinary</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Row 3: Opportunity Type (Filter chips: All, Funding, Residency, Open Call) -->
+          <div class="filter-row filter-row-type">
+            <span class="filter-row-label">Type:</span>
+            <div class="filter-chips-scroll" role="group" aria-label="Filter by Opportunity Type">
+              <button type="button" class="filter-chip active" data-filter-group="type" data-filter="All">
+                <span class="filter-chip-dot" aria-hidden="true"></span>
+                <span class="filter-chip-text">All Types</span>
+              </button>
+              <button type="button" class="filter-chip" data-filter-group="type" data-filter="Funding">
+                <span class="filter-chip-dot" aria-hidden="true"></span>
+                <span class="filter-chip-text">Funding</span>
+              </button>
+              <button type="button" class="filter-chip" data-filter-group="type" data-filter="Residency">
+                <span class="filter-chip-dot" aria-hidden="true"></span>
+                <span class="filter-chip-text">Residency</span>
+              </button>
+              <button type="button" class="filter-chip" data-filter-group="type" data-filter="Open Call">
+                <span class="filter-chip-dot" aria-hidden="true"></span>
+                <span class="filter-chip-text">Open Call</span>
+              </button>
+            </div>
+
+            <!-- Quick Filter Actions (Saved toggle and Reset) -->
+            <div class="filter-row-aux">
+              <button type="button" class="filter-chip filter-chip-saved" id="btn-filter-saved" aria-label="Show saved only">
+                <span class="filter-chip-dot" aria-hidden="true"></span>
+                <span class="filter-chip-text">Saved Only</span>
+                <span class="filter-saved-badge" id="filter-saved-count">0</span>
+              </button>
+              <button type="button" class="btn-clear-all" id="btn-clear-all-filters" style="display: none;">
+                Reset Filters
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- 3. OPPORTUNITIES FEED / LIST (Resident Advisor Inspired Architecture) -->
+      <main class="feed-main-container">
+        <div class="feed-status-bar">
+          <span class="feed-count-display" id="feed-count-indicator">Showing 9 opportunities</span>
+          <div class="feed-sorting">
+            <label for="sort-select" class="sort-label">Sort:</label>
             <select class="sort-select" id="sort-select" aria-label="Sort opportunities">
-              <option value="deadline-asc">Deadline (Soonest)</option>
-              <option value="deadline-desc">Deadline (Furthest)</option>
-              <option value="title-asc">Title (A - Z)</option>
+              <option value="deadline-asc">Deadline (Earliest)</option>
+              <option value="deadline-desc">Deadline (Latest)</option>
+              <option value="title-asc">Title (A–Z)</option>
             </select>
           </div>
         </div>
 
-        <!-- Horizontal Filter Chips (All, Dance, Sound, Residency, Funding, Saved) -->
-        <nav class="filter-chips-wrapper" aria-label="Category filters">
-          <button type="button" class="filter-chip active" data-filter="All" id="chip-all">
-            <span>All Calls</span>
-          </button>
-          <button type="button" class="filter-chip" data-filter="Dance" id="chip-dance">
-            <span>Dance</span>
-          </button>
-          <button type="button" class="filter-chip" data-filter="Sound" id="chip-sound">
-            <span>Sound &amp; Music</span>
-          </button>
-          <button type="button" class="filter-chip" data-filter="Residency" id="chip-residency">
-            <span>Residency</span>
-          </button>
-          <button type="button" class="filter-chip" data-filter="Funding" id="chip-funding">
-            <span>Funding</span>
-          </button>
-          <button type="button" class="filter-chip" data-filter="Saved" id="chip-saved">
-            <span>★ Saved</span>
-            <span class="chip-count" id="chip-saved-count">0</span>
-          </button>
-        </nav>
-      </div>
-    </section>
+        <!-- The List of Opportunity Cards -->
+        <section 
+          class="opportunities-list" 
+          id="opportunities-grid" 
+          aria-label="Opportunities list"
+        >
+          <!-- Injected via Vanilla JS -->
+        </section>
 
-    <!-- 3. RESPONSIVE CSS GRID DISPLAYING OPPORTUNITY CARDS -->
-    <main class="opportunities-container" id="opportunities-main">
-      <div class="grid-header-meta">
-        <span id="active-count-indicator">Showing 9 of 9 Opportunities</span>
-        
-        <!-- Google Drive Dossier Sync Trigger -->
-        <button type="button" class="drive-sync-shortcut" id="btn-header-drive-vault">
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path>
-            <polyline points="7 10 12 15 17 10"></polyline>
-            <line x1="12" y1="15" x2="12" y2="3"></line>
-          </svg>
-          <span>Google Drive Dossier Vault</span>
-        </button>
-      </div>
+        <!-- Empty State -->
+        <div class="empty-feed-box" id="empty-feed-box" style="display: none;">
+          <p class="empty-feed-title">No opportunities found</p>
+          <p class="empty-feed-desc">No calls match your active filter combination. Clear your filters to browse all calls.</p>
+          <button type="button" class="btn-reset-filters" id="btn-reset-filters">Reset All Filters</button>
+        </div>
+      </main>
 
-      <!-- CSS Grid Container -->
-      <section 
-        class="opportunities-grid" 
-        id="opportunities-grid" 
-        aria-label="Opportunities Feed"
+      <!-- Floating Quick-Filter Pill (Reveals smoothly when scrolled past the filter bar) -->
+      <button 
+        type="button" 
+        class="floating-filter-pill" 
+        id="btn-floating-filter"
+        aria-label="Jump to filters and view active parameters"
+        title="Scroll to filter controls"
       >
-        <!-- Dynamic Cards rendered via Vanilla JS -->
+        <span class="floating-pill-dot" aria-hidden="true">●</span>
+        <span id="floating-pill-label">Filters · 16 Calls</span>
+        <span class="floating-pill-arrow" aria-hidden="true">↑</span>
+      </button>
+    </div>
+
+    <!-- ======================================================================
+         VIEW 2: THE ARTIST PROFILE VIEW (PART 4: SHOWREEL & PORTFOLIO)
+         ====================================================================== -->
+    <div class="view-panel" id="view-profile" role="region" aria-label="Artist Profile" style="display: none;">
+      <!-- 1. Top Section: "Sign in with Google" status bar + minimalist Social Media Links -->
+      <section class="profile-top-bar">
+        <div class="profile-top-inner">
+          <div class="profile-auth-block" id="profile-auth-block">
+            <button 
+              type="button" 
+              class="profile-google-btn" 
+              id="profile-google-signin-btn"
+              aria-label="Sign in with Google"
+            >
+              <svg class="google-svg" viewBox="0 0 48 48" aria-hidden="true">
+                <path fill="#EA4335" d="M24 9.5c3.54 0 6.71 1.22 9.21 3.6l6.85-6.85C35.9 2.38 30.47 0 24 0 14.62 0 6.51 5.38 2.56 13.22l7.98 6.19C12.43 13.72 17.74 9.5 24 9.5z"></path>
+                <path fill="#4285F4" d="M46.98 24.55c0-1.57-.15-3.09-.38-4.55H24v9.02h12.94c-.58 2.96-2.26 5.48-4.78 7.18l7.73 6c4.51-4.18 7.09-10.36 7.09-17.65z"></path>
+                <path fill="#FBBC05" d="M10.53 28.59c-.48-1.45-.76-2.99-.76-4.59s.27-3.14.76-4.59l-7.98-6.19C.92 16.46 0 20.12 0 24c0 3.88.92 7.54 2.56 10.78l7.97-6.19z"></path>
+                <path fill="#34A853" d="M24 48c6.48 0 11.93-2.13 15.89-5.81l-7.73-6c-2.15 1.45-4.92 2.3-8.16 2.3-6.26 0-11.57-4.22-13.47-9.91l-7.98 6.19C6.51 42.62 14.62 48 24 48z"></path>
+              </svg>
+              <span>Sign in with Google</span>
+            </button>
+
+            <!-- Authenticated User Display -->
+            <div class="profile-logged-user" id="profile-logged-user" style="display: none;">
+              <img id="profile-user-avatar" class="profile-user-avatar" src="" alt="User avatar" />
+              <span id="profile-user-name" class="profile-user-name">Roi Padan</span>
+              <button type="button" class="btn-profile-signout" id="profile-signout-btn">Sign Out</button>
+            </div>
+          </div>
+
+          <!-- Minimalist Social Media Links (Instagram, Spotify, Website) -->
+          <div class="profile-social-links" aria-label="Artist social media links">
+            <a href="https://instagram.com" target="_blank" rel="noopener noreferrer" class="social-text-link">
+              <span>Instagram</span>
+              <span class="arrow-glyph">↗</span>
+            </a>
+            <a href="https://spotify.com" target="_blank" rel="noopener noreferrer" class="social-text-link">
+              <span>Spotify</span>
+              <span class="arrow-glyph">↗</span>
+            </a>
+            <a href="https://cueradar.org" target="_blank" rel="noopener noreferrer" class="social-text-link">
+              <span>Website</span>
+              <span class="arrow-glyph">↗</span>
+            </a>
+          </div>
+        </div>
       </section>
 
-      <!-- Empty State View -->
-      <section class="empty-state" id="empty-state" aria-hidden="true">
-        <svg class="empty-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true">
-          <circle cx="12" cy="12" r="10"></circle>
-          <line x1="4.93" y1="4.93" x2="19.07" y2="19.07"></line>
-        </svg>
-        <h3 class="empty-title">Zero Radar Signals Detected</h3>
-        <p class="empty-text">No opportunities matched your active filters, selected hub, or search criteria.</p>
-        <button type="button" class="btn-reset-filters" id="btn-reset-filters">Reset All Filters</button>
-      </section>
-    </main>
+      <!-- 2. Showreel (Hero): Sleek full-width 16:9 responsive video container placeholder -->
+      <section class="profile-showreel-wrapper">
+        <div class="showreel-container">
+          <div class="showreel-aspect-ratio" id="showreel-aspect-ratio">
+            <video 
+              id="profile-video-element" 
+              class="showreel-video-tag"
+              poster="https://images.unsplash.com/photo-1516450360452-9312f5e86fc7?w=1600&auto=format&fit=crop&q=85"
+              playsinline
+              loop
+              preload="metadata"
+            >
+              <source src="https://commondatastorage.googleapis.com/gtv-videos-bucket/sample/TearsOfSteel.mp4" type="video/mp4" />
+            </video>
 
-    <!-- 4. MODAL OVERLAY (USED FOR DETAILS, DRIVE VAULT & INSTITUTIONS) -->
+            <!-- Playback HUD Overlay -->
+            <div class="showreel-hud" id="showreel-hud">
+              <div class="hud-top">
+                <span class="hud-badge">16:9 4K SHOWREEL</span>
+                <span class="hud-specs">RESONANCE CYCLE // CHOREOGRAPHY &amp; SOUND</span>
+              </div>
+
+              <button type="button" class="hud-play-btn" id="btn-showreel-play" aria-label="Toggle showreel play">
+                <span id="showreel-play-icon">▶</span>
+              </button>
+
+              <div class="hud-bottom">
+                <div class="hud-caption">
+                  <span class="hud-caption-title">ROI PADAN · ARCHIVE FOOTAGE</span>
+                  <span class="hud-caption-sub">PACT Zollverein · TanzFaktur Köln · Tmuna Tel Aviv</span>
+                </div>
+                <div class="hud-controls">
+                  <span class="hud-time" id="showreel-time-display">00:00 / 04:18</span>
+                  <button type="button" class="hud-btn" id="btn-showreel-mute">Mute</button>
+                  <button type="button" class="hud-btn" id="btn-showreel-fs">Fullscreen</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- 3. Bio Block: Artist Name (Space Grotesk, bold), Location, short bio paragraph -->
+      <section class="profile-bio-section">
+        <div class="profile-bio-inner">
+          <div class="profile-bio-heading">
+            <div class="profile-kicker">CHOREOGRAPHER &amp; EXPERIMENTAL SOUND ARTIST</div>
+            <h1 class="profile-artist-name" id="artist-profile-name">ROI PADAN</h1>
+            <div class="profile-artist-location" id="artist-profile-location">
+              <span class="pin-symbol" aria-hidden="true">📍</span> Cologne / NRW · Tel Aviv
+            </div>
+          </div>
+
+          <p class="profile-bio-text" id="artist-profile-bio">
+            Independent choreographer, physical performer &amp; experimental sound artist researching somatic resonance, spatial club acoustics, and kinetic scenography. Developing autonomous touring works between North Rhine-Westphalia, Berlin, and the Mediterranean.
+          </p>
+
+          <div class="profile-disciplines-list" id="profile-disciplines-list">
+            <span class="profile-discipline-tag">Contemporary Dance</span>
+            <span class="profile-discipline-tag">Choreography</span>
+            <span class="profile-discipline-tag">Experimental Sound</span>
+            <span class="profile-discipline-tag">Live Electronics</span>
+          </div>
+        </div>
+      </section>
+
+      <!-- 4. Content Tabs System (Vanilla JS): "Saved Opportunities" | "Portfolio / Media" -->
+      <section class="profile-tabs-section">
+        <div class="profile-tabs-inner">
+          <div class="profile-tab-bar" role="tablist">
+            <button 
+              type="button" 
+              class="profile-tab-button active" 
+              id="btn-tab-saved" 
+              data-tab="saved"
+              role="tab"
+              aria-selected="true"
+            >
+              <span>Saved Opportunities</span>
+              <span class="profile-tab-count" id="tab-counter-saved">0</span>
+            </button>
+            <button 
+              type="button" 
+              class="profile-tab-button" 
+              id="btn-tab-portfolio" 
+              data-tab="portfolio"
+              role="tab"
+              aria-selected="false"
+            >
+              <span>Portfolio / Media</span>
+              <span class="profile-tab-count" id="tab-counter-portfolio">4</span>
+            </button>
+          </div>
+
+          <!-- Tab 1: Saved Opportunities -->
+          <div class="profile-tab-content active" id="panel-tab-saved" role="tabpanel">
+            <div class="opportunities-list" id="profile-saved-list">
+              <!-- Rendered via JS using same clean card hierarchy -->
+            </div>
+            <div class="empty-saved-box" id="profile-empty-saved" style="display: none;">
+              <p class="empty-saved-title">No saved opportunities</p>
+              <p class="empty-saved-sub">Save open calls and grants in The Hub to monitor upcoming deadlines.</p>
+              <button type="button" class="btn-browse-hub" id="btn-goto-hub">Explore The Hub →</button>
+            </div>
+          </div>
+
+          <!-- Tab 2: Portfolio / Media (Minimalist CSS grid displaying 4 placeholder image cards) -->
+          <div class="profile-tab-content" id="panel-tab-portfolio" role="tabpanel" style="display: none;">
+            <div class="portfolio-grid-4" id="portfolio-media-grid">
+              <!-- Rendered via JS: 4 placeholder image cards for past works/gigs -->
+            </div>
+          </div>
+        </div>
+      </section>
+    </div>
+
+    <!-- 4. MODAL DIALOG (Details, Directory, Google Drive) -->
     <div class="modal-overlay" id="general-modal" role="dialog" aria-modal="true" aria-hidden="true">
-      <div class="modal-box wide" id="modal-content-container">
-        <!-- Rendered dynamically by openDetailsModal(), openDriveVaultModal(), openInstitutionsModal() -->
+      <div class="modal-box" id="modal-content-container">
+        <!-- Injected via Vanilla JS -->
       </div>
     </div>
 
-    <!-- 5. TOAST NOTIFICATIONS (FOR SAVE / REMOVE / DRIVE SYNC) -->
+    <!-- 5. TOAST CONTAINER -->
     <div class="toast-container" id="toast-container" aria-live="polite"></div>
 
-    <!-- 6. FOOTER -->
-    <footer class="app-footer" id="app-footer">
+    <!-- 6. EDITORIAL FOOTER -->
+    <footer class="site-footer">
       <div class="footer-inner">
-        <div class="footer-left">
-          <span class="footer-indicator"></span>
-          <span>CUE RADAR — INDEPENDENT ARTIST CAREER OS</span>
+        <div class="footer-brand">
+          <span>CUE RADAR</span>
+          <span class="footer-sep">·</span>
+          <span>Career OS for Alternative Performing &amp; Sonic Artists</span>
         </div>
-        <div class="footer-right">
-          <span>COLOGNE · BERLIN · BRUSSELS · ISRAEL // GOOGLE DRIVE SYNC READY</span>
+        <div class="footer-cities">
+          <span>Cologne</span>
+          <span>Berlin</span>
+          <span>Brussels</span>
+          <span>Tel Aviv</span>
         </div>
       </div>
     </footer>
 
-    <!-- Vanilla JavaScript Entry Point -->
+    <!-- Main JS Application Entry Point -->
     <script type="module" src="/src/main.js"></script>
   </body>
 </html>
