@@ -1883,6 +1883,165 @@ button {
   }
 }
 
+/* ============================================================================
+   PROFILE REDESIGN — mobile-first artist archive
+   ============================================================================ */
+:root {
+  --bg-canvas: #080b0d;
+  --bg-surface: #10161a;
+  --bg-surface-elevated: #172127;
+  --text-primary: #f4f7f6;
+  --text-secondary: #9eabae;
+  --text-muted: #657276;
+  --text-subtle: #354247;
+  --border-line: #243136;
+  --border-hover: #40545a;
+  --vermilion: #b8ff3d;
+  --vermilion-subtle: rgba(184, 255, 61, 0.1);
+}
+
+#view-profile {
+  background: #080b0d;
+  min-height: calc(100vh - 64px);
+}
+
+#view-profile .profile-top-bar {
+  background: transparent;
+  border-bottom: 0;
+  padding: 1rem 1rem 0;
+}
+
+#view-profile .profile-top-inner {
+  max-width: none;
+  padding: 0;
+  justify-content: flex-end;
+}
+
+#view-profile .profile-auth-block { display: none; }
+#view-profile .profile-social-links { gap: 0.75rem; }
+#view-profile .social-text-link {
+  padding: 0.4rem 0.65rem;
+  border: 1px solid #243136;
+  color: #9eabae;
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+#view-profile .profile-showreel-wrapper {
+  max-width: none;
+  margin: 0;
+  padding: 0.75rem 1rem 0;
+}
+
+#view-profile .showreel-container {
+  border: 0;
+  border-radius: 0;
+  background: #10161a;
+}
+
+#view-profile .showreel-aspect-ratio { aspect-ratio: 4 / 3; }
+#view-profile .showreel-video-tag { filter: saturate(0.72) contrast(1.08); }
+#view-profile .showreel-hud {
+  padding: 0.9rem;
+  background: linear-gradient(180deg, rgba(8,11,13,0.12), transparent 42%, rgba(8,11,13,0.92));
+}
+#view-profile .hud-badge { color: #b8ff3d; font-size: 0.63rem; }
+#view-profile .hud-specs { color: #b8ff3d; font-family: var(--font-display); }
+#view-profile .hud-play-btn { width: 52px; height: 52px; border-color: #b8ff3d; color: #b8ff3d; background: rgba(8,11,13,0.75); }
+#view-profile .hud-caption-title { font-size: 0.82rem; }
+#view-profile .hud-caption-sub { font-size: 0.68rem; }
+
+#view-profile .profile-bio-section {
+  max-width: none;
+  padding: 1.35rem 1rem 1.25rem;
+  border-bottom: 1px solid #243136;
+}
+#view-profile .profile-bio-inner { gap: 0.85rem; }
+#view-profile .profile-kicker {
+  color: #b8ff3d;
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+  margin: 0;
+}
+#view-profile .profile-artist-name {
+  font-size: clamp(2.7rem, 15vw, 5.4rem);
+  line-height: 0.88;
+  letter-spacing: -0.065em;
+  max-width: 8ch;
+  margin: 0;
+}
+#view-profile .profile-artist-location {
+  font-size: 0.78rem;
+  color: #9eabae;
+  letter-spacing: 0.04em;
+}
+#view-profile .profile-bio-text {
+  font-size: 0.9rem;
+  line-height: 1.48;
+  max-width: 32rem;
+  color: #9eabae;
+}
+#view-profile .profile-availability-row { margin-top: 0.3rem; gap: 0.45rem; }
+#view-profile .profile-availability-badge,
+#view-profile .profile-share-button {
+  background: transparent;
+  border-color: #354247;
+  padding: 0.42rem 0.55rem;
+  font-size: 0.59rem;
+}
+#view-profile .profile-availability-badge { border-color: rgba(184,255,61,0.42); color: #b8ff3d; }
+#view-profile .profile-discipline-tag {
+  border: 0;
+  padding: 0;
+  margin-right: 0.75rem;
+  color: #657276;
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+#view-profile .profile-disciplines-list { gap: 0; }
+
+#view-profile .profile-tabs-section {
+  max-width: none;
+  padding: 0;
+}
+#view-profile .profile-tab-bar {
+  margin: 0;
+  padding: 0 1rem;
+  gap: 1.35rem;
+  overflow-x: auto;
+  border-bottom: 1px solid #243136;
+}
+#view-profile .profile-tab-button {
+  flex: 0 0 auto;
+  padding: 1rem 0 0.8rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+#view-profile .profile-tab-button.active::after { background: #b8ff3d; height: 3px; }
+#view-profile .profile-tab-count { color: #b8ff3d; font-size: 0.68rem; }
+#view-profile .profile-tab-content { padding: 1rem; }
+#view-profile .portfolio-grid-4 { grid-template-columns: 1fr 1fr; gap: 0.55rem; }
+#view-profile .portfolio-media-card { border: 0; border-radius: 0; background: #10161a; }
+#view-profile .portfolio-img-aspect { aspect-ratio: 1 / 1; }
+#view-profile .portfolio-card-body { padding: 0.65rem; gap: 0.28rem; }
+#view-profile .portfolio-card-top { font-size: 0.58rem; }
+#view-profile .portfolio-card-title { font-size: 0.85rem; line-height: 1.08; }
+#view-profile .portfolio-card-desc { display: none; }
+#view-profile .portfolio-card-tags { display: none; }
+
+@media (min-width: 760px) {
+  #view-profile .profile-showreel-wrapper { padding: 1.5rem 2rem 0; }
+  #view-profile .showreel-aspect-ratio { aspect-ratio: 16 / 7; }
+  #view-profile .profile-bio-section { padding: 2rem; }
+  #view-profile .profile-artist-name { max-width: none; font-size: 5rem; }
+  #view-profile .profile-tabs-section { padding: 0 2rem 4rem; }
+  #view-profile .profile-tab-bar { padding: 0; }
+  #view-profile .profile-tab-content { padding: 2rem 0 0; }
+}
+
 /* ==========================================================================
    7. FOOTER
    ========================================================================== */
