@@ -484,6 +484,12 @@ function updateUI() {
     btnMobileSaved.classList.toggle("active", state.savedOnly);
   }
 
+  const btnMobileProfile = document.getElementById("btn-mobile-profile");
+  if (btnMobileProfile) {
+    btnMobileProfile.classList.toggle("active", state.activeView === "profile");
+    btnMobileProfile.setAttribute("aria-pressed", state.activeView === "profile" ? "true" : "false");
+  }
+
   const btnFilterSaved = document.getElementById("btn-filter-saved");
   if (btnFilterSaved) {
     btnFilterSaved.classList.toggle("active", state.savedOnly);
@@ -1225,12 +1231,69 @@ function setupEventListeners() {
     updateUI();
   });
 
-  // 2. Saved Filter Shortcut in Top Nav
+  // 2. Saved Filter Shortcut in Top Nav & Mobile Header
   document.getElementById("nav-saved-btn")?.addEventListener("click", () => {
     state.savedOnly = !state.savedOnly;
     if (state.activeView !== "hub") {
       state.activeView = "hub";
     }
+    updateUI();
+  });
+
+  // Mobile Header 1-Tap Profile Shortcut
+  document.getElementById("btn-mobile-profile")?.addEventListener("click", () => {
+    state.activeView = state.activeView === "profile" ? "hub" : "profile";
+    closeMobileDrawer();
+    updateUI();
+  });
+
+  // Mobile Header Saved Shortcut
+  document.getElementById("btn-mobile-saved")?.addEventListener("click", () => {
+    state.savedOnly = !state.savedOnly;
+    if (state.activeView !== "hub") {
+      state.activeView = "hub";
+    }
+    closeMobileDrawer();
+    updateUI();
+  });
+
+  // Mobile Slide-over Drawer Controls
+  const mobileDrawer = document.getElementById("mobile-drawer");
+  const mobileMenuToggle = document.getElementById("btn-mobile-menu-toggle");
+  const drawerBackdrop = document.getElementById("mobile-drawer-backdrop");
+
+  function toggleMobileDrawer() {
+    if (!mobileDrawer) return;
+    const isOpen = mobileDrawer.classList.toggle("open");
+    if (mobileMenuToggle) {
+      mobileMenuToggle.classList.toggle("active", isOpen);
+      mobileMenuToggle.setAttribute("aria-expanded", isOpen ? "true" : "false");
+    }
+    mobileDrawer.setAttribute("aria-hidden", isOpen ? "false" : "true");
+  }
+
+  function closeMobileDrawer() {
+    if (!mobileDrawer) return;
+    mobileDrawer.classList.remove("open");
+    if (mobileMenuToggle) {
+      mobileMenuToggle.classList.remove("active");
+      mobileMenuToggle.setAttribute("aria-expanded", "false");
+    }
+    mobileDrawer.setAttribute("aria-hidden", "true");
+  }
+
+  mobileMenuToggle?.addEventListener("click", toggleMobileDrawer);
+  drawerBackdrop?.addEventListener("click", closeMobileDrawer);
+
+  document.getElementById("drawer-view-hub")?.addEventListener("click", () => {
+    state.activeView = "hub";
+    closeMobileDrawer();
+    updateUI();
+  });
+
+  document.getElementById("drawer-view-profile")?.addEventListener("click", () => {
+    state.activeView = "profile";
+    closeMobileDrawer();
     updateUI();
   });
 
@@ -1365,6 +1428,10 @@ function setupEventListeners() {
 
   googleBtn?.addEventListener("click", handleSignIn);
   profileGoogleBtn?.addEventListener("click", handleSignIn);
+  document.getElementById("drawer-gsi-signin-btn")?.addEventListener("click", () => {
+    closeMobileDrawer();
+    handleSignIn();
+  });
 
   profileSignoutBtn?.addEventListener("click", async () => {
     await signOutUser();
@@ -1433,16 +1500,26 @@ function syncAuthState() {
   const profileGoogleBtn = document.getElementById("profile-google-signin-btn");
   const driveUserPill = document.getElementById("drive-user-pill");
   const gsiBtn = document.getElementById("gsi-signin-btn");
+  const drawerLoggedUser = document.getElementById("drawer-logged-user");
+  const drawerGsiBtn = document.getElementById("drawer-gsi-signin-btn");
 
   if (state.user) {
     if (profileGoogleBtn) profileGoogleBtn.style.display = "none";
     if (loggedBlock) loggedBlock.style.display = "inline-flex";
+    if (drawerGsiBtn) drawerGsiBtn.style.display = "none";
+    if (drawerLoggedUser) drawerLoggedUser.style.display = "flex";
 
     const avatar = document.getElementById("profile-user-avatar");
     if (avatar && state.user.photoURL) avatar.src = state.user.photoURL;
 
+    const drawerAvatar = document.getElementById("drawer-user-avatar");
+    if (drawerAvatar && state.user.photoURL) drawerAvatar.src = state.user.photoURL;
+
     const name = document.getElementById("profile-user-name");
     if (name) name.textContent = state.user.displayName || "Artist User";
+
+    const drawerName = document.getElementById("drawer-user-name");
+    if (drawerName) drawerName.textContent = state.user.displayName || "Artist User";
 
     if (gsiBtn) gsiBtn.style.display = "none";
     if (driveUserPill) {
@@ -1455,6 +1532,8 @@ function syncAuthState() {
   } else {
     if (profileGoogleBtn) profileGoogleBtn.style.display = "inline-flex";
     if (loggedBlock) loggedBlock.style.display = "none";
+    if (drawerGsiBtn) drawerGsiBtn.style.display = "flex";
+    if (drawerLoggedUser) drawerLoggedUser.style.display = "none";
     if (gsiBtn) gsiBtn.style.display = "inline-flex";
     if (driveUserPill) driveUserPill.style.display = "none";
   }
