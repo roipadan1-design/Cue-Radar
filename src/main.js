@@ -1408,7 +1408,27 @@ function setupEventListeners() {
     renderProfileView();
   });
 
-  // 9. Google Sign-In Listeners
+  // 9. Profile share action
+  document.getElementById("profile-share-btn")?.addEventListener("click", async () => {
+    const shareData = {
+      title: "Roi Padan · CUE RADAR",
+      text: "Roi Padan — choreographer and experimental sound artist",
+      url: window.location.href
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else if (navigator.clipboard) {
+        await navigator.clipboard.writeText(window.location.href);
+        showToast("Profile link copied");
+      }
+    } catch (error) {
+      if (error?.name !== "AbortError") showToast("Unable to share profile");
+    }
+  });
+
+  // 10. Google Sign-In Listeners
   const googleBtn = document.getElementById("gsi-signin-btn");
   const profileGoogleBtn = document.getElementById("profile-google-signin-btn");
   const profileSignoutBtn = document.getElementById("profile-signout-btn");

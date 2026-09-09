@@ -41,6 +41,8 @@ import {
   DEFAULT_PROFILE,
   DEFAULT_RADAR_PREFERENCES
 } from '../services/profileService.ts';
+import { ArtistHero } from './ArtistHero';
+import { VideoShowcase } from './VideoShowcase';
 
 // Available markets and disciplines
 const AVAILABLE_MARKETS = [
@@ -403,7 +405,9 @@ export const UserProfileRadar: React.FC = () => {
 
       {/* TAB 1: PROFILE & BIO EDITOR / PUBLIC VIEW */}
       {activeTab === 'profile' && (
-        <div className="space-y-6">
+        <div className="flex flex-col gap-6">
+          <ArtistHero profile={profile} onEdit={() => { setEditFormData(profile); setIsEditMode(true); }} />
+          <VideoShowcase url={profile.showreel_url} />
           {/* Bio & Basic Details */}
           <div className="bg-[#121215] border border-[#27272a] rounded-lg p-6 space-y-6">
             <div className="flex items-center justify-between border-b border-[#27272a] pb-4">
