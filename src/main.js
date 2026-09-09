@@ -513,7 +513,10 @@ function updateUI() {
 
   if (state.activeView === "hub") {
     if (hubView) hubView.style.display = "block";
-    if (profileView) profileView.style.display = "none";
+    if (profileView) {
+      profileView.style.display = "none";
+      profileView.classList.remove("active");
+    }
     if (navViewHub) {
       navViewHub.classList.add("active");
       navViewHub.setAttribute("aria-pressed", "true");
@@ -527,7 +530,10 @@ function updateUI() {
     renderFeed();
   } else {
     if (hubView) hubView.style.display = "none";
-    if (profileView) profileView.style.display = "block";
+    if (profileView) {
+      profileView.style.display = "";
+      profileView.classList.add("active");
+    }
     if (navViewHub) {
       navViewHub.classList.remove("active");
       navViewHub.setAttribute("aria-pressed", "false");

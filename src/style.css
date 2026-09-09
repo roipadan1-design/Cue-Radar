@@ -1207,6 +1207,28 @@ button {
   display: block;
 }
 
+/* Keep the artist identity first, then place the showreel immediately below it. */
+#view-profile.view-panel.active {
+  display: flex !important;
+  flex-direction: column;
+}
+
+#view-profile .profile-bio-section {
+  order: 1;
+}
+
+#view-profile .profile-showreel-wrapper {
+  order: 2;
+}
+
+#view-profile .profile-tabs-section {
+  order: 3;
+}
+
+#view-profile .profile-top-bar {
+  order: 4;
+}
+
 /* 1. Top Section: Sign in with Google status bar + minimalist Social Media Links */
 .profile-top-bar {
   border-bottom: 1px solid var(--border-line);
@@ -1269,9 +1291,40 @@ button {
 }
 
 .profile-social-links {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 0.7rem;
+  margin-left: 0.9rem;
+  vertical-align: middle;
+}
+
+.profile-artist-location .profile-social-links {
+  position: relative;
+  top: 0.15rem;
+}
+
+.social-icon-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  color: var(--text-secondary);
+  border: 1px solid transparent;
+  border-radius: 50%;
+  transition: color var(--transition-fast), border-color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.social-icon-link:hover {
+  color: var(--text-primary);
+  border-color: var(--vermilion);
+  background-color: var(--vermilion-subtle);
+}
+
+.brand-icon {
+  width: 1.05rem;
+  height: 1.05rem;
+  display: block;
 }
 
 .social-text-link {
