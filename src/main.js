@@ -471,15 +471,6 @@ function updateUI() {
   const navMobileSavedBadge = document.getElementById("nav-mobile-saved-count");
   if (navMobileSavedBadge) navMobileSavedBadge.textContent = savedCount.toString();
 
-  const navDbLabel = document.getElementById("nav-db-label");
-  if (navDbLabel) navDbLabel.textContent = `Master DB · ${state.sources.length}`;
-
-  const navMobileDbLabel = document.getElementById("nav-mobile-db-label");
-  if (navMobileDbLabel) navMobileDbLabel.textContent = state.sources.length.toString();
-
-  const drawerDbStats = document.getElementById("drawer-db-stats");
-  if (drawerDbStats) drawerDbStats.textContent = `${state.sources.length} Sources · 23 Markets · Live Sync`;
-
   const filterSavedBadge = document.getElementById("filter-saved-count");
   if (filterSavedBadge) filterSavedBadge.textContent = savedCount.toString();
 
@@ -1234,16 +1225,7 @@ function setupEventListeners() {
     updateUI();
   });
 
-  // 2. Master DB Sync & Institutions Directory Shortcuts in Top Nav
-  document.getElementById("btn-db-sync")?.addEventListener("click", () => {
-    openDatabaseSyncModal();
-  });
-
-  document.getElementById("btn-institutions-directory")?.addEventListener("click", () => {
-    openInstitutionsModal();
-  });
-
-  // 3. Saved Filter Shortcut in Top Nav
+  // 2. Saved Filter Shortcut in Top Nav
   document.getElementById("nav-saved-btn")?.addEventListener("click", () => {
     state.savedOnly = !state.savedOnly;
     if (state.activeView !== "hub") {
