@@ -1896,8 +1896,8 @@ button {
   --text-subtle: #354247;
   --border-line: #243136;
   --border-hover: #40545a;
-  --vermilion: #b8ff3d;
-  --vermilion-subtle: rgba(184, 255, 61, 0.1);
+  --vermilion: #E63946;
+  --vermilion-subtle: rgba(230, 57, 70, 0.12);
 }
 
 #view-profile {
@@ -1918,15 +1918,25 @@ button {
 }
 
 #view-profile .profile-auth-block { display: none; }
-#view-profile .profile-social-links { gap: 0.75rem; }
-#view-profile .social-text-link {
-  padding: 0.4rem 0.65rem;
-  border: 1px solid #243136;
-  color: #9eabae;
-  font-size: 0.68rem;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
+#view-profile .profile-social-links { gap: 0.55rem; }
+#view-profile .social-icon-link {
+  width: 2.35rem;
+  height: 2.35rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-line);
+  color: var(--text-secondary);
+  transition: color var(--transition-fast), border-color var(--transition-fast), background-color var(--transition-fast);
 }
+#view-profile .social-icon-link:hover,
+#view-profile .social-icon-link:focus-visible {
+  color: var(--vermilion);
+  border-color: var(--vermilion);
+  background: var(--vermilion-subtle);
+  outline: none;
+}
+#view-profile .brand-icon { width: 1.15rem; height: 1.15rem; display: block; }
 
 #view-profile .profile-showreel-wrapper {
   max-width: none;
@@ -1946,9 +1956,9 @@ button {
   padding: 0.9rem;
   background: linear-gradient(180deg, rgba(8,11,13,0.12), transparent 42%, rgba(8,11,13,0.92));
 }
-#view-profile .hud-badge { color: #b8ff3d; font-size: 0.63rem; }
-#view-profile .hud-specs { color: #b8ff3d; font-family: var(--font-display); }
-#view-profile .hud-play-btn { width: 52px; height: 52px; border-color: #b8ff3d; color: #b8ff3d; background: rgba(8,11,13,0.75); }
+#view-profile .hud-badge { color: var(--vermilion); font-size: 0.63rem; }
+#view-profile .hud-specs { color: var(--vermilion); font-family: var(--font-display); }
+#view-profile .hud-play-btn { width: 52px; height: 52px; border-color: var(--vermilion); color: var(--vermilion); background: rgba(8,11,13,0.75); }
 #view-profile .hud-caption-title { font-size: 0.82rem; }
 #view-profile .hud-caption-sub { font-size: 0.68rem; }
 
@@ -1959,7 +1969,7 @@ button {
 }
 #view-profile .profile-bio-inner { gap: 0.85rem; }
 #view-profile .profile-kicker {
-  color: #b8ff3d;
+  color: var(--vermilion);
   font-size: 0.62rem;
   letter-spacing: 0.16em;
   margin: 0;
@@ -1990,7 +2000,7 @@ button {
   padding: 0.42rem 0.55rem;
   font-size: 0.59rem;
 }
-#view-profile .profile-availability-badge { border-color: rgba(184,255,61,0.42); color: #b8ff3d; }
+#view-profile .profile-availability-badge { border-color: rgba(184,255,61,0.42); color: var(--vermilion); }
 #view-profile .profile-discipline-tag {
   border: 0;
   padding: 0;
@@ -2020,8 +2030,8 @@ button {
   letter-spacing: 0.1em;
   text-transform: uppercase;
 }
-#view-profile .profile-tab-button.active::after { background: #b8ff3d; height: 3px; }
-#view-profile .profile-tab-count { color: #b8ff3d; font-size: 0.68rem; }
+#view-profile .profile-tab-button.active::after { background: var(--vermilion); height: 3px; }
+#view-profile .profile-tab-count { color: var(--vermilion); font-size: 0.68rem; }
 #view-profile .profile-tab-content { padding: 1rem; }
 #view-profile .portfolio-grid-4 { grid-template-columns: 1fr 1fr; gap: 0.55rem; }
 #view-profile .portfolio-media-card { border: 0; border-radius: 0; background: #10161a; }
