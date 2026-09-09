@@ -37,15 +37,110 @@ export const DEFAULT_PROFILE: UserProfile = {
   id: 'guest-artist-uuid',
   full_name: 'Elena Rostova',
   bio: 'Choreographer and sonic performance researcher experimenting with spatial acoustics, bodily kinetic feedback, and multi-channel field recordings. Co-founder of Kinetic Sensor Lab.',
+  avatar_url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?auto=format&fit=crop&w=400&q=80',
+  open_for_collaboration: true,
+  collaboration_status_text: 'Available for European Residencies & Sound Commissions',
   locations: ['Cologne', 'Tel Aviv', 'Berlin'],
-  disciplines: ['Contemporary Dance', 'Experimental Sound', 'Choreography'],
+  disciplines: ['Contemporary Dance', 'Experimental Sound', 'Choreography', 'Live Electronics'],
   showreel_url: 'https://vimeo.com/76979871',
+  showreel_title: 'Somatic Echoes: Multi-Channel Performance Anthology',
+  showreel_duration: '03:45',
+  showreel_credits: ['PACT Zollverein', 'TanzFaktur Köln', 'Kelim Center', 'NRW KULTUR'],
   social_links: {
     instagram: 'https://instagram.com/elenarostova.art',
     spotify: 'https://open.spotify.com/artist/kinetic',
     website: 'https://elenarostova.art',
-    vimeo: 'https://vimeo.com/elenarostova'
+    vimeo: 'https://vimeo.com/elenarostova',
+    soundcloud: 'https://soundcloud.com/elena-rostova-sound'
   },
+  portfolio_items: [
+    {
+      id: 'port-01',
+      title: 'Acoustic Displacements (TanzFaktur Köln)',
+      year: '2025',
+      venue: 'TanzFaktur',
+      city: 'Cologne',
+      image: 'https://images.unsplash.com/photo-1518834107812-67b0b7c58434?auto=format&fit=crop&w=800&q=80',
+      description: 'Multi-channel quadraphonic performance exploring subterranean reverberation and movement inertia.',
+      disciplines: ['Dance', 'Spatial Sound'],
+      media_type: 'video'
+    },
+    {
+      id: 'port-02',
+      title: 'Feedback / Flesh (Uferstudios Wedding)',
+      year: '2024',
+      venue: 'Uferstudios Studio 14',
+      city: 'Berlin',
+      image: 'https://images.unsplash.com/photo-1547153760-18fc86324498?auto=format&fit=crop&w=800&q=80',
+      description: 'Choreographic research piece examining microphone proximity and micro-tonal somatic feedback.',
+      disciplines: ['Dance', 'Live Electronics'],
+      media_type: 'video'
+    },
+    {
+      id: 'port-03',
+      title: 'Somatic Waves (Kelim Choreography Center)',
+      year: '2024',
+      venue: 'Kelim Center',
+      city: 'Tel Aviv',
+      image: 'https://images.unsplash.com/photo-1509198397868-475647b2a1e5?auto=format&fit=crop&w=800&q=80',
+      description: 'Duet exploring silence, sudden physical articulation, and electroacoustic tape loops.',
+      disciplines: ['Choreography', 'Sound'],
+      media_type: 'audio'
+    },
+    {
+      id: 'port-04',
+      title: 'Interference Patterns (La Raffinerie)',
+      year: '2023',
+      venue: 'Charleroi danse',
+      city: 'Brussels',
+      image: 'https://images.unsplash.com/photo-1460723237483-7a6dc9d0b212?auto=format&fit=crop&w=800&q=80',
+      description: 'Site-responsive architectural intervention in the historic Molenbeek industrial complex.',
+      disciplines: ['Multidisciplinary', 'Installation'],
+      media_type: 'image'
+    }
+  ],
+  collaborators: [
+    {
+      id: 'collab-1',
+      name: 'Marc Vandevelde',
+      role: 'Sonic Architect & Spatialist',
+      location: 'Brussels',
+      avatar_url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?auto=format&fit=crop&w=200&q=80',
+      recent_work: 'Resonances at Charleroi danse',
+      mutual_connections: 7,
+      connected: true
+    },
+    {
+      id: 'collab-2',
+      name: 'Maya Shenhav',
+      role: 'Dramaturg & Movement Theorist',
+      location: 'Tel Aviv',
+      avatar_url: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?auto=format&fit=crop&w=200&q=80',
+      recent_work: 'Somatic Waves at Kelim',
+      mutual_connections: 12,
+      connected: false
+    },
+    {
+      id: 'collab-3',
+      name: 'Leo Baumgartner',
+      role: 'Kinetic Light Designer',
+      location: 'Berlin',
+      avatar_url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?auto=format&fit=crop&w=200&q=80',
+      recent_work: 'Feedback / Flesh at Uferstudios',
+      mutual_connections: 5,
+      connected: true
+    },
+    {
+      id: 'collab-4',
+      name: 'Kenjiro Tanaka',
+      role: 'Analog Modular Synthesist',
+      location: 'Cologne',
+      avatar_url: 'https://images.unsplash.com/photo-1522075469751-3a6694fb2f61?auto=format&fit=crop&w=200&q=80',
+      recent_work: 'TanzFaktur Sound Lab',
+      mutual_connections: 9,
+      connected: false
+    }
+  ],
   drive_connected: true,
   portfolio_pdf_url: 'https://drive.google.com/file/d/dossier_2026.pdf'
 };

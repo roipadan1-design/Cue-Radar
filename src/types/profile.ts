@@ -7,17 +7,50 @@ export interface SocialLinks {
   spotify?: string;
   website?: string;
   vimeo?: string;
+  soundcloud?: string;
   [key: string]: string | undefined;
+}
+
+export interface PortfolioItem {
+  id: string;
+  title: string;
+  venue: string;
+  city: string;
+  year: string;
+  image: string;
+  description: string;
+  disciplines: string[];
+  media_url?: string;
+  media_type?: 'video' | 'audio' | 'image';
+}
+
+export interface Collaborator {
+  id: string;
+  name: string;
+  role: string;
+  location: string;
+  avatar_url?: string;
+  recent_work: string;
+  mutual_connections: number;
+  connected?: boolean;
 }
 
 export interface UserProfile {
   id: string;
   full_name: string;
   bio: string;
+  avatar_url?: string;
+  open_for_collaboration: boolean;
+  collaboration_status_text?: string;
   locations: string[];
   disciplines: string[];
   showreel_url: string;
+  showreel_title?: string;
+  showreel_duration?: string;
+  showreel_credits?: string[];
   social_links: SocialLinks;
+  portfolio_items?: PortfolioItem[];
+  collaborators?: Collaborator[];
   drive_connected: boolean;
   portfolio_pdf_url?: string;
   created_at?: string;

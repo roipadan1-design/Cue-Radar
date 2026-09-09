@@ -21,6 +21,7 @@ import {
 } from "./data.js";
 
 import { initAuth, signInWithGoogle, signOutUser } from "./auth.js";
+import { mountReactProfile } from "./mountProfile.tsx";
 
 // ============================================================================
 // 1. APPLICATION STATE
@@ -269,9 +270,12 @@ function createOpportunityCardHTML(item) {
   const isSaved = state.savedIds.has(item.opp_id);
   const days = item.daysRemaining;
 
-  // Countdown text formatting
+  // Countdown text formatting & urgency
   let countdownText = "";
-  if (days < 0) {
+  const isClosed = days < 0;
+  const isUrgent = days >= 0 && days <= 7;
+
+  if (isClosed) {
     countdownText = "Call Closed";
   } else if (days === 0) {
     countdownText = "Ends Today";
@@ -318,9 +322,9 @@ function createOpportunityCardHTML(item) {
           : ""
       }
 
-      <!-- 4. Footer / Action Bar: Vermilion Countdown on left, Save pill on right -->
+      <!-- 4. Footer / Action Bar: Countdown badge & Save pill -->
       <div class="card-footer-action-bar">
-        <div class="countdown-badge">
+        <div class="countdown-badge ${isUrgent ? "urgent" : ""} ${isClosed ? "closed" : ""}">
           <span class="countdown-dot" aria-hidden="true"></span>
           <span>${escapeHtml(countdownText)}</span>
         </div>
@@ -400,70 +404,10 @@ function updateFloatingPill(count) {
 }
 
 /**
- * Render Artist Profile View (Part 4)
+ * Render Artist Profile View (Part 4: Digital Artist Card & Setup Wizard)
  */
 function renderProfileView() {
-  // 1. Saved Opportunities tab
-  const savedContainer = document.getElementById("profile-saved-list");
-  const emptySaved = document.getElementById("profile-empty-saved");
-  const savedCounter = document.getElementById("tab-counter-saved");
-
-  const savedList = state.opportunities
-    .filter((o) => state.savedIds.has(o.opp_id))
-    .map((o) => getOpportunityWithSource(o));
-
-  if (savedCounter) {
-    savedCounter.textContent = savedList.length.toString();
-  }
-
-  if (savedContainer) {
-    if (savedList.length === 0) {
-      savedContainer.innerHTML = "";
-      if (emptySaved) emptySaved.style.display = "flex";
-    } else {
-      if (emptySaved) emptySaved.style.display = "none";
-      savedContainer.innerHTML = savedList
-        .map((item) => createOpportunityCardHTML(item))
-        .join("");
-    }
-  }
-
-  // 2. Portfolio / Media Tab (4 placeholder image cards for past works/gigs)
-  const portfolioContainer = document.getElementById("portfolio-media-grid");
-  const portfolioCounter = document.getElementById("tab-counter-portfolio");
-
-  if (portfolioCounter) {
-    portfolioCounter.textContent = artistPortfolio.length.toString();
-  }
-
-  if (portfolioContainer) {
-    portfolioContainer.innerHTML = artistPortfolio
-      .map((item) => `
-        <div class="portfolio-media-card" data-portfolio-id="${escapeHtml(item.id)}">
-          <div class="portfolio-img-aspect">
-            <img 
-              src="${escapeHtml(item.image)}" 
-              alt="${escapeHtml(item.title)}" 
-              class="portfolio-img" 
-              loading="lazy" 
-              referrerpolicy="no-referrer"
-            />
-          </div>
-          <div class="portfolio-card-body">
-            <div class="portfolio-card-top">
-              <span class="portfolio-card-venue">${escapeHtml(item.venue)} · ${escapeHtml(item.city)}</span>
-              <span>${escapeHtml(item.year)}</span>
-            </div>
-            <h3 class="portfolio-card-title">${escapeHtml(item.title)}</h3>
-            <p class="portfolio-card-desc">${escapeHtml(item.description)}</p>
-            <div class="portfolio-card-tags">
-              ${item.disciplines.map((d) => `<span class="portfolio-card-tag">${escapeHtml(d)}</span>`).join("")}
-            </div>
-          </div>
-        </div>
-      `)
-      .join("");
-  }
+  mountReactProfile("view-profile");
 }
 
 /**
