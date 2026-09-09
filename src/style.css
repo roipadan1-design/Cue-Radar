@@ -1207,6 +1207,28 @@ button {
   display: block;
 }
 
+/* Keep the artist identity first, then place the showreel immediately below it. */
+#view-profile.view-panel.active {
+  display: flex !important;
+  flex-direction: column;
+}
+
+#view-profile .profile-bio-section {
+  order: 1;
+}
+
+#view-profile .profile-showreel-wrapper {
+  order: 2;
+}
+
+#view-profile .profile-tabs-section {
+  order: 3;
+}
+
+#view-profile .profile-top-bar {
+  order: 4;
+}
+
 /* 1. Top Section: Sign in with Google status bar + minimalist Social Media Links */
 .profile-top-bar {
   border-bottom: 1px solid var(--border-line);
@@ -1269,9 +1291,40 @@ button {
 }
 
 .profile-social-links {
-  display: flex;
+  display: inline-flex;
   align-items: center;
-  gap: 1.5rem;
+  gap: 0.7rem;
+  margin-left: 0.9rem;
+  vertical-align: middle;
+}
+
+.profile-artist-location .profile-social-links {
+  position: relative;
+  top: 0.15rem;
+}
+
+.social-icon-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2rem;
+  height: 2rem;
+  color: var(--text-secondary);
+  border: 1px solid transparent;
+  border-radius: 50%;
+  transition: color var(--transition-fast), border-color var(--transition-fast), background-color var(--transition-fast);
+}
+
+.social-icon-link:hover {
+  color: var(--text-primary);
+  border-color: var(--vermilion);
+  background-color: var(--vermilion-subtle);
+}
+
+.brand-icon {
+  width: 1.05rem;
+  height: 1.05rem;
+  display: block;
 }
 
 .social-text-link {
@@ -1448,6 +1501,52 @@ button {
   color: var(--text-primary);
   letter-spacing: -0.025em;
   margin-bottom: 0.35rem;
+}
+
+.profile-availability-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.75rem;
+  margin-top: 1rem;
+}
+
+.profile-availability-badge,
+.profile-share-button {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  padding: 0.55rem 0.75rem;
+  border: 1px solid var(--border-line);
+  background: var(--bg-surface);
+  color: var(--text-secondary);
+  font-family: var(--font-sans);
+  font-size: 0.68rem;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.profile-availability-badge {
+  border-color: rgba(52, 211, 153, 0.35);
+  color: #6ee7b7;
+}
+
+.availability-dot {
+  width: 0.4rem;
+  height: 0.4rem;
+  border-radius: 999px;
+  background: #6ee7b7;
+  box-shadow: 0 0 0.5rem rgba(110, 231, 183, 0.7);
+}
+
+.profile-share-button {
+  cursor: pointer;
+  transition: border-color 160ms ease, color 160ms ease;
+}
+
+.profile-share-button:hover {
+  border-color: var(--vermilion);
+  color: var(--text-primary);
 }
 
 .profile-artist-location {
@@ -1835,6 +1934,175 @@ button {
     opacity: 1;
     transform: translateY(0);
   }
+}
+
+/* ============================================================================
+   PROFILE REDESIGN — mobile-first artist archive
+   ============================================================================ */
+:root {
+  --bg-canvas: #080b0d;
+  --bg-surface: #10161a;
+  --bg-surface-elevated: #172127;
+  --text-primary: #f4f7f6;
+  --text-secondary: #9eabae;
+  --text-muted: #657276;
+  --text-subtle: #354247;
+  --border-line: #243136;
+  --border-hover: #40545a;
+  --vermilion: #E63946;
+  --vermilion-subtle: rgba(230, 57, 70, 0.12);
+}
+
+#view-profile {
+  background: #080b0d;
+  min-height: calc(100vh - 64px);
+}
+
+#view-profile .profile-top-bar {
+  background: transparent;
+  border-bottom: 0;
+  padding: 1rem 1rem 0;
+}
+
+#view-profile .profile-top-inner {
+  max-width: none;
+  padding: 0;
+  justify-content: flex-end;
+}
+
+#view-profile .profile-auth-block { display: none; }
+#view-profile .profile-social-links { gap: 0.55rem; }
+#view-profile .social-icon-link {
+  width: 2.35rem;
+  height: 2.35rem;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid var(--border-line);
+  color: var(--text-secondary);
+  transition: color var(--transition-fast), border-color var(--transition-fast), background-color var(--transition-fast);
+}
+#view-profile .social-icon-link:hover,
+#view-profile .social-icon-link:focus-visible {
+  color: var(--vermilion);
+  border-color: var(--vermilion);
+  background: var(--vermilion-subtle);
+  outline: none;
+}
+#view-profile .brand-icon { width: 1.15rem; height: 1.15rem; display: block; }
+
+#view-profile .profile-showreel-wrapper {
+  max-width: none;
+  margin: 0;
+  padding: 0.75rem 1rem 0;
+}
+
+#view-profile .showreel-container {
+  border: 0;
+  border-radius: 0;
+  background: #10161a;
+}
+
+#view-profile .showreel-aspect-ratio { aspect-ratio: 4 / 3; }
+#view-profile .showreel-video-tag { filter: saturate(0.72) contrast(1.08); }
+#view-profile .showreel-hud {
+  padding: 0.9rem;
+  background: linear-gradient(180deg, rgba(8,11,13,0.12), transparent 42%, rgba(8,11,13,0.92));
+}
+#view-profile .hud-badge { color: var(--vermilion); font-size: 0.63rem; }
+#view-profile .hud-specs { color: var(--vermilion); font-family: var(--font-display); }
+#view-profile .hud-play-btn { width: 52px; height: 52px; border-color: var(--vermilion); color: var(--vermilion); background: rgba(8,11,13,0.75); }
+#view-profile .hud-caption-title { font-size: 0.82rem; }
+#view-profile .hud-caption-sub { font-size: 0.68rem; }
+
+#view-profile .profile-bio-section {
+  max-width: none;
+  padding: 1.35rem 1rem 1.25rem;
+  border-bottom: 1px solid #243136;
+}
+#view-profile .profile-bio-inner { gap: 0.85rem; }
+#view-profile .profile-kicker {
+  color: var(--vermilion);
+  font-size: 0.62rem;
+  letter-spacing: 0.16em;
+  margin: 0;
+}
+#view-profile .profile-artist-name {
+  font-size: clamp(2.7rem, 15vw, 5.4rem);
+  line-height: 0.88;
+  letter-spacing: -0.065em;
+  max-width: 8ch;
+  margin: 0;
+}
+#view-profile .profile-artist-location {
+  font-size: 0.78rem;
+  color: #9eabae;
+  letter-spacing: 0.04em;
+}
+#view-profile .profile-bio-text {
+  font-size: 0.9rem;
+  line-height: 1.48;
+  max-width: 32rem;
+  color: #9eabae;
+}
+#view-profile .profile-availability-row { margin-top: 0.3rem; gap: 0.45rem; }
+#view-profile .profile-availability-badge,
+#view-profile .profile-share-button {
+  background: transparent;
+  border-color: #354247;
+  padding: 0.42rem 0.55rem;
+  font-size: 0.59rem;
+}
+#view-profile .profile-availability-badge { border-color: rgba(184,255,61,0.42); color: var(--vermilion); }
+#view-profile .profile-discipline-tag {
+  border: 0;
+  padding: 0;
+  margin-right: 0.75rem;
+  color: #657276;
+  font-size: 0.66rem;
+  text-transform: uppercase;
+  letter-spacing: 0.08em;
+}
+#view-profile .profile-disciplines-list { gap: 0; }
+
+#view-profile .profile-tabs-section {
+  max-width: none;
+  padding: 0;
+}
+#view-profile .profile-tab-bar {
+  margin: 0;
+  padding: 0 1rem;
+  gap: 1.35rem;
+  overflow-x: auto;
+  border-bottom: 1px solid #243136;
+}
+#view-profile .profile-tab-button {
+  flex: 0 0 auto;
+  padding: 1rem 0 0.8rem;
+  font-size: 0.72rem;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+}
+#view-profile .profile-tab-button.active::after { background: var(--vermilion); height: 3px; }
+#view-profile .profile-tab-count { color: var(--vermilion); font-size: 0.68rem; }
+#view-profile .profile-tab-content { padding: 1rem; }
+#view-profile .portfolio-grid-4 { grid-template-columns: 1fr 1fr; gap: 0.55rem; }
+#view-profile .portfolio-media-card { border: 0; border-radius: 0; background: #10161a; }
+#view-profile .portfolio-img-aspect { aspect-ratio: 1 / 1; }
+#view-profile .portfolio-card-body { padding: 0.65rem; gap: 0.28rem; }
+#view-profile .portfolio-card-top { font-size: 0.58rem; }
+#view-profile .portfolio-card-title { font-size: 0.85rem; line-height: 1.08; }
+#view-profile .portfolio-card-desc { display: none; }
+#view-profile .portfolio-card-tags { display: none; }
+
+@media (min-width: 760px) {
+  #view-profile .profile-showreel-wrapper { padding: 1.5rem 2rem 0; }
+  #view-profile .showreel-aspect-ratio { aspect-ratio: 16 / 7; }
+  #view-profile .profile-bio-section { padding: 2rem; }
+  #view-profile .profile-artist-name { max-width: none; font-size: 5rem; }
+  #view-profile .profile-tabs-section { padding: 0 2rem 4rem; }
+  #view-profile .profile-tab-bar { padding: 0; }
+  #view-profile .profile-tab-content { padding: 2rem 0 0; }
 }
 
 /* ==========================================================================
@@ -2285,4 +2553,32 @@ button {
   outline: none;
   border-color: #555;
 }
+
+.country-flag { display:inline-block; margin-right:.35rem; font-size:1rem; line-height:1; vertical-align:-.08em; }
+#view-profile { display:flex; flex-direction:column; }
+#view-profile .profile-bio-section { order:1; display:flex; flex-direction:column; gap:1rem; }
+#view-profile .profile-top-bar { order:2; }
+#view-profile .profile-showreel-wrapper { order:3; }
+#view-profile .profile-tabs-section { order:4; }
+.profile-portrait { width:7.5rem; height:7.5rem; display:grid; place-items:center; overflow:hidden; border:1px solid var(--vermilion); border-radius:50%; background:radial-gradient(circle at 35% 25%,#7f9b8f,#263d3b 45%,#111); color:#f6f4ed; font:700 2rem var(--font-display); letter-spacing:-.08em; }
+.profile-portrait::after { content:""; position:absolute; width:7.5rem; height:7.5rem; border:1px solid rgba(230,57,70,.35); border-radius:50%; transform:translate(5px,5px); }
+.profile-social-links { display:flex; gap:.55rem; flex-wrap:wrap; }
+.social-text-link { display:inline-flex; align-items:center; gap:.45rem; padding:.55rem .7rem; border:1px solid var(--border-line); color:var(--text-primary); font-size:.72rem; text-transform:uppercase; letter-spacing:.08em; }
+.social-text-link::before { content:""; display:grid; place-items:center; width:1.2rem; height:1.2rem; border-radius:50%; background:var(--vermilion); color:#fff; font-weight:700; }
+.social-text-link:nth-child(1)::before { content:"◎"; }.social-text-link:nth-child(2)::before { content:"♪"; }.social-text-link:nth-child(3)::before { content:"↗"; }
+@media (max-width: 640px) { #view-profile .profile-bio-section { padding:1rem; } .profile-portrait { width:6.25rem; height:6.25rem; } .profile-portrait::after { width:6.25rem; height:6.25rem; } }
+.artist-hero { display:flex; flex-direction:column; gap:1rem; padding:1rem; background:#15191b; border:1px solid #2b3437; border-radius:4px; }
+.artist-hero-image { width:100%; aspect-ratio:1; max-height:280px; display:flex; align-items:flex-end; padding:1rem; background:linear-gradient(145deg,#34464a,#101718 68%); color:#d8ff3e; font:700 3rem/.9 var(--font-display); letter-spacing:-.08em; }
+.artist-hero-content { display:flex; flex-direction:column; gap:.8rem; }
+.artist-hero-heading { display:flex; justify-content:space-between; align-items:flex-start; gap:.75rem; }
+.artist-kicker,.showreel-label { color:#8e9a9b; font:600 .65rem var(--font-sans); letter-spacing:.14em; text-transform:uppercase; }
+.artist-hero h1 { margin-top:.2rem; color:#f4f6f1; font:700 clamp(2rem,10vw,4.5rem)/.95 var(--font-display); letter-spacing:-.07em; }
+.artist-edit-button { display:grid; place-items:center; min-width:2.25rem; min-height:2.25rem; border:1px solid #3c494b; color:#d8ff3e; border-radius:50%; }
+.artist-edit-button svg { width:1rem; }
+.artist-meta-row { display:flex; flex-wrap:wrap; gap:.55rem; color:#aeb9b8; font-size:.75rem; }
+.artist-status { color:#d8ff3e; }.artist-status i { display:inline-block; width:.4rem; height:.4rem; margin-right:.35rem; border-radius:50%; background:#d8ff3e; }
+.artist-socials { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:.45rem; }
+.social-link { display:flex; align-items:center; gap:.45rem; min-height:2.5rem; padding:.55rem .65rem; border:1px solid #2b3437; color:#dbe2df; font-size:.72rem; }.social-link:hover { border-color:#d8ff3e; color:#d8ff3e; }.social-link>svg:first-child { width:1rem; color:#d8ff3e; }.social-arrow { width:.75rem!important; margin-left:auto; color:#738080!important; }
+.showreel-card { display:flex; flex-direction:column; gap:.7rem; padding:1rem; background:#101415; border:1px solid #2b3437; border-radius:4px; }.showreel-label { display:flex; align-items:center; gap:.45rem; }.showreel-label svg { width:.9rem; color:#d8ff3e; }.showreel-frame { position:relative; aspect-ratio:16/9; display:flex; align-items:center; justify-content:center; overflow:hidden; background:linear-gradient(120deg,#283b3e,#111617 55%,#d8ff3e22); }.showreel-play { display:grid; place-items:center; width:3.25rem; height:3.25rem; border:1px solid #d8ff3e; border-radius:50%; color:#d8ff3e; }.showreel-play svg { width:1rem; }.showreel-caption { position:absolute; inset:auto .75rem .65rem; display:flex; justify-content:space-between; color:#f4f6f1; font-size:.7rem; }.showreel-caption span { color:#aeb9b8; }.showreel-link { display:flex; justify-content:space-between; color:#d8ff3e; font-size:.75rem; }.showreel-link svg { width:.9rem; }
+@media (min-width: 640px) { .artist-hero { flex-direction:row; padding:1.5rem; }.artist-hero-image { width:35%; max-height:none; }.artist-hero-content { flex:1; justify-content:center; } }
 

@@ -257,6 +257,14 @@ function getFilteredOpportunities() {
  * 4. Compensation details: clear secondary line
  * 5. Footer: Countdown badge on left ("Ends in X days"), Pill Save button on right
  */
+function getCountryFlag(country = "") {
+  const normalized = country.toLowerCase().trim();
+  const flags = {
+    germany: "🇩🇪", deutschland: "🇩🇪", israel: "🇮🇱", belgium: "🇧🇪", switzerland: "🇨🇭", austria: "🇦🇹", netherlands: "🇳🇱", france: "🇫🇷", uk: "🇬🇧", "united kingdom": "🇬🇧", usa: "🇺🇸", "united states": "🇺🇸"
+  };
+  return flags[normalized] || "🌍";
+}
+
 function createOpportunityCardHTML(item) {
   const isSaved = state.savedIds.has(item.opp_id);
   const days = item.daysRemaining;
@@ -288,7 +296,7 @@ function createOpportunityCardHTML(item) {
           <span class="card-bullet" aria-hidden="true">·</span>
           <span class="card-city-name">${escapeHtml(item.city)}</span>
         </div>
-        <span class="card-country-tag">${escapeHtml(item.country)}</span>
+        <span class="card-country-tag"><span class="country-flag" aria-hidden="true">${getCountryFlag(item.country)}</span>${escapeHtml(item.country)}</span>
       </div>
 
       <!-- 2. Opportunity Title: Space Grotesk, large, pure white, prominent -->
@@ -505,7 +513,10 @@ function updateUI() {
 
   if (state.activeView === "hub") {
     if (hubView) hubView.style.display = "block";
-    if (profileView) profileView.style.display = "none";
+    if (profileView) {
+      profileView.style.display = "none";
+      profileView.classList.remove("active");
+    }
     if (navViewHub) {
       navViewHub.classList.add("active");
       navViewHub.setAttribute("aria-pressed", "true");
@@ -519,7 +530,10 @@ function updateUI() {
     renderFeed();
   } else {
     if (hubView) hubView.style.display = "none";
-    if (profileView) profileView.style.display = "block";
+    if (profileView) {
+      profileView.style.display = "";
+      profileView.classList.add("active");
+    }
     if (navViewHub) {
       navViewHub.classList.remove("active");
       navViewHub.setAttribute("aria-pressed", "false");
@@ -1408,7 +1422,27 @@ function setupEventListeners() {
     renderProfileView();
   });
 
-  // 9. Google Sign-In Listeners
+  // 9. Profile share action
+  document.getElementById("profile-share-btn")?.addEventListener("click", async () => {
+    const shareData = {
+      title: "Roi Padan · CUE RADAR",
+      text: "Roi Padan — choreographer and experimental sound artist",
+      url: window.location.href
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else if (navigator.clipboard) {
+        await navigator.clipboard.writeText(window.location.href);
+        showToast("Profile link copied");
+      }
+    } catch (error) {
+      if (error?.name !== "AbortError") showToast("Unable to share profile");
+    }
+  });
+
+  // 10. Google Sign-In Listeners
   const googleBtn = document.getElementById("gsi-signin-btn");
   const profileGoogleBtn = document.getElementById("profile-google-signin-btn");
   const profileSignoutBtn = document.getElementById("profile-signout-btn");
