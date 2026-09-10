@@ -1,6 +1,0 @@
-{
-  "name": "CUE RADAR",
-  "description": "Digital Career OS and Opportunities Hub for independent artists in contemporary dance, experimental music, and alternative arts.",
-  "requestFramePermissions": [],
-  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
-}

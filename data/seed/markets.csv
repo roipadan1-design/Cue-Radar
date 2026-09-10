@@ -1,0 +1,24 @@
+slug,display_name,country,region,timezone,currency,lat,lng
+berlin,Berlin,Germany,DACH,Europe/Berlin,EUR,52.52,13.405
+cologne,Cologne,Germany,DACH,Europe/Berlin,EUR,50.9375,6.9603
+tel_aviv,Tel Aviv,Israel,Med,Asia/Tel_Aviv,ILS,32.0853,34.7818
+brussels,Brussels,Belgium,Benelux,Europe/Brussels,EUR,50.8503,4.3517
+vienna,Vienna,Austria,DACH,Europe/Vienna,EUR,48.2082,16.3738
+zurich,Zurich,Switzerland,DACH,Europe/Zurich,CHF,47.3769,8.5417
+amsterdam,Amsterdam,Netherlands,Benelux,Europe/Amsterdam,EUR,52.3676,4.9041
+paris,Paris,France,France,Europe/Paris,EUR,48.8566,2.3522
+lyon,Lyon,France,France,Europe/Paris,EUR,45.764,4.8357
+stockholm,Stockholm,Sweden,Nordics,Europe/Stockholm,SEK,59.3293,18.0686
+oslo,Oslo,Norway,Nordics,Europe/Oslo,NOK,59.9139,10.7522
+copenhagen,Copenhagen,Denmark,Nordics,Europe/Copenhagen,DKK,55.6761,12.5683
+athens,Athens,Greece,Med,Europe/Athens,EUR,37.9838,23.7275
+tbilisi,Tbilisi,Georgia,Caucasus,Asia/Tbilisi,GEL,41.7151,44.8271
+tokyo,Tokyo,Japan,East_Asia,Asia/Tokyo,JPY,35.6762,139.6503
+seoul,Seoul,South Korea,East_Asia,Asia/Seoul,KRW,37.5665,126.978
+warsaw,Warsaw,Poland,CEE,Europe/Warsaw,PLN,52.2297,21.0122
+krakow,Krakow,Poland,CEE,Europe/Warsaw,PLN,50.0647,19.945
+prague,Prague,Czech Republic,CEE,Europe/Prague,CZK,50.0755,14.4378
+lisbon,Lisbon,Portugal,Med,Europe/Lisbon,EUR,38.7223,-9.1393
+barcelona,Barcelona,Spain,Med,Europe/Madrid,EUR,41.3851,2.1734
+turin,Turin,Italy,Med,Europe/Rome,EUR,45.0703,7.6869
+remote,Remote,Global,remote,UTC,EUR,0.0,0.0
