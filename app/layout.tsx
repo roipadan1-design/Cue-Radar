@@ -25,7 +25,12 @@ export default function RootLayout({
   return (
     <html
       lang="en"
+<<<<<<< Updated upstream
       className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+=======
+      suppressHydrationWarning
+      className={`${interTight.variable} ${jetbrainsMono.variable} h-full antialiased bg-[#0B0B0C] text-[#EDEDED]`}
+>>>>>>> Stashed changes
     >
       <body className="min-h-full flex flex-col">{children}</body>
     </html>
