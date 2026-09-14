@@ -14,7 +14,8 @@ Then read the task you were assigned in `docs/tasks/`. Do only what the task say
 7. **All colors and fonts come from CSS variables in `app/globals.css`.** No hex values, no `rgb()`, no font names in `.tsx` files.
 8. **No new dependencies without the task saying so.** No component libraries (shadcn, base-ui, MUI, etc.). No state libraries. No second `package.json` anywhere in the repo.
 9. **No secrets.** `.env.local` is gitignored and stays that way.
-10. **Do not start deferred features.** Trip Radar, `/radar/*`, events UI, Fit score, Effort meter, Connect, Peer Calls, Digest, OG images, analytics — all of these are blocked until a task explicitly names them.
+10. **No yellow.** No yellow, yellow-green, lime, chartreuse, amber, gold, mustard, or any hue between roughly 45° and 110° on the color wheel, at any saturation, anywhere: tokens, Tailwind classes (`yellow-*`, `amber-*`, `lime-*`), inline styles, SVGs, images. This includes the legacy `#D7FF3F`. Urgency is expressed with a true red, not orange.
+11. **Do not start deferred features.** Trip Radar, `/radar/*`, events UI, Fit score, Effort meter, Connect, Peer Calls, Digest, OG images, analytics — all of these are blocked until a task explicitly names them.
 
 ## When the task and your judgment disagree
 
