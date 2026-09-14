@@ -9,3 +9,6 @@ This log records conservative choices made autonomously when requirements allowe
 - **Controlled Vocabularies & Markets**: Seeded 23 markets with real geographic and timezone metadata derived from standard geographic datasets.
 - **Seed CSV Generation**: Derived `sources.csv` (57 sources) and `opportunities_staging.csv` (16 legacy opportunities marked `draft`) directly from `public/data/sources.json` and `public/data/opportunities.json`.
 - **Validation Script**: Implemented unit tests for the Python sync validator running completely offline using local seed CSVs.
+
+## Task 01
+- No deviations.

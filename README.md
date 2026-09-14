@@ -2,6 +2,8 @@
 
 Cue Radar is a career operating system for independent contemporary dance, performance, and experimental sound artists across European, Mediterranean, and East-Asian scenes.
 
+For product and architectural specifications, see [HANDOFF_V3](docs/HANDOFF_V3.md).
+
 ## Stack
 - **Framework**: Next.js 15 (App Router, React 19)
 - **Styling**: Tailwind CSS v4
