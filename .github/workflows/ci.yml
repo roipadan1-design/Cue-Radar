@@ -1,3 +1,4 @@
+# Save as: .github/workflows/ci.yml
 name: CI
 
 on:
@@ -44,6 +45,9 @@ jobs:
       - name: No hex colors in TSX
         run: |
           ! grep -rnE "#[0-9A-Fa-f]{6}\b" app components --include=*.tsx || { echo "colors must come from CSS variables"; exit 1; }
+      - name: No yellow-family colors
+        run: |
+          ! grep -rniE "yellow|amber|lime|chartreuse|gold|mustard|#D7FF3F|#FFFF00|#FFD700|#FFC107|#FACC15|#EAB308|#84CC16|#A3E635" app components lib --include=*.ts --include=*.tsx --include=*.css || { echo "yellow-family colors are forbidden (AGENTS.md rule 10)"; exit 1; }
       - name: No deferred features
         run: |
           test ! -d app/radar || { echo "app/radar is a deferred feature"; exit 1; }
