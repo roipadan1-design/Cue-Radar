@@ -1,0 +1,64 @@
+name: CI
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+jobs:
+  web:
+    name: Next.js build + lint
+    runs-on: ubuntu-latest
+    env:
+      # Placeholders so `next build` can run. Pages are dynamic and do not
+      # contact Supabase at build time. Real values live only in Vercel / .env.local.
+      NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
+      NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key
+      NEXT_PUBLIC_SITE_URL: http://localhost:3000
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+      - run: npm ci
+      - run: npm run lint
+      - run: npm run build
+
+  guardrails:
+    name: Repo guardrails
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: No second app or config
+        run: |
+          test ! -d new-design || { echo "new-design/ must not exist"; exit 1; }
+          test ! -f next.config.ts || { echo "next.config.ts must not exist (use next.config.mjs)"; exit 1; }
+          test "$(find . -name package.json -not -path './node_modules/*' | wc -l)" = "1" || { echo "only one package.json allowed"; exit 1; }
+      - name: No client persistence
+        run: |
+          ! grep -rn "localStorage\|sessionStorage\|indexedDB" app components lib --include=*.ts --include=*.tsx || { echo "client persistence is forbidden"; exit 1; }
+      - name: No hard-coded fallbacks
+        run: |
+          ! grep -rn "FALLBACK_" app components lib --include=*.ts --include=*.tsx || { echo "FALLBACK_ constants are forbidden"; exit 1; }
+      - name: No hex colors in TSX
+        run: |
+          ! grep -rnE "#[0-9A-Fa-f]{6}\b" app components --include=*.tsx || { echo "colors must come from CSS variables"; exit 1; }
+      - name: No deferred features
+        run: |
+          test ! -d app/radar || { echo "app/radar is a deferred feature"; exit 1; }
+      - name: No empty source files
+        run: |
+          empty=$(find app components lib scripts supabase data docs -type f -size 0 2>/dev/null)
+          test -z "$empty" || { echo "empty files:"; echo "$empty"; exit 1; }
+
+  sync:
+    name: Python sync tests
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.11'
+      - run: pip install -r scripts/requirements.txt
+      - run: python -m unittest discover -s scripts -p 'test_*.py' -v
