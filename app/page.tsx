@@ -1,14 +1,17 @@
 import Button from '@/components/ui/Button'
+import Mark from '@/components/brand/Mark'
 import { getSeedMarkets } from '@/lib/seed'
 
 export default function LandingPage() {
   const markets = getSeedMarkets()
 
   return (
-    <div className="max-w-[720px] mx-auto px-4 md:px-6">
-      <div id="mark-slot" />
+    <div className="max-w-[720px] mx-auto px-4 md:px-6 pt-12 md:pt-16">
+      <div id="mark-slot" className="animate-mark-fade mb-[64px] text-fg">
+        <Mark size="lg" />
+      </div>
 
-      <h1 className="t-display text-fg mt-[64px]">
+      <h1 className="t-display text-fg">
         Open calls, residencies
         <br />
         and grants for independent

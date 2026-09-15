@@ -9,7 +9,8 @@ This document tracks all tasks that require manual action by the repository owne
 ### Step 1: Provision Supabase Project
 1. Create or confirm your Supabase project.
 2. Enable Google Provider in **Authentication -> Providers**.
-3. Add Site URL and Redirect URLs (`http://localhost:3000/auth/callback` and your production domain).
+3. Enable Apple Provider in **Authentication -> Providers** (Services ID, Key ID, Private Key, Team ID).
+4. Add Site URL and Redirect URLs (`http://localhost:3000/auth/callback` and your production domain).
 
 ### Step 2: Apply Database Migrations
 If `SUPABASE_ACCESS_TOKEN` is not provided to the agent, execute the migration files in order via the Supabase SQL Editor:

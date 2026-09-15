@@ -1,8 +1,9 @@
-import type { Metadata } from 'next'
-import { Archivo, Manrope } from 'next/font/google'
+import type { Metadata, Viewport } from 'next'
+import { Archivo, Manrope, Noto_Sans_JP } from 'next/font/google'
 import TopBar from '@/components/layout/TopBar'
 import MobileNav from '@/components/layout/MobileNav'
 import Footer from '@/components/layout/Footer'
+import { BRAND } from '@/lib/brand'
 import './globals.css'
 
 const archivo = Archivo({
@@ -17,9 +18,24 @@ const manrope = Manrope({
   variable: '--font-body',
 })
 
+const notoSansJP = Noto_Sans_JP({
+  weight: '700',
+  // @ts-expect-error Next.js Google font loader supports text parameter for character subsetting at runtime
+  text: '間',
+  preload: false,
+  variable: '--font-mark',
+})
+
 export const metadata: Metadata = {
-  title: 'Cue Radar',
-  description: 'Career OS for independent contemporary dance, performance, and experimental sound artists.',
+  title: {
+    default: BRAND.name,
+    template: `%s · ${BRAND.name}`,
+  },
+  description: BRAND.tagline,
+}
+
+export const viewport: Viewport = {
+  themeColor: BRAND.themeColor,
 }
 
 export default function RootLayout({
@@ -28,7 +44,10 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${archivo.variable} ${manrope.variable}`}>
+    <html
+      lang="en"
+      className={`${archivo.variable} ${manrope.variable} ${notoSansJP.variable}`}
+    >
       <body className="min-h-screen flex flex-col bg-bg text-fg font-body antialiased">
         <TopBar />
         <main className="flex-1 w-full mx-auto pb-[72px] md:pb-0">

@@ -1,11 +1,10 @@
 import Link from 'next/link'
+import Wordmark from '@/components/brand/Wordmark'
 
 export default function TopBar() {
   return (
     <header className="sticky top-0 z-40 h-[52px] bg-surface border-b border-line px-4 md:px-6 flex items-center justify-between">
-      <Link href="/" className="t-meta text-fg hover:text-fg transition-colors">
-        CUE RADAR
-      </Link>
+      <Wordmark />
 
       <div className="flex items-center gap-6">
         <nav className="hidden md:flex items-center gap-4 t-meta text-muted">

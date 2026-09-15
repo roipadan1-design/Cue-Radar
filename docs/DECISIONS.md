@@ -17,3 +17,12 @@ This log records conservative choices made autonomously when requirements allowe
 - **Color Contrast Verification**: Verified contrast ratio for `--muted` (`#8C8C8C`) on `--bg` (`#0A0A0A`). The contrast ratio passes accessible standards at ~5.9:1 (exceeding the required 4.5:1).
 - **Guest Feed Logic**: Kept staging CSV data restricted exclusively to the `/dev/preview` route. The production `/hub` route renders live DB rows only (0 until Task 04).
 - **Public Profile Fallback**: Rendered an empty `--surface` box block when a profile has no `avatar_url` and no name initials.
+
+## Task 03
+- **Brand Icon SVG Glyph Rendering**: Rendered `<text>` element with `font-family="Noto Sans JP, sans-serif"` inside `app/icon.svg` without adding third-party font parsing dependencies.
+- **Accent Contrast Verification**: Calculated contrast ratios against `--bg` (`#0A0A0A`, luminance ~0.00304):
+  - Accent A (`#5EC8FF`, sky): ~10.9:1 contrast ratio.
+  - Accent B (`#3DDC97`, mint): ~11.9:1 contrast ratio.
+  - Accent C (`#B39DFF`, lavender): ~8.2:1 contrast ratio (Selected by owner).
+  All candidate colors pass WCAG 2.1 AAA (>= 7:1) for text and button fills.
+- **Auth Strategy Alignment**: Expanded authentication providers to support Google, Apple, and Email/Password per task instructions, superseding the Google-only spec from HANDOFF_V3.

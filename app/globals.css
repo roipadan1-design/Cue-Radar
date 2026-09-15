@@ -7,7 +7,7 @@
   --line-strong: #2E2E2E;
   --fg: #F2F2F2;
   --muted: #8C8C8C;
-  --accent: #F2F2F2;
+  --accent: #B39DFF;
   --urgent: #E5484D;
   --backdrop: rgba(0, 0, 0, 0.6);
   --radius: 2px;
@@ -33,6 +33,7 @@
   --color-backdrop: var(--backdrop);
   --font-display: var(--font-display);
   --font-body: var(--font-body);
+  --font-mark: var(--font-mark);
   --radius-sm: var(--radius);
 }
 
@@ -63,6 +64,19 @@ button {
 :focus-visible {
   outline: 2px solid var(--fg);
   outline-offset: 2px;
+}
+
+@keyframes mark-fade-in {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
+
+.animate-mark-fade {
+  animation: mark-fade-in 400ms ease-out forwards;
 }
 
 @layer components {
@@ -144,5 +158,6 @@ button {
 @media (prefers-reduced-motion: reduce) {
   * {
     transition: none !important;
+    animation: none !important;
   }
 }
