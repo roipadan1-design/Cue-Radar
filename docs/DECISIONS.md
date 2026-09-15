@@ -12,3 +12,8 @@ This log records conservative choices made autonomously when requirements allowe
 
 ## Task 01
 - No deviations.
+
+## Task 02
+- **Color Contrast Verification**: Verified contrast ratio for `--muted` (`#8C8C8C`) on `--bg` (`#0A0A0A`). The contrast ratio passes accessible standards at ~5.9:1 (exceeding the required 4.5:1).
+- **Guest Feed Logic**: Kept staging CSV data restricted exclusively to the `/dev/preview` route. The production `/hub` route renders live DB rows only (0 until Task 04).
+- **Public Profile Fallback**: Rendered an empty `--surface` box block when a profile has no `avatar_url` and no name initials.
