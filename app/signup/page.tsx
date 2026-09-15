@@ -4,18 +4,19 @@ import { useState } from 'react'
 import Link from 'next/link'
 import Button from '@/components/ui/Button'
 import Field from '@/components/ui/Field'
-import { signInSchema, type SignInFormData } from '@/lib/schemas/auth'
+import { signUpSchema, type SignUpFormData } from '@/lib/schemas/auth'
 
-export default function SignInPage() {
-  const [formData, setFormData] = useState<SignInFormData>({
+export default function SignUpPage() {
+  const [formData, setFormData] = useState<SignUpFormData>({
+    full_name: '',
     email: '',
     password: '',
   })
 
   const [errors, setErrors] = useState<Record<string, string>>({})
 
-  const handleBlur = (field: keyof SignInFormData) => {
-    const result = signInSchema.shape[field].safeParse(formData[field])
+  const handleBlur = (field: keyof SignUpFormData) => {
+    const result = signUpSchema.shape[field].safeParse(formData[field])
     if (!result.success) {
       setErrors((prev) => ({
         ...prev,
@@ -30,14 +31,14 @@ export default function SignInPage() {
     }
   }
 
-  const handleChange = (field: keyof SignInFormData, value: string) => {
+  const handleChange = (field: keyof SignUpFormData, value: string) => {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
   return (
     <div className="max-w-[720px] mx-auto px-4 md:px-6 py-12 flex flex-col items-center justify-center min-h-[calc(100vh-120px)]">
       <div className="w-full max-w-[400px] flex flex-col gap-6">
-        <h1 className="t-title text-fg text-center">Sign in</h1>
+        <h1 className="t-title text-fg text-center">Create an account</h1>
 
         {/* OAuth Buttons */}
         <div className="flex flex-col gap-3">
@@ -57,8 +58,18 @@ export default function SignInPage() {
           <span className="relative px-3 bg-bg t-meta text-muted">OR</span>
         </div>
 
-        {/* Email / Password Form */}
+        {/* Form Fields */}
         <form onSubmit={(e) => e.preventDefault()} className="flex flex-col gap-4">
+          <Field label="Full name" error={errors.full_name}>
+            <input
+              type="text"
+              value={formData.full_name}
+              onChange={(e) => handleChange('full_name', e.target.value)}
+              onBlur={() => handleBlur('full_name')}
+              className="w-full h-11 px-3 bg-surface border border-line rounded-[var(--radius)] t-body text-fg focus:outline-none focus:border-fg"
+            />
+          </Field>
+
           <Field label="Email" error={errors.email}>
             <input
               type="email"
@@ -69,7 +80,7 @@ export default function SignInPage() {
             />
           </Field>
 
-          <Field label="Password" error={errors.password}>
+          <Field label="Password" error={errors.password} helpText="At least 8 characters">
             <input
               type="password"
               value={formData.password}
@@ -79,14 +90,8 @@ export default function SignInPage() {
             />
           </Field>
 
-          <div className="flex justify-end">
-            <Button variant="ghost" disabled type="button" className="text-xs">
-              Forgot password?
-            </Button>
-          </div>
-
           <Button variant="primary" disabled type="submit" className="w-full mt-2">
-            Sign in
+            Create account
           </Button>
 
           <p className="t-meta text-muted text-center mt-2">
@@ -96,9 +101,9 @@ export default function SignInPage() {
 
         {/* Footer Link */}
         <div className="flex items-center justify-center gap-2 t-body text-muted text-sm pt-4 border-t border-line">
-          <span>New here?</span>
-          <Link href="/signup" className="text-fg underline hover:opacity-80 font-medium">
-            Create an account
+          <span>Already have an account?</span>
+          <Link href="/signin" className="text-fg underline hover:opacity-80 font-medium">
+            Sign in
           </Link>
         </div>
       </div>

@@ -11,6 +11,7 @@ import {
   getSeedMarkets,
   getSeedVocab,
   getSeedOpportunitiesStaging,
+  getDemoProfile,
 } from '@/lib/seed'
 import type { Profile, SavedRow } from '@/lib/types'
 
@@ -22,6 +23,7 @@ export default function DevPreviewPage() {
   const markets = getSeedMarkets()
   const vocab = getSeedVocab()
   const allRows = getSeedOpportunitiesStaging()
+  const demoProfile = getDemoProfile()
 
   // Generate specific rows for deadline states preview
   const rowFar = allRows.find((r) => r.days_left && r.days_left > 30) || allRows[0]
@@ -82,10 +84,6 @@ export default function DevPreviewPage() {
           <Chip>DRAFT</Chip>
         </div>
         <div className="border-t border-line pt-4">
-          <div className="flex items-baseline gap-3 mb-4">
-            <h2 className="t-title text-fg">Opportunities</h2>
-            <span className="t-num t-title text-muted">{allRows.length}</span>
-          </div>
           <Suspense fallback={<div className="h-[69px] py-4 border-b border-line" />}>
             <FilterBar markets={markets} vocab={vocab} />
           </Suspense>
@@ -100,10 +98,6 @@ export default function DevPreviewPage() {
           <Chip>DRAFT</Chip>
         </div>
         <div className="border-t border-line pt-4">
-          <div className="flex items-baseline gap-3 mb-4">
-            <h2 className="t-title text-fg">Opportunities</h2>
-            <span className="t-num t-title text-muted">{allRows.length}</span>
-          </div>
           <Suspense fallback={<div className="h-[69px] py-4 border-b border-line" />}>
             <FilterBar markets={markets} vocab={vocab} />
           </Suspense>
@@ -191,7 +185,18 @@ export default function DevPreviewPage() {
         </div>
       </section>
 
-      {/* 6. Public Profile (Empty Fallback) */}
+      {/* 6. Public Profile (Demo) */}
+      <section className="flex flex-col gap-4">
+        <div className="flex items-center gap-3">
+          <span className="t-meta text-muted">DEV PREVIEW · PUBLIC PROFILE (REAL DEMO)</span>
+          <Chip>DRAFT</Chip>
+        </div>
+        <div className="border-t border-line pt-4">
+          <PublicProfileView profile={demoProfile} isOwner={true} />
+        </div>
+      </section>
+
+      {/* 7. Public Profile (Empty Fallback) */}
       <section className="flex flex-col gap-4">
         <div className="flex items-center gap-3">
           <span className="t-meta text-muted">DEV PREVIEW · PUBLIC PROFILE (FALLBACKS)</span>
@@ -202,7 +207,7 @@ export default function DevPreviewPage() {
         </div>
       </section>
 
-      {/* 7. Edit Profile Form */}
+      {/* 8. Edit Profile Form */}
       <section className="flex flex-col gap-4">
         <div className="flex items-center gap-3">
           <span className="t-meta text-muted">DEV PREVIEW · EDIT PROFILE FORM</span>

@@ -1,18 +1,44 @@
 import React from 'react'
-import Link from 'next/link'
 import ShareLink from './ShareLink'
-import type { Profile } from '@/lib/types'
+import type { ProfileView, Profile } from '@/lib/types'
 
 interface PublicProfileViewProps {
-  profile: Profile
+  profile: Partial<ProfileView> & Profile
   isOwner?: boolean
 }
 
-export default function PublicProfileView({ profile, isOwner = false }: PublicProfileViewProps) {
+function formatDateShort(dateStr?: string | null): string {
+  if (!dateStr) return ''
+  try {
+    const d = new Date(dateStr)
+    return new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short' }).format(d)
+  } catch {
+    return dateStr
+  }
+}
+
+function formatDateFull(dateStr?: string | null): string {
+  if (!dateStr) return ''
+  try {
+    const d = new Date(dateStr)
+    return new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }).format(d)
+  } catch {
+    return dateStr
+  }
+}
+
+function getInitials(name?: string): string {
+  if (!name) return ''
+  const parts = name.trim().split(/\s+/)
+  if (parts.length === 0) return ''
+  if (parts.length === 1) return parts[0].slice(0, 2).toUpperCase()
+  return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
+}
+
+export default function PublicProfileView({ profile }: PublicProfileViewProps) {
+  const initials = getInitials(profile.full_name)
   const locationsText =
     profile.locations && profile.locations.length > 0 ? profile.locations.join(' · ') : ''
-
-  const subline = [profile.role_label, locationsText].filter(Boolean).join('  ·  ')
 
   // Parse showreel embed URL if present
   let embedUrl = ''
@@ -31,58 +57,118 @@ export default function PublicProfileView({ profile, isOwner = false }: PublicPr
     }
   }
 
+  const bioParagraphs = profile.bio ? profile.bio.split('\n\n') : []
+
+  // Facts rows calculation
+  const factsRows: { label: string; value: string }[] = []
+  if (locationsText) factsRows.push({ label: 'Location', value: locationsText })
+  if (profile.disciplines && profile.disciplines.length > 0) {
+    factsRows.push({ label: 'Disciplines', value: profile.disciplines.join(', ') })
+  }
+  if (profile.active_since) factsRows.push({ label: 'Active since', value: String(profile.active_since) })
+  if (profile.languages && profile.languages.length > 0) {
+    factsRows.push({ label: 'Languages', value: profile.languages.join(', ') })
+  }
+  if (profile.available_from) {
+    factsRows.push({ label: 'Available from', value: formatDateFull(profile.available_from) })
+  }
+
+  // Demo gallery rule: show for handle 'roipadan' or if images exist
+  const isDemo = profile.handle === 'roipadan'
+
   return (
-    <div className="max-w-[720px] mx-auto px-4 md:px-6 py-8 flex flex-col gap-6">
-      {/* Top Header & Owner/Share Actions */}
-      <div className="flex items-start justify-between">
-        <div className="flex items-center gap-4">
-          {profile.avatar_url ? (
-            /* eslint-disable-next-line @next/next/no-img-element */
-            <img
-              src={profile.avatar_url}
-              alt={profile.full_name || 'Profile avatar'}
-              className="w-[72px] h-[72px] rounded-[var(--radius)] object-cover bg-surface"
-            />
-          ) : (
-            <div className="w-[72px] h-[72px] rounded-[var(--radius)] bg-surface border border-line" />
-          )}
-
-          <div>
-            {profile.full_name && <h1 className="t-title text-fg">{profile.full_name}</h1>}
-            {subline && <p className="t-meta text-muted mt-1">{subline}</p>}
+    <div className="max-w-[720px] mx-auto px-4 md:px-6 py-8 flex flex-col gap-[48px]">
+      {/* 1. Header */}
+      <div className="flex flex-col md:flex-row md:items-center gap-6">
+        {profile.avatar_url ? (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img
+            src={profile.avatar_url}
+            alt={profile.full_name || 'Profile avatar'}
+            className="w-[88px] h-[88px] rounded-[var(--radius)] object-cover bg-surface flex-shrink-0"
+          />
+        ) : (
+          <div className="w-[88px] h-[88px] rounded-[var(--radius)] bg-surface border border-line flex items-center justify-center flex-shrink-0">
+            {initials ? (
+              <span className="t-title text-fg select-none">{initials}</span>
+            ) : null}
           </div>
-        </div>
+        )}
 
-        <div className="flex items-center gap-3">
-          {isOwner && (
-            <Link href="/profile/edit" className="t-meta text-muted hover:text-fg">
-              Edit
-            </Link>
+        <div className="flex flex-col gap-1.5">
+          {profile.full_name && (
+            <h1 className="t-display text-[36px] md:text-[48px] text-fg leading-none">
+              {profile.full_name}
+            </h1>
           )}
-          <ShareLink />
+          {profile.role_label && (
+            <div className="t-meta text-fg">{profile.role_label}</div>
+          )}
+          {locationsText && (
+            <div className="t-meta text-muted">{locationsText}</div>
+          )}
         </div>
       </div>
 
-      {/* Status Lines */}
-      <div className="flex flex-col gap-1 t-body text-fg">
+      {/* 2. Status */}
+      <div className="flex flex-col gap-1.5 t-body text-fg">
         {profile.current_city && (
           <p>
             Currently in {profile.current_city}
-            {profile.current_city_until ? ` until ${profile.current_city_until}` : ''}
+            {profile.current_city_until ? ` until ${formatDateShort(profile.current_city_until)}` : ''}
           </p>
         )}
         {profile.open_for_collab && <p>Open for collaboration</p>}
-        {profile.available_from && <p>Available from {profile.available_from}</p>}
+        {profile.available_from && (
+          <p>Available from {formatDateFull(profile.available_from)}</p>
+        )}
       </div>
 
-      {/* Bio */}
-      {profile.bio && (
-        <div className="max-w-[60ch] t-body text-fg">
-          <p>{profile.bio}</p>
+      {/* 3. Actions */}
+      <div>
+        <ShareLink />
+      </div>
+
+      {/* 4. Bio */}
+      {bioParagraphs.length > 0 && (
+        <div className="max-w-[60ch] flex flex-col gap-4 t-body text-fg">
+          {bioParagraphs.map((para, idx) => (
+            <p key={idx}>{para}</p>
+          ))}
         </div>
       )}
 
-      {/* Showreel */}
+      {/* 5. Facts */}
+      {factsRows.length > 0 && (
+        <div className="py-4 border-y border-line grid grid-cols-[140px_1fr] gap-y-3">
+          {factsRows.map((row) => (
+            <React.Fragment key={row.label}>
+              <div className="t-meta text-muted flex items-center">{row.label}</div>
+              <div className="t-body text-fg">{row.value}</div>
+            </React.Fragment>
+          ))}
+        </div>
+      )}
+
+      {/* 6. Selected works */}
+      {profile.works && profile.works.length > 0 && (
+        <div className="flex flex-col gap-3">
+          <div className="t-meta text-muted">SELECTED WORKS</div>
+          <div className="border-t border-line">
+            {profile.works.map((work, idx) => (
+              <div key={idx} className="py-3 border-b border-line flex flex-col gap-1">
+                <div className="flex items-center justify-between gap-4">
+                  <span className="t-row text-fg">{work.title}</span>
+                  <span className="t-num t-body text-muted">{work.year}</span>
+                </div>
+                <div className="t-meta text-muted">{work.kind}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 7. Showreel */}
       {embedUrl && (
         <div className="w-full aspect-video bg-surface rounded-[var(--radius)] overflow-hidden border border-line">
           <iframe
@@ -95,15 +181,32 @@ export default function PublicProfileView({ profile, isOwner = false }: PublicPr
         </div>
       )}
 
-      {/* Social Links */}
+      {/* 8. Gallery */}
+      {isDemo && (
+        <div className="flex flex-col gap-3">
+          <div className="t-meta text-muted">GALLERY</div>
+          <div className="grid grid-cols-2 gap-3">
+            {[1, 2, 3, 4].map((slot) => (
+              <div
+                key={slot}
+                className="aspect-square bg-surface border border-line rounded-[var(--radius)] flex items-center justify-center"
+              >
+                <span className="t-meta text-muted">IMAGE</span>
+              </div>
+            ))}
+          </div>
+        </div>
+      )}
+
+      {/* 9. Links */}
       {profile.social_links && (
-        <div className="flex flex-wrap items-center gap-4 pt-2 border-t border-line">
+        <div className="flex flex-wrap items-center gap-4">
           {profile.social_links.instagram && (
             <a
               href={profile.social_links.instagram}
               target="_blank"
               rel="noopener noreferrer"
-              className="t-meta text-muted hover:text-fg hover:underline hover:underline-offset-4"
+              className="t-body text-fg hover:underline hover:underline-offset-4"
             >
               Instagram
             </a>
@@ -113,7 +216,7 @@ export default function PublicProfileView({ profile, isOwner = false }: PublicPr
               href={profile.social_links.website}
               target="_blank"
               rel="noopener noreferrer"
-              className="t-meta text-muted hover:text-fg hover:underline hover:underline-offset-4"
+              className="t-body text-fg hover:underline hover:underline-offset-4"
             >
               Website
             </a>
@@ -123,7 +226,7 @@ export default function PublicProfileView({ profile, isOwner = false }: PublicPr
               href={profile.social_links.spotify}
               target="_blank"
               rel="noopener noreferrer"
-              className="t-meta text-muted hover:text-fg hover:underline hover:underline-offset-4"
+              className="t-body text-fg hover:underline hover:underline-offset-4"
             >
               Spotify
             </a>
@@ -133,7 +236,7 @@ export default function PublicProfileView({ profile, isOwner = false }: PublicPr
               href={profile.social_links.vimeo}
               target="_blank"
               rel="noopener noreferrer"
-              className="t-meta text-muted hover:text-fg hover:underline hover:underline-offset-4"
+              className="t-body text-fg hover:underline hover:underline-offset-4"
             >
               Vimeo
             </a>

@@ -17,6 +17,15 @@ export default function HubFeedView({ rows, locked = true }: HubFeedViewProps) {
 
   const { closingThisWeek, thisMonth, later, rolling } = groupHubRows(rows)
 
+  const todayFormatted = new Intl.DateTimeFormat('en-GB', {
+    weekday: 'long',
+    day: 'numeric',
+    month: 'long',
+  }).format(new Date())
+
+  const openDeadlinesCount = rows.filter((r) => r.deadline || r.is_rolling).length
+  const closingThisWeekCount = closingThisWeek.length
+
   const limitCount = 8
   let renderedCount = 0
 
@@ -29,6 +38,18 @@ export default function HubFeedView({ rows, locked = true }: HubFeedViewProps) {
 
   return (
     <div className="mt-2">
+      <div className="mb-6 flex flex-col gap-1">
+        <div className="t-meta text-muted">{todayFormatted}</div>
+        <h1 className="t-display text-[36px] md:text-[64px] text-fg">
+          {openDeadlinesCount} open deadlines
+        </h1>
+        {closingThisWeekCount > 0 && (
+          <div className="t-meta text-muted">
+            {closingThisWeekCount} closing this week
+          </div>
+        )}
+      </div>
+
       {groups.map((group) => {
         const groupRows = group.rows
         const groupStart = renderedCount

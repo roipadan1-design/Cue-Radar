@@ -9,6 +9,16 @@ interface OpportunityDetailViewProps {
   vocab?: VocabEntry[]
 }
 
+function formatVerifiedDate(dateStr?: string | null): string {
+  if (!dateStr) return ''
+  try {
+    const d = new Date(dateStr)
+    return new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }).format(d)
+  } catch {
+    return dateStr
+  }
+}
+
 export default function OpportunityDetailView({ row, vocab = [] }: OpportunityDetailViewProps) {
   let hostname = ''
   try {
@@ -24,6 +34,11 @@ export default function OpportunityDetailView({ row, vocab = [] }: OpportunityDe
   const metaLine = [typeLabel, row.source_name, row.city_name]
     .filter(Boolean)
     .join('  ·  ')
+
+  const verifiedFormatted = formatVerifiedDate(row.verified_at)
+  const trustLine = verifiedFormatted
+    ? `Verified ${verifiedFormatted}  ·  Source: ${row.source_name}`
+    : `Source: ${row.source_name}`
 
   const deadlineInfo = formatDeadline(row)
   const fundingText = formatFunding(row)
@@ -46,7 +61,10 @@ export default function OpportunityDetailView({ row, vocab = [] }: OpportunityDe
       </div>
 
       {/* 2. Meta line */}
-      <div className="t-meta text-muted mb-2">{metaLine}</div>
+      <div className="t-meta text-muted mb-1">{metaLine}</div>
+
+      {/* Trust line */}
+      <div className="t-meta text-muted mb-4">{trustLine}</div>
 
       {/* 3. Title (sentence case) */}
       <h1 className="t-title normal-case text-fg mb-6">{row.title}</h1>

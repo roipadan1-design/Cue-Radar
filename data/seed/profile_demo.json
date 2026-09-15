@@ -1,0 +1,24 @@
+{
+  "handle": "roipadan",
+  "full_name": "Roi Padan",
+  "role_label": "Choreographer · Sound artist",
+  "locations": ["Cologne", "Tel Aviv"],
+  "current_city": "Cologne",
+  "current_city_until": "2026-11-20",
+  "available_from": "2026-11-21",
+  "open_for_collab": true,
+  "bio": "Roi Padan is a choreographer and sound artist working between Cologne and Tel Aviv. His practice examines the body as an acoustic instrument, using movement, modular synthesis, and field recording to create live environments where listening becomes physical.\n\nHis work is grounded in duration, resonance, and the unstable space between a gesture and its echo.",
+  "disciplines": ["Dance", "Sound"],
+  "active_since": 2016,
+  "languages": ["Hebrew", "English", "German"],
+  "showreel_url": null,
+  "avatar_url": null,
+  "instagram": null,
+  "website": null,
+  "is_public": true,
+  "works": [
+    { "title": "Somatic Echoes", "kind": "Choreography", "year": 2025 },
+    { "title": "Kinetic Drift", "kind": "Live performance", "year": 2024 },
+    { "title": "Bodily Feedback", "kind": "Installation", "year": 2023 }
+  ]
+}

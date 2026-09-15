@@ -1,7 +1,7 @@
 import fs from 'node:fs'
 import path from 'node:path'
 import { parseCsv } from './csv'
-import type { Market, VocabEntry, HubFeedRow } from './types'
+import type { Market, VocabEntry, HubFeedRow, ProfileView } from './types'
 
 function readSeedFile(filename: string): Record<string, string>[] {
   const filePath = path.join(process.cwd(), 'data', 'seed', filename)
@@ -54,6 +54,39 @@ export function getSeedVocab(): VocabEntry[] {
 
 export function getSeedSources(): Record<string, string>[] {
   return readSeedFile('sources.csv')
+}
+
+export function getDemoProfile(): ProfileView {
+  const filePath = path.join(process.cwd(), 'data', 'seed', 'profile_demo.json')
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`Missing required seed file at: ${filePath}`)
+  }
+  const content = fs.readFileSync(filePath, 'utf-8')
+  const json = JSON.parse(content)
+
+  return {
+    id: 'demo-user-id',
+    handle: json.handle,
+    full_name: json.full_name,
+    role_label: json.role_label || null,
+    locations: json.locations || [],
+    current_city: json.current_city || null,
+    current_city_until: json.current_city_until || null,
+    available_from: json.available_from || null,
+    open_for_collab: Boolean(json.open_for_collab),
+    bio: json.bio || null,
+    disciplines: json.disciplines || [],
+    active_since: json.active_since ?? null,
+    languages: json.languages || [],
+    showreel_url: json.showreel_url || null,
+    avatar_url: json.avatar_url || null,
+    social_links: {
+      instagram: json.instagram || null,
+      website: json.website || null,
+    },
+    is_public: Boolean(json.is_public),
+    works: json.works || [],
+  }
 }
 
 export function getSeedOpportunitiesStaging(): HubFeedRow[] {
@@ -131,7 +164,6 @@ export function groupHubRows(rows: HubFeedRow[]): GroupedHubRows {
     if (r.is_rolling || r.days_left === null || r.days_left === undefined) {
       rolling.push(r)
     } else if (r.days_left <= 7) {
-      // days_left === 0 belongs to closingThisWeek
       closingThisWeek.push(r)
     } else if (r.days_left <= 30) {
       thisMonth.push(r)

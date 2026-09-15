@@ -53,10 +53,10 @@ export interface HubFeedRow {
 export type OpportunityDetail = HubFeedRow
 
 export interface ProfileSocialLinks {
-  instagram?: string
-  spotify?: string
-  website?: string
-  vimeo?: string
+  instagram?: string | null
+  spotify?: string | null
+  website?: string | null
+  vimeo?: string | null
 }
 
 export interface Profile {
@@ -78,6 +78,19 @@ export interface Profile {
   is_public: boolean
   created_at?: string
   updated_at?: string
+}
+
+export interface ProfileWork {
+  title: string
+  kind: string
+  year: number
+}
+
+export type ProfileView = Profile & {
+  disciplines: string[]
+  active_since: number | null
+  languages: string[]
+  works: ProfileWork[]
 }
 
 export interface SavedRow {
