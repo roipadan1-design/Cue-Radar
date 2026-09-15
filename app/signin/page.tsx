@@ -15,7 +15,7 @@ export default function SignInPage() {
         <Button variant="secondary" disabled>
           Continue with Google
         </Button>
-        <span className="t-meta text-muted">Saving is enabled once you sign in.</span>
+        <span className="t-meta text-muted">Sign-in is enabled in a later release.</span>
       </div>
 
       <div>

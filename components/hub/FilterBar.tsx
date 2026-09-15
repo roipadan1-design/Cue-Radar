@@ -46,7 +46,7 @@ export default function FilterBar({ markets, vocab }: FilterBarProps) {
         <button
           type="button"
           onClick={() => setIsSheetOpen(true)}
-          className="h-9 px-3 border border-line-strong rounded-[2px] t-meta text-fg hover:border-fg transition-colors"
+          className="h-9 px-3 border border-line-strong rounded-[var(--radius)] t-meta text-fg hover:border-fg transition-colors"
         >
           {activeCount > 0 ? `Filter · ${activeCount}` : 'Filter'}
         </button>
@@ -66,7 +66,7 @@ export default function FilterBar({ markets, vocab }: FilterBarProps) {
         <select
           value={currentCity}
           onChange={(e) => updateParam('city', e.target.value)}
-          className="bg-surface border border-line rounded-[2px] h-9 px-3 t-body text-xs text-fg focus:outline-none focus:border-fg"
+          className="bg-surface border border-line rounded-[var(--radius)] h-9 px-3 t-body text-xs text-fg focus:outline-none focus:border-fg"
         >
           <option value="">All cities</option>
           {markets.map((m) => (
@@ -79,7 +79,7 @@ export default function FilterBar({ markets, vocab }: FilterBarProps) {
         <select
           value={currentType}
           onChange={(e) => updateParam('type', e.target.value)}
-          className="bg-surface border border-line rounded-[2px] h-9 px-3 t-body text-xs text-fg focus:outline-none focus:border-fg"
+          className="bg-surface border border-line rounded-[var(--radius)] h-9 px-3 t-body text-xs text-fg focus:outline-none focus:border-fg"
         >
           <option value="">All types</option>
           {typeOptions.map((t) => (
@@ -92,7 +92,7 @@ export default function FilterBar({ markets, vocab }: FilterBarProps) {
         <select
           value={currentDiscipline}
           onChange={(e) => updateParam('discipline', e.target.value)}
-          className="bg-surface border border-line rounded-[2px] h-9 px-3 t-body text-xs text-fg focus:outline-none focus:border-fg"
+          className="bg-surface border border-line rounded-[var(--radius)] h-9 px-3 t-body text-xs text-fg focus:outline-none focus:border-fg"
         >
           <option value="">All disciplines</option>
           {disciplineOptions.map((d) => (
@@ -121,7 +121,7 @@ export default function FilterBar({ markets, vocab }: FilterBarProps) {
             <select
               value={currentCity}
               onChange={(e) => updateParam('city', e.target.value)}
-              className="bg-surface border border-line rounded-[2px] h-11 px-3 t-body text-sm text-fg"
+              className="bg-surface border border-line rounded-[var(--radius)] h-11 px-3 t-body text-sm text-fg"
             >
               <option value="">All cities</option>
               {markets.map((m) => (
@@ -137,7 +137,7 @@ export default function FilterBar({ markets, vocab }: FilterBarProps) {
             <select
               value={currentType}
               onChange={(e) => updateParam('type', e.target.value)}
-              className="bg-surface border border-line rounded-[2px] h-11 px-3 t-body text-sm text-fg"
+              className="bg-surface border border-line rounded-[var(--radius)] h-11 px-3 t-body text-sm text-fg"
             >
               <option value="">All types</option>
               {typeOptions.map((t) => (
@@ -153,7 +153,7 @@ export default function FilterBar({ markets, vocab }: FilterBarProps) {
             <select
               value={currentDiscipline}
               onChange={(e) => updateParam('discipline', e.target.value)}
-              className="bg-surface border border-line rounded-[2px] h-11 px-3 t-body text-sm text-fg"
+              className="bg-surface border border-line rounded-[var(--radius)] h-11 px-3 t-body text-sm text-fg"
             >
               <option value="">All disciplines</option>
               {disciplineOptions.map((d) => (
@@ -175,7 +175,7 @@ export default function FilterBar({ markets, vocab }: FilterBarProps) {
             <button
               type="button"
               onClick={() => setIsSheetOpen(false)}
-              className="h-10 px-4 bg-fg text-bg rounded-[2px] t-body font-semibold text-sm"
+              className="h-10 px-4 bg-fg text-bg rounded-[var(--radius)] t-body font-semibold text-sm"
             >
               Done
             </button>

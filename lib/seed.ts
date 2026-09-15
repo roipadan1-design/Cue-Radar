@@ -5,7 +5,9 @@ import type { Market, VocabEntry, HubFeedRow } from './types'
 
 function readSeedFile(filename: string): Record<string, string>[] {
   const filePath = path.join(process.cwd(), 'data', 'seed', filename)
-  if (!fs.existsSync(filePath)) return []
+  if (!fs.existsSync(filePath)) {
+    throw new Error(`Missing required seed CSV file at: ${filePath}`)
+  }
   const content = fs.readFileSync(filePath, 'utf-8')
   return parseCsv(content)
 }
@@ -110,4 +112,33 @@ export function getSeedOpportunitiesStaging(): HubFeedRow[] {
       is_rolling,
     }
   })
+}
+
+export interface GroupedHubRows {
+  closingThisWeek: HubFeedRow[]
+  thisMonth: HubFeedRow[]
+  later: HubFeedRow[]
+  rolling: HubFeedRow[]
+}
+
+export function groupHubRows(rows: HubFeedRow[]): GroupedHubRows {
+  const closingThisWeek: HubFeedRow[] = []
+  const thisMonth: HubFeedRow[] = []
+  const later: HubFeedRow[] = []
+  const rolling: HubFeedRow[] = []
+
+  rows.forEach((r) => {
+    if (r.is_rolling || r.days_left === null || r.days_left === undefined) {
+      rolling.push(r)
+    } else if (r.days_left <= 7) {
+      // days_left === 0 belongs to closingThisWeek
+      closingThisWeek.push(r)
+    } else if (r.days_left <= 30) {
+      thisMonth.push(r)
+    } else {
+      later.push(r)
+    }
+  })
+
+  return { closingThisWeek, thisMonth, later, rolling }
 }

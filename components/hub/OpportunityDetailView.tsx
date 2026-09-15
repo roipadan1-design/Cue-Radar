@@ -2,13 +2,14 @@ import Link from 'next/link'
 import Button from '@/components/ui/Button'
 import Chip from '@/components/ui/Chip'
 import { formatFunding, formatDeadline } from '@/components/hub/OpportunityRow'
-import type { HubFeedRow } from '@/lib/types'
+import type { HubFeedRow, VocabEntry } from '@/lib/types'
 
 interface OpportunityDetailViewProps {
   row: HubFeedRow
+  vocab?: VocabEntry[]
 }
 
-export default function OpportunityDetailView({ row }: OpportunityDetailViewProps) {
+export default function OpportunityDetailView({ row, vocab = [] }: OpportunityDetailViewProps) {
   let hostname = ''
   try {
     hostname = new URL(row.apply_url).hostname.replace(/^www\./, '')
@@ -16,18 +17,24 @@ export default function OpportunityDetailView({ row }: OpportunityDetailViewProp
     hostname = row.apply_url
   }
 
-  const metaLine = [row.type.toUpperCase(), row.source_name, row.city_name]
+  // Resolve vocab label for type
+  const typeEntry = vocab.find((v) => v.category === 'type' && v.value === row.type)
+  const typeLabel = typeEntry ? typeEntry.label : row.type
+
+  const metaLine = [typeLabel, row.source_name, row.city_name]
     .filter(Boolean)
     .join('  ·  ')
 
   const deadlineInfo = formatDeadline(row)
   const fundingText = formatFunding(row)
 
-  const feeText = row.application_fee > 0 ? `€${row.application_fee}` : 'Free'
+  const symbol = row.currency === 'USD' ? '$' : row.currency === 'GBP' ? '£' : '€'
+  const feeText = row.application_fee > 0 ? `${symbol}${row.application_fee}` : '—'
+
   const eligibilityText =
     row.eligibility_geo && row.eligibility_geo.length > 0
       ? row.eligibility_geo.join(', ')
-      : 'Any'
+      : '—'
 
   return (
     <div className="max-w-[720px] mx-auto px-4 md:px-6 py-6 pb-[120px] md:pb-12">
@@ -51,7 +58,6 @@ export default function OpportunityDetailView({ row }: OpportunityDetailViewProp
           <span className={`t-num ${deadlineInfo.isUrgent ? 'text-urgent font-semibold' : ''}`}>
             {deadlineInfo.text}
           </span>
-          {row.deadline && <span className="text-muted ml-2">({row.deadline})</span>}
         </div>
 
         <div className="t-meta text-muted">Funding</div>
@@ -97,9 +103,9 @@ export default function OpportunityDetailView({ row }: OpportunityDetailViewProp
           </a>
           <Button variant="secondary">Save</Button>
         </div>
-        <a href={`/opportunities/${row.slug}/ics`} className="t-body text-muted hover:text-fg underline underline-offset-4">
+        <Button variant="ghost" disabled>
           Add to calendar
-        </a>
+        </Button>
       </div>
 
       {/* 5. Summary */}
@@ -112,7 +118,7 @@ export default function OpportunityDetailView({ row }: OpportunityDetailViewProp
       {/* 6. Materials required */}
       {row.materials_required && row.materials_required.length > 0 && (
         <div className="my-6">
-          <h2 className="t-meta text-muted mb-3">MATERlALS REQUIRED</h2>
+          <h2 className="t-meta text-muted mb-3">Materials required</h2>
           <div className="border-t border-line">
             {row.materials_required.map((mat, idx) => (
               <div key={idx} className="py-2.5 border-b border-line t-body text-fg">

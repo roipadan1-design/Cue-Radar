@@ -1,4 +1,3 @@
-import Link from 'next/link'
 import Button from '@/components/ui/Button'
 import { getSeedMarkets } from '@/lib/seed'
 
@@ -24,12 +23,12 @@ export default function LandingPage() {
       </p>
 
       <div className="mt-[32px] flex items-center gap-4">
-        <Link href="/hub">
-          <Button variant="primary">Enter</Button>
-        </Link>
-        <Link href="/hub">
-          <Button variant="ghost">Browse open calls</Button>
-        </Link>
+        <Button variant="primary" href="/hub">
+          Enter
+        </Button>
+        <Button variant="ghost" href="/hub">
+          Browse open calls
+        </Button>
       </div>
 
       <div className="mt-[64px] pb-12">

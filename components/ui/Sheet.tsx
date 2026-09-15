@@ -48,16 +48,18 @@ export default function Sheet({ isOpen, onClose, children, title }: SheetProps) 
     }
   }
 
-  if (!isOpen) return null
-
   return (
     <dialog
       ref={dialogRef}
       onClick={handleBackdropClick}
-      className="fixed inset-0 z-50 m-0 h-full w-full max-w-none max-h-none bg-black/60 p-0 flex flex-col justify-end border-none backdrop:bg-transparent"
+      className={`fixed inset-0 z-50 m-0 h-full w-full max-w-none max-h-none p-0 bg-transparent flex flex-col justify-end border-none transition-all duration-200 ease-out backdrop:bg-backdrop ${
+        isOpen
+          ? 'opacity-100 translate-y-0 pointer-events-auto'
+          : 'opacity-0 translate-y-4 pointer-events-none'
+      }`}
     >
-      <div className="w-full bg-surface border-t border-line rounded-t-lg p-5 flex flex-col gap-4 max-h-[85vh] overflow-y-auto">
-        <div className="w-8 h-[3px] bg-line-strong mx-auto rounded-full flex-shrink-0" />
+      <div className="w-full bg-surface border-t border-line rounded-t-[var(--radius)] p-5 flex flex-col gap-4 max-h-[85vh] overflow-y-auto">
+        <div className="w-8 h-[3px] bg-line-strong mx-auto rounded-[var(--radius)] flex-shrink-0" />
         {title && <h2 className="t-row text-fg">{title}</h2>}
         <div>{children}</div>
       </div>

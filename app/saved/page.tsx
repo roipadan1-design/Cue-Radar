@@ -1,5 +1,6 @@
 import Link from 'next/link'
 import EmptyState from '@/components/hub/EmptyState'
+import type { SavedRow } from '@/lib/types'
 
 interface PipelinePageProps {
   searchParams?: Promise<{ status?: string }>
@@ -9,13 +10,27 @@ export default async function PipelinePage(props: PipelinePageProps) {
   const searchParams = (await props.searchParams) || {}
   const activeStatus = searchParams.status || 'saved'
 
+  // Until Task 04: Saved rows come from DB (currently empty array)
+  const savedRows: SavedRow[] = []
+
+  const counts: Record<string, number> = {}
+  savedRows.forEach((r) => {
+    counts[r.pipeline_status] = (counts[r.pipeline_status] || 0) + 1
+  })
+
   const tabs = [
-    { label: 'Saved · 3', status: 'saved' },
-    { label: 'Drafting · 1', status: 'drafting' },
+    { label: 'Saved', status: 'saved' },
+    { label: 'Drafting', status: 'drafting' },
     { label: 'Submitted', status: 'submitted' },
     { label: 'Accepted', status: 'accepted' },
     { label: 'Rejected', status: 'rejected' },
-  ]
+  ].map((tab) => {
+    const count = counts[tab.status]
+    return {
+      ...tab,
+      displayLabel: count !== undefined ? `${tab.label} · ${count}` : tab.label,
+    }
+  })
 
   return (
     <div className="max-w-[960px] mx-auto px-4 md:px-6 py-6">
@@ -35,13 +50,13 @@ export default async function PipelinePage(props: PipelinePageProps) {
                   : 'text-muted border-transparent hover:text-fg'
               }`}
             >
-              {tab.label}
+              {tab.displayLabel}
             </Link>
           )
         })}
       </div>
 
-      {/* Until Task 04: Empty state for all tabs */}
+      {/* Empty state */}
       <div className="mt-6">
         <EmptyState
           title="Nothing here yet."

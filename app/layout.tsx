@@ -1,20 +1,20 @@
 import type { Metadata } from 'next'
-import { Archivo, Manrope } from 'next/font/google'
+import { Inter_Tight, JetBrains_Mono } from 'next/font/google'
 import TopBar from '@/components/layout/TopBar'
 import MobileNav from '@/components/layout/MobileNav'
 import Footer from '@/components/layout/Footer'
 import './globals.css'
 
-const archivo = Archivo({
+const interTight = Inter_Tight({
   subsets: ['latin'],
-  weight: ['800'],
+  weight: '600',
   variable: '--font-display',
 })
 
-const manrope = Manrope({
+const jetbrainsMono = JetBrains_Mono({
   subsets: ['latin'],
-  weight: ['400', '500', '600'],
-  variable: '--font-body',
+  weight: '400',
+  variable: '--font-mono',
 })
 
 export const metadata: Metadata = {
@@ -28,10 +28,10 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en" className={`${archivo.variable} ${manrope.variable}`}>
-      <body className="min-h-screen flex flex-col bg-bg text-fg font-body antialiased">
+    <html lang="en" className={`${interTight.variable} ${jetbrainsMono.variable}`}>
+      <body className="min-h-screen flex flex-col bg-bg text-fg font-mono">
         <TopBar />
-        <main className="flex-1 w-full mx-auto pb-[72px] md:pb-0">
+        <main className="flex-1 w-full max-w-[1200px] mx-auto px-5 py-6">
           {children}
         </main>
         <Footer />

@@ -9,6 +9,7 @@
   --muted: #8C8C8C;
   --accent: #F2F2F2;
   --urgent: #E5484D;
+  --backdrop: rgba(0, 0, 0, 0.6);
   --radius: 2px;
   --space-1: 4px;
   --space-2: 8px;
@@ -29,6 +30,7 @@
   --color-muted: var(--muted);
   --color-accent: var(--accent);
   --color-urgent: var(--urgent);
+  --color-backdrop: var(--backdrop);
   --font-display: var(--font-display);
   --font-body: var(--font-body);
   --radius-sm: var(--radius);

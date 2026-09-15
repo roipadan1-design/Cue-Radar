@@ -1,7 +1,6 @@
-'use client'
-
-import React, { useState } from 'react'
+import React from 'react'
 import Link from 'next/link'
+import ShareLink from './ShareLink'
 import type { Profile } from '@/lib/types'
 
 interface PublicProfileViewProps {
@@ -10,30 +9,10 @@ interface PublicProfileViewProps {
 }
 
 export default function PublicProfileView({ profile, isOwner = false }: PublicProfileViewProps) {
-  const [copied, setCopied] = useState(false)
-
-  const initials = profile.full_name
-    ? profile.full_name
-        .split(' ')
-        .map((n) => n[0])
-        .join('')
-        .toUpperCase()
-        .slice(0, 2)
-    : '??'
-
-  const locationsText = profile.locations && profile.locations.length > 0
-    ? profile.locations.join(' · ')
-    : ''
+  const locationsText =
+    profile.locations && profile.locations.length > 0 ? profile.locations.join(' · ') : ''
 
   const subline = [profile.role_label, locationsText].filter(Boolean).join('  ·  ')
-
-  function handleShare() {
-    if (typeof window !== 'undefined') {
-      navigator.clipboard.writeText(window.location.href)
-      setCopied(true)
-      setTimeout(() => setCopied(false), 2000)
-    }
-  }
 
   // Parse showreel embed URL if present
   let embedUrl = ''
@@ -61,17 +40,15 @@ export default function PublicProfileView({ profile, isOwner = false }: PublicPr
             /* eslint-disable-next-line @next/next/no-img-element */
             <img
               src={profile.avatar_url}
-              alt={profile.full_name}
-              className="w-[72px] h-[72px] rounded-[2px] object-cover bg-surface"
+              alt={profile.full_name || 'Profile avatar'}
+              className="w-[72px] h-[72px] rounded-[var(--radius)] object-cover bg-surface"
             />
           ) : (
-            <div className="w-[72px] h-[72px] rounded-[2px] bg-surface border border-line flex items-center justify-center t-title text-fg">
-              {initials}
-            </div>
+            <div className="w-[72px] h-[72px] rounded-[var(--radius)] bg-surface border border-line" />
           )}
 
           <div>
-            <h1 className="t-title text-fg">{profile.full_name || 'Independent Artist'}</h1>
+            {profile.full_name && <h1 className="t-title text-fg">{profile.full_name}</h1>}
             {subline && <p className="t-meta text-muted mt-1">{subline}</p>}
           </div>
         </div>
@@ -82,13 +59,7 @@ export default function PublicProfileView({ profile, isOwner = false }: PublicPr
               Edit
             </Link>
           )}
-          <button
-            type="button"
-            onClick={handleShare}
-            className="t-meta text-muted hover:text-fg cursor-pointer"
-          >
-            {copied ? 'Copied' : 'Share'}
-          </button>
+          <ShareLink />
         </div>
       </div>
 
@@ -113,7 +84,7 @@ export default function PublicProfileView({ profile, isOwner = false }: PublicPr
 
       {/* Showreel */}
       {embedUrl && (
-        <div className="w-full aspect-video bg-surface rounded-[2px] overflow-hidden border border-line">
+        <div className="w-full aspect-video bg-surface rounded-[var(--radius)] overflow-hidden border border-line">
           <iframe
             src={embedUrl}
             className="w-full h-full border-0"

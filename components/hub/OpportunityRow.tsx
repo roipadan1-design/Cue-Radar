@@ -12,12 +12,12 @@ export function formatFunding(row: HubFeedRow): string {
     const symbol = row.currency === 'USD' ? '$' : row.currency === 'GBP' ? '£' : '€'
     if (row.funding_min && row.funding_max) {
       if (row.funding_min === row.funding_max) {
-        return `${symbol}${row.funding_min.toLocaleString()}`
+        return `${symbol}${row.funding_min.toLocaleString('en-US')}`
       }
-      return `${symbol}${row.funding_min.toLocaleString()}–${row.funding_max.toLocaleString()}`
+      return `${symbol}${row.funding_min.toLocaleString('en-US')}–${row.funding_max.toLocaleString('en-US')}`
     }
-    if (row.funding_min) return `${symbol}${row.funding_min.toLocaleString()}`
-    if (row.funding_max) return `${symbol}${row.funding_max.toLocaleString()}`
+    if (row.funding_min) return `${symbol}${row.funding_min.toLocaleString('en-US')}`
+    if (row.funding_max) return `${symbol}${row.funding_max.toLocaleString('en-US')}`
   }
   if (row.funding_type === 'artist_fee' || row.funding_type === 'stipend') return 'Fee'
   if (row.funding_type === 'in_kind') return 'In-kind'
@@ -52,7 +52,7 @@ export default function OpportunityRow({ row, locked = false }: OpportunityRowPr
 
   if (locked) {
     return (
-      <div className="py-4 border-b border-line flex flex-col gap-1.5 opacity-60 cursor-not-allowed">
+      <div className="py-4 border-b border-line flex flex-col gap-1.5">
         <h3 className="t-row text-muted line-clamp-2">{row.title}</h3>
       </div>
     )
@@ -69,7 +69,7 @@ export default function OpportunityRow({ row, locked = false }: OpportunityRowPr
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-1 md:gap-4">
           <div className="flex items-center gap-2 t-body text-[14px] text-muted min-w-0">
             <span className="truncate">{sourceCity}</span>
-            <span className="hidden md:inline text-line">·</span>
+            <span className="hidden md:inline text-muted">·</span>
             <span className="hidden md:inline t-num text-[14px] text-fg font-medium">
               {fundingText}
             </span>
@@ -81,7 +81,7 @@ export default function OpportunityRow({ row, locked = false }: OpportunityRowPr
             </span>
             <span
               className={`t-meta ${
-                deadlineInfo.isUrgent ? 'text-urgent font-semibold' : 'text-muted'
+                deadlineInfo.isUrgent ? 'text-urgent' : 'text-muted'
               }`}
             >
               {deadlineInfo.text}

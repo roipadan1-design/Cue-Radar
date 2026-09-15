@@ -14,7 +14,7 @@ export default function Chip({ tone = 'neutral', children }: ChipProps) {
 
   return (
     <span
-      className={`inline-flex items-center px-1.5 py-0.5 t-meta text-[11px] border rounded-[2px] ${toneClasses[tone]}`}
+      className={`inline-flex items-center px-1.5 py-0.5 t-meta text-[11px] border rounded-[var(--radius)] ${toneClasses[tone]}`}
     >
       {children}
     </span>

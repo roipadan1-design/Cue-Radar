@@ -1,18 +1,18 @@
+import { Suspense } from 'react'
 import { notFound } from 'next/navigation'
 import FilterBar from '@/components/hub/FilterBar'
-import GroupHeader from '@/components/hub/GroupHeader'
 import OpportunityRow from '@/components/hub/OpportunityRow'
 import OpportunityDetailView from '@/components/hub/OpportunityDetailView'
 import PublicProfileView from '@/components/profile/PublicProfileView'
+import ProfileForm from '@/components/profile/ProfileForm'
+import HubFeedView from '@/components/hub/HubFeedView'
 import Chip from '@/components/ui/Chip'
-import Field from '@/components/ui/Field'
-import Button from '@/components/ui/Button'
 import {
   getSeedMarkets,
   getSeedVocab,
   getSeedOpportunitiesStaging,
 } from '@/lib/seed'
-import type { Profile } from '@/lib/types'
+import type { Profile, SavedRow } from '@/lib/types'
 
 export default function DevPreviewPage() {
   if (process.env.NODE_ENV === 'production') {
@@ -25,14 +25,33 @@ export default function DevPreviewPage() {
 
   // Generate specific rows for deadline states preview
   const rowFar = allRows.find((r) => r.days_left && r.days_left > 30) || allRows[0]
-  const rowMedium = allRows.find((r) => r.days_left && r.days_left >= 7 && r.days_left <= 30) || allRows[1] || allRows[0]
-  const rowUrgent = allRows.find((r) => r.days_left && r.days_left < 7) || allRows[2] || allRows[0]
+  const rowMedium =
+    allRows.find((r) => r.days_left && r.days_left >= 7 && r.days_left <= 30) ||
+    allRows[1] ||
+    allRows[0]
+  const rowUrgent =
+    allRows.find((r) => r.days_left && r.days_left < 7 && r.days_left >= 0) ||
+    allRows[2] ||
+    allRows[0]
   const rowRolling = allRows.find((r) => r.is_rolling) || allRows[3] || allRows[0]
+
+  // Pipeline preview rows with notes if available
+  const sampleSavedRows: SavedRow[] = allRows.slice(0, 3).map((r, i) => ({
+    user_id: 'dev_user',
+    opp_id: r.opp_id,
+    pipeline_status: i === 0 ? 'saved' : 'drafting',
+    notes: i === 0 ? 'Application draft prepared for autumn cycle.' : null,
+    saved_at: new Date().toISOString(),
+    opportunity: r,
+  }))
+
+  const savedCount = sampleSavedRows.filter((s) => s.pipeline_status === 'saved').length
+  const draftingCount = sampleSavedRows.filter((s) => s.pipeline_status === 'drafting').length
 
   // Empty profile for fallback testing
   const emptyProfile: Profile = {
     id: 'empty-user-id',
-    handle: 'empty_profile',
+    handle: '',
     full_name: '',
     role_label: null,
     bio: null,
@@ -53,7 +72,7 @@ export default function DevPreviewPage() {
     <div className="max-w-[960px] mx-auto px-4 md:px-6 py-8 flex flex-col gap-16 pb-24">
       <div className="border-b border-line pb-4 flex items-center justify-between">
         <h1 className="t-title text-fg">Dev Component Preview</h1>
-        <Chip tone="accent">DRAFT</Chip>
+        <Chip>DRAFT</Chip>
       </div>
 
       {/* 1. Hub Guest Mode */}
@@ -62,18 +81,15 @@ export default function DevPreviewPage() {
           <span className="t-meta text-muted">DEV PREVIEW · HUB GUEST MODE</span>
           <Chip>DRAFT</Chip>
         </div>
-        <div className="border border-line p-4 rounded-[2px] bg-bg">
+        <div className="border-t border-line pt-4">
           <div className="flex items-baseline gap-3 mb-4">
             <h2 className="t-title text-fg">Opportunities</h2>
             <span className="t-num t-title text-muted">{allRows.length}</span>
           </div>
-          <FilterBar markets={markets} vocab={vocab} />
-          <div className="mt-4">
-            <GroupHeader label="CLOSING THIS WEEK" count={Math.min(2, allRows.length)} />
-            {allRows.slice(0, 2).map((r) => (
-              <OpportunityRow key={`guest-${r.opp_id}`} row={r} locked={true} />
-            ))}
-          </div>
+          <Suspense fallback={<div className="h-[69px] py-4 border-b border-line" />}>
+            <FilterBar markets={markets} vocab={vocab} />
+          </Suspense>
+          <HubFeedView rows={allRows} locked={true} />
         </div>
       </section>
 
@@ -83,18 +99,15 @@ export default function DevPreviewPage() {
           <span className="t-meta text-muted">DEV PREVIEW · HUB SIGNED-IN MODE</span>
           <Chip>DRAFT</Chip>
         </div>
-        <div className="border border-line p-4 rounded-[2px] bg-bg">
+        <div className="border-t border-line pt-4">
           <div className="flex items-baseline gap-3 mb-4">
             <h2 className="t-title text-fg">Opportunities</h2>
             <span className="t-num t-title text-muted">{allRows.length}</span>
           </div>
-          <FilterBar markets={markets} vocab={vocab} />
-          <div className="mt-4">
-            <GroupHeader label="ALL STAGING CALLS" count={allRows.length} />
-            {allRows.slice(0, 4).map((r) => (
-              <OpportunityRow key={`auth-${r.opp_id}`} row={r} locked={false} />
-            ))}
-          </div>
+          <Suspense fallback={<div className="h-[69px] py-4 border-b border-line" />}>
+            <FilterBar markets={markets} vocab={vocab} />
+          </Suspense>
+          <HubFeedView rows={allRows} locked={false} />
         </div>
       </section>
 
@@ -104,7 +117,7 @@ export default function DevPreviewPage() {
           <span className="t-meta text-muted">DEV PREVIEW · DEADLINE STATES</span>
           <Chip>DRAFT</Chip>
         </div>
-        <div className="border border-line p-4 rounded-[2px] bg-bg flex flex-col gap-2">
+        <div className="border-t border-line pt-4 flex flex-col gap-2">
           <div>
             <span className="t-meta text-muted">&gt; 30 Days</span>
             <OpportunityRow row={rowFar} locked={false} />
@@ -130,8 +143,8 @@ export default function DevPreviewPage() {
           <span className="t-meta text-muted">DEV PREVIEW · OPPORTUNITY DETAIL</span>
           <Chip>DRAFT</Chip>
         </div>
-        <div className="border border-line rounded-[2px] bg-bg">
-          {allRows[0] && <OpportunityDetailView row={allRows[0]} />}
+        <div className="border-t border-line pt-4">
+          {allRows[0] && <OpportunityDetailView row={allRows[0]} vocab={vocab} />}
         </div>
       </section>
 
@@ -141,28 +154,39 @@ export default function DevPreviewPage() {
           <span className="t-meta text-muted">DEV PREVIEW · PIPELINE BOARD</span>
           <Chip>DRAFT</Chip>
         </div>
-        <div className="border border-line p-4 rounded-[2px] bg-bg flex flex-col gap-4">
+        <div className="border-t border-line pt-4 flex flex-col gap-4">
           <div className="flex items-center gap-6 border-b border-line pb-[1px]">
             <span className="t-meta text-fg border-b-2 border-fg py-2 font-semibold">
-              Saved · 3
+              Saved · {savedCount}
             </span>
-            <span className="t-meta text-muted py-2">Drafting · 1</span>
+            <span className="t-meta text-muted py-2">
+              Drafting · {draftingCount}
+            </span>
             <span className="t-meta text-muted py-2">Submitted</span>
+            <span className="t-meta text-muted py-2">Accepted</span>
+            <span className="t-meta text-muted py-2">Rejected</span>
           </div>
           <div className="flex flex-col">
-            {allRows.slice(0, 2).map((r) => (
-              <div key={`pipeline-${r.opp_id}`} className="py-2">
-                <OpportunityRow row={r} locked={false} />
-                <div className="px-1 mt-1 flex items-center justify-between gap-4">
-                  <p className="t-body text-muted text-xs line-clamp-1">
-                    Notes excerpt: Draft application strategy for fall proposal.
-                  </p>
-                  {r.days_left !== undefined && r.days_left !== null && r.days_left < 0 && (
-                    <Chip tone="urgent">Expired</Chip>
-                  )}
+            {sampleSavedRows.map((savedItem) => {
+              const r = savedItem.opportunity!
+              return (
+                <div key={`pipeline-${r.opp_id}`} className="py-2">
+                  <OpportunityRow row={r} locked={false} />
+                  <div className="px-1 mt-1 flex items-center justify-between gap-4">
+                    {savedItem.notes ? (
+                      <p className="t-body text-muted text-xs line-clamp-1">
+                        {savedItem.notes}
+                      </p>
+                    ) : (
+                      <span />
+                    )}
+                    {r.days_left !== undefined && r.days_left !== null && r.days_left < 0 && (
+                      <Chip tone="urgent">Expired</Chip>
+                    )}
+                  </div>
                 </div>
-              </div>
-            ))}
+              )
+            })}
           </div>
         </div>
       </section>
@@ -173,7 +197,7 @@ export default function DevPreviewPage() {
           <span className="t-meta text-muted">DEV PREVIEW · PUBLIC PROFILE (FALLBACKS)</span>
           <Chip>DRAFT</Chip>
         </div>
-        <div className="border border-line rounded-[2px] bg-bg">
+        <div className="border-t border-line pt-4">
           <PublicProfileView profile={emptyProfile} isOwner={true} />
         </div>
       </section>
@@ -184,30 +208,8 @@ export default function DevPreviewPage() {
           <span className="t-meta text-muted">DEV PREVIEW · EDIT PROFILE FORM</span>
           <Chip>DRAFT</Chip>
         </div>
-        <div className="border border-line p-6 rounded-[2px] bg-bg">
-          <h3 className="t-title text-fg mb-4">Edit Profile</h3>
-          <div className="flex flex-col gap-4 max-w-[500px]">
-            <Field label="HANDLE">
-              <input
-                type="text"
-                defaultValue="artist_handle"
-                className="w-full h-11 px-3 bg-surface border border-line rounded-[2px] t-body text-fg"
-              />
-            </Field>
-            <Field label="FULL NAME">
-              <input
-                type="text"
-                defaultValue="Independent Artist"
-                className="w-full h-11 px-3 bg-surface border border-line rounded-[2px] t-body text-fg"
-              />
-            </Field>
-            <div className="flex items-center gap-4">
-              <Button variant="primary" disabled>
-                Save
-              </Button>
-              <span className="t-meta text-muted">Saving is enabled once you sign in.</span>
-            </div>
-          </div>
+        <div className="border-t border-line pt-4">
+          <ProfileForm />
         </div>
       </section>
     </div>
