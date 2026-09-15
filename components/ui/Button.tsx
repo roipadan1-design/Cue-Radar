@@ -19,7 +19,7 @@ export default function Button({
     'inline-flex items-center justify-center font-semibold rounded-[var(--radius)] transition-colors focus-visible:outline-2 focus-visible:outline-fg focus-visible:outline-offset-2 disabled:opacity-50 disabled:cursor-not-allowed'
 
   if (variant === 'primary') {
-    baseStyles += ' bg-accent text-bg h-10 px-4 t-body hover:opacity-90'
+    baseStyles += ' bg-accent text-bg h-10 px-4 t-body'
   } else if (variant === 'secondary') {
     baseStyles += ' border border-line-strong text-fg h-10 px-4 t-body hover:border-fg'
   } else if (variant === 'ghost') {

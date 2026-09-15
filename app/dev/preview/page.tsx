@@ -40,7 +40,7 @@ export default function DevPreviewPage() {
     user_id: 'dev_user',
     opp_id: r.opp_id,
     pipeline_status: i === 0 ? 'saved' : 'drafting',
-    notes: i === 0 ? 'Application draft prepared for autumn cycle.' : null,
+    notes: null,
     saved_at: new Date().toISOString(),
     opportunity: r,
   }))
