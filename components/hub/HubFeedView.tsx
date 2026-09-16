@@ -2,7 +2,7 @@ import Link from 'next/link'
 import GroupHeader from '@/components/hub/GroupHeader'
 import OpportunityRow from '@/components/hub/OpportunityRow'
 import EmptyState from '@/components/hub/EmptyState'
-import { groupHubRows } from '@/lib/hub'
+import { groupHubRows } from '@/lib/seed'
 import type { HubFeedRow, Profile, VocabEntry } from '@/lib/types'
 
 interface HubFeedViewProps {
@@ -15,7 +15,7 @@ interface HubFeedViewProps {
 
 export default function HubFeedView({
   rows,
-  locked = false,
+  locked = true,
   hasActiveFilters = false,
   profile = null,
   vocab = [],
@@ -40,17 +40,9 @@ export default function HubFeedView({
     month: 'long',
   }).format(new Date())
 
-  const openCount = rows.filter((r) => r.deadline || r.is_rolling).length
+  const openDeadlinesCount = rows.filter((r) => r.deadline || r.is_rolling).length
   const closingThisWeekCount = closingThisWeek.length
   const citiesCount = new Set(rows.map((r) => r.city).filter(Boolean)).size
-
-  const metaCounts = [
-    `${openCount} open`,
-    closingThisWeekCount > 0 ? `${closingThisWeekCount} closing this week` : null,
-    `${citiesCount} ${citiesCount === 1 ? 'city' : 'cities'}`,
-  ]
-    .filter(Boolean)
-    .join('  ·  ')
 
   const groups = [
     { label: 'CLOSING THIS WEEK', rows: closingThisWeek },
@@ -59,54 +51,43 @@ export default function HubFeedView({
     { label: 'ROLLING', rows: rolling },
   ].filter((g) => g.rows.length > 0)
 
+  const metaParts = [`${openDeadlinesCount} open`]
+  if (closingThisWeekCount > 0) {
+    metaParts.push(`${closingThisWeekCount} closing this week`)
+  }
+  metaParts.push(`${citiesCount} ${citiesCount === 1 ? 'city' : 'cities'}`)
+
   return (
-    <div className="mt-4">
-      {/* Header */}
+    <div className="mt-2">
       <div className="mb-6 flex flex-col gap-1">
         <div className="t-meta text-muted">{todayFormatted}</div>
-        <h1 className="t-title text-fg text-2xl md:text-3xl font-semibold">
-          Opportunities
-        </h1>
-        <div className="t-body text-muted text-sm">{metaCounts}</div>
+        <h1 className="t-title text-fg">Opportunities</h1>
+        <div className="t-body text-muted">{metaParts.join(' · ')}</div>
       </div>
 
-      {groups.map((group, groupIdx) => {
-        const groupRows = group.rows
-
-        return (
-          <div key={group.label} className="mb-6">
-            <GroupHeader label={group.label} count={groupRows.length} />
-            <div>
-              {groupRows.map((row) => (
-                <OpportunityRow
-                  key={row.opp_id}
-                  row={row}
-                  locked={false}
-                  profile={profile}
-                  vocab={vocab}
-                />
-              ))}
-            </div>
-
-            {/* Guest mode inline banner after the first group */}
-            {locked && groupIdx === 0 && (
-              <div className="my-6 p-4 bg-surface border border-line text-center rounded-[var(--radius)]">
-                <div className="t-body text-fg text-sm">
-                  Sign in to save calls and see which ones you&apos;re eligible for.
-                </div>
-                <div className="mt-2">
-                  <Link
-                    href="/signin"
-                    className="t-meta text-fg underline underline-offset-4 hover:opacity-80"
-                  >
-                    Sign in
-                  </Link>
-                </div>
-              </div>
-            )}
+      {groups.map((group, groupIdx) => (
+        <div key={group.label} className="mb-6">
+          <GroupHeader label={group.label} count={group.rows.length} />
+          <div className="flex flex-col gap-4">
+            {group.rows.map((row) => (
+              <OpportunityRow key={row.opp_id} row={row} locked={locked} profile={profile} vocab={vocab} />
+            ))}
           </div>
-        )
-      })}
+          {locked && groupIdx === 0 && (
+            <div className="mt-4 py-3 text-center">
+              <span className="t-body text-muted">
+                Sign in to save calls and see which ones you&apos;re eligible for.{' '}
+              </span>
+              <Link
+                href="/signin"
+                className="t-body text-fg underline underline-offset-4 hover:opacity-80"
+              >
+                Sign in
+              </Link>
+            </div>
+          )}
+        </div>
+      ))}
     </div>
   )
 }

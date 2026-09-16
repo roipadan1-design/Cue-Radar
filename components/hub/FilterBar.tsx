@@ -40,7 +40,7 @@ export default function FilterBar({ markets, vocab }: FilterBarProps) {
   ].filter(Boolean).length
 
   const typeOptions = vocab.filter((v) => v.category === 'type')
-  const disciplineOptions = vocab.filter((v) => v.category === 'discipline')
+  const disciplineOptions = vocab.filter((v) => v.category === 'discipline' && !v.deprecated)
 
   function getToggleUrl(key: string, value?: string) {
     const params = new URLSearchParams(searchParams.toString())

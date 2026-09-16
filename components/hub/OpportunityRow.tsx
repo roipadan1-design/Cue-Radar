@@ -1,6 +1,6 @@
 import Link from 'next/link'
+import Chip from '@/components/ui/Chip'
 import { checkEligibility } from '@/lib/fit'
-import { effortLevel, effortLabel } from '@/lib/effort'
 import type { HubFeedRow, Profile, VocabEntry } from '@/lib/types'
 
 interface OpportunityRowProps {
@@ -25,7 +25,6 @@ export function formatFunding(row: HubFeedRow): string {
   }
   if (row.funding_type === 'artist_fee' || row.funding_type === 'stipend') return 'Fee'
   if (row.funding_type === 'in_kind') return 'In-kind'
-  if (row.funding_type === 'none') return 'None'
   return '—'
 }
 
@@ -44,10 +43,25 @@ export function formatDeadline(row: HubFeedRow): { text: string; isUrgent: boole
     const deadlineDate = new Date(row.deadline)
     const month = deadlineDate.toLocaleString('en-US', { month: 'short' })
     const day = deadlineDate.getDate()
-    return { text: `Closes ${day} ${month}`, isUrgent: false }
+    return { text: `Closes ${month} ${day}`, isUrgent: false }
   }
 
   return { text: row.deadline, isUrgent: false }
+}
+
+/**
+ * The single differentiator tag shown on a card face: whichever of
+ * "funded" or "no fee" is the more decision-relevant fact for this row.
+ * Returns null when neither applies, keeping the tag cap at two.
+ */
+export function getDifferentiatorTag(row: HubFeedRow): string | null {
+  const isFunded =
+    (row.funding_min ?? 0) > 0 ||
+    (row.funding_max ?? 0) > 0 ||
+    ['grant', 'stipend', 'artist_fee', 'salaried'].includes(row.funding_type ?? '')
+  if (isFunded) return 'Funded'
+  if (row.application_fee === 0) return 'No fee'
+  return null
 }
 
 export default function OpportunityRow({
@@ -56,69 +70,48 @@ export default function OpportunityRow({
   profile = null,
   vocab = [],
 }: OpportunityRowProps) {
-  const sourceCity = [row.source_name, row.city_name].filter(Boolean).join(' · ')
   const fundingText = formatFunding(row)
   const deadlineInfo = formatDeadline(row)
 
-  // Resolve type label from vocab
-  const typeVocab = vocab.find((v) => v.category === 'type' && v.value === row.type)
-  const typeLabel = typeVocab ? typeVocab.label : row.type
+  // Card-face tags — capped at three: discipline, city, one differentiator.
+  const disciplineCode = row.discipline_flags?.[0]
+  const disciplineLabel = disciplineCode
+    ? vocab.find((v) => v.category === 'discipline' && v.value === disciplineCode)?.label ||
+      disciplineCode
+    : null
+  const cityLabel = row.city_name || row.city || null
+  const differentiator = getDifferentiatorTag(row)
 
-  // Resolve first 2 discipline labels from vocab
-  const disciplineLabels = (row.discipline_flags || []).slice(0, 2).map((flag) => {
-    const found = vocab.find((v) => v.category === 'discipline' && v.value === flag)
-    return found ? found.label : flag
-  })
-
-  const effort = effortLevel(row.materials_required)
-  const eLabel = effortLabel(effort)
-
-  // Build tag line items
-  const tags: string[] = []
-  if (typeLabel) tags.push(typeLabel)
-  if (disciplineLabels.length > 0) tags.push(disciplineLabels.join(', '))
-  if (fundingText !== '—') tags.push(fundingText)
-  if (row.application_fee === 0) tags.push('No fee')
-  if (row.covers?.includes('housing')) tags.push('Housing')
-  if (row.covers?.includes('travel')) tags.push('Travel')
-  tags.push(eLabel)
-  if (row.is_demo) tags.push('Demo')
-
-  // Eligibility badge — only for signed-in users (profile present) on unlocked rows
+  // Eligibility badge — only for signed-in users (profile present)
   const eligibility = !locked && profile ? checkEligibility(profile, row) : null
-
-  if (locked) {
-    return (
-      <div className="py-4 border-b border-line flex flex-col gap-1.5">
-        <h3 className="t-row text-muted line-clamp-2">{row.title}</h3>
-      </div>
-    )
-  }
 
   return (
     <Link
       href={`/opportunities/${row.slug}`}
-      className="group block py-4 border-b border-line hover:bg-surface transition-colors"
+      className="block p-4 border border-line rounded-[var(--radius)] bg-bg hover:border-line-strong transition-colors"
     >
-      <div className="flex flex-col gap-1.5">
+      <div className="flex flex-col gap-2">
         <h3 className="t-row text-fg line-clamp-2">{row.title}</h3>
 
-        <div className="t-body text-[14px] text-muted truncate">
-          {sourceCity}
-        </div>
+        <div className="t-meta text-muted truncate">{row.source_name}</div>
 
-        {/* Tag line */}
-        {tags.length > 0 && (
-          <div className="t-meta text-muted text-[11px] line-clamp-2">
-            {tags.join('  ·  ')}
+        {(disciplineLabel || cityLabel || differentiator) && (
+          <div className="flex flex-wrap items-center gap-2">
+            {disciplineLabel && <Chip>{disciplineLabel}</Chip>}
+            {cityLabel && <Chip>{cityLabel}</Chip>}
+            {differentiator && <Chip tone="accent">{differentiator}</Chip>}
           </div>
         )}
 
-        <div className="flex items-center justify-between gap-2 pt-1">
-          <span className="t-num text-[14px] text-fg font-medium">
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-1 md:gap-4">
+          <div className="hidden md:block t-num text-[14px] text-fg font-medium">
             {fundingText}
-          </span>
-          <div className="flex items-center gap-2">
+          </div>
+
+          <div className="flex items-center justify-between md:justify-end gap-2">
+            <span className="md:hidden t-num text-[14px] text-fg font-medium">
+              {fundingText}
+            </span>
             {eligibility && (
               <span
                 className={`t-meta ${eligibility.isEligible ? 'text-accent' : 'text-muted'}`}

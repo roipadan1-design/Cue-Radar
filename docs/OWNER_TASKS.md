@@ -42,6 +42,20 @@ Set the following environment variables:
   - `GOOGLE_SHEETS_ID`
   - `GOOGLE_SERVICE_ACCOUNT_JSON`
 
+### Step 4a: Apply the discipline taxonomy migration (2026-09-16)
+`supabase/migrations/0004_discipline_taxonomy.sql` (new discipline vocab: Sound, Music, Performance, Dance, Painting, Sculpture — see `docs/DECISIONS.md` "Discipline taxonomy change") is written and verified safe, but was **not applied** to the live database in this session.
+
+Why manual: migrations `0001`–`0003` were applied by hand via the Supabase SQL Editor rather than `supabase db push`, so the CLI's migration-history table has no record of them. Running `supabase db push` now tries to replay `0001_core.sql` from scratch and fails on `CREATE POLICY ... already exists`, since those objects are already live. This session's sandbox also would not permit the fix (`supabase migration repair --status applied 0001 0002 0003`) as a live-project action.
+
+Two ways to finish this — pick one:
+- **Simplest (matches how 0001–0003 were applied)**: open the Supabase SQL Editor and run the contents of `supabase/migrations/0004_discipline_taxonomy.sql` directly. It is additive/idempotent (`ADD COLUMN IF NOT EXISTS`, `ON CONFLICT ... DO UPDATE`, a scoped `UPDATE`), safe to run as-is.
+- **Via CLI**: run `npx supabase migration repair --status applied 0001 0002 0003` once (updates only the CLI's bookkeeping table, executes no schema SQL), then `npx supabase db push` to apply `0004`.
+
+After applying, verify with: `select category, value, label, sort_order, deprecated from vocab where category = 'discipline' order by sort_order;` — expect 6 rows with `deprecated = false` (sound, music, performance, dance, painting, sculpture) and 4 rows with `deprecated = true` (choreography, live_electronics, installation, interdisciplinary).
+
+### Step 4b: `/radar/[city]` and event calendar links need `0003` applied (2026-09-17)
+Confirmed live (queried the DB directly): `supabase/migrations/0003_demo_seed.sql` from Step 2 above is still **not applied** — the `events` table is empty, `vocab` has no `event_type` category, and `hub_feed` has no `is_demo` column. The new `/radar/[city]` page (Trip Radar v1, Task 06 §7.2) and `app/events/[id]/ics/route.ts` are built and were verified against the live `hub_feed` data (real opportunities show up correctly), but the "Workshops & classes" and "On stage & exhibitions" sections will stay empty — correctly rendering nothing rather than an error — until `0003` is applied. Same fix as Step 2 / Step 4a: paste `0003_demo_seed.sql` into the Supabase SQL Editor (it's additive/idempotent), or run `npx supabase migration repair --status applied 0001 0002` then `npx supabase db push` to apply both `0003` and `0004` via the CLI.
+
 ### Step 4: Google Service Account & Sheet Setup
 1. Create a Google Cloud Service Account and download its JSON key.
 2. Store the JSON key contents in GitHub Secret `GOOGLE_SERVICE_ACCOUNT_JSON`.

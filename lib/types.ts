@@ -16,6 +16,7 @@ export interface VocabEntry {
   value: string
   label: string
   sort_order: number
+  deprecated?: boolean
 }
 
 export interface HubFeedRow {
@@ -48,6 +49,7 @@ export interface HubFeedRow {
   region?: string | null
   days_left?: number | null
   is_rolling: boolean
+  is_demo: boolean
 }
 
 export type OpportunityDetail = HubFeedRow
@@ -91,6 +93,22 @@ export type ProfileView = Profile & {
   active_since: number | null
   languages: string[]
   works: ProfileWork[]
+}
+
+export interface EventRow {
+  event_id: string
+  market?: string | null
+  venue_name: string
+  title: string
+  event_type: string
+  disciplines: string[]
+  date: string
+  time?: string | null
+  price_min?: number | null
+  ticket_url?: string | null
+  lat?: number | null
+  lng?: number | null
+  is_demo: boolean
 }
 
 export interface SavedRow {

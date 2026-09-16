@@ -32,12 +32,12 @@ CREATE OR REPLACE VIEW public.hub_feed AS
     o.verified_by,
     o.created_at,
     o.updated_at,
-    o.is_demo,
     s.name AS source_name,
     m.display_name AS city_name,
     m.region,
     (o.deadline - current_date) AS days_left,
-    (o.deadline IS NULL) AS is_rolling
+    (o.deadline IS NULL) AS is_rolling,
+    o.is_demo
   FROM public.opportunities o
   JOIN public.sources s USING (source_id)
   LEFT JOIN public.markets m ON m.slug = o.city

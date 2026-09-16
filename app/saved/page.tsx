@@ -3,11 +3,11 @@ import { createClient } from '@/lib/supabase/server'
 import SavedPipelineView from '@/components/saved/SavedPipelineView'
 import type { SavedRow, HubFeedRow } from '@/lib/types'
 
-interface PipelinePageProps {
+interface SavedPageProps {
   searchParams?: Promise<{ status?: string }>
 }
 
-export default async function PipelinePage(props: PipelinePageProps) {
+export default async function SavedPage(props: SavedPageProps) {
   const searchParams = (await props.searchParams) || {}
   const activeStatus = searchParams.status || 'saved'
 
@@ -40,6 +40,7 @@ export default async function PipelinePage(props: PipelinePageProps) {
       funding_max?: number | null
       currency?: string | null
       funding_type?: string | null
+      is_demo?: boolean | null
       sources?: { name: string } | null
       markets?: { display_name: string } | null
     } | null
@@ -60,6 +61,7 @@ export default async function PipelinePage(props: PipelinePageProps) {
         status: 'live',
         discipline_flags: [],
         is_rolling: !opp.deadline,
+        is_demo: opp.is_demo ?? false,
       } as HubFeedRow
     }
 
@@ -75,7 +77,7 @@ export default async function PipelinePage(props: PipelinePageProps) {
 
   return (
     <div className="max-w-[960px] mx-auto px-4 md:px-6 py-6">
-      <h1 className="t-title text-fg mb-4">Pipeline</h1>
+      <h1 className="t-title text-fg mb-4">Saved calls</h1>
       <SavedPipelineView
         initialRows={savedRows}
         activeStatus={activeStatus}
