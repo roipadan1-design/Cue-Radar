@@ -11,7 +11,7 @@
   "disciplines": ["Dance", "Sound"],
   "active_since": 2016,
   "languages": ["Hebrew", "English", "German"],
-  "showreel_url": "https://www.youtube.com/watch?v=YE7VzlLtp-4",
+  "showreel_url": "placeholder",
   "avatar_url": "https://picsum.photos/seed/roipadan-avatar/400/400",
   "instagram": "https://www.instagram.com/roipadan",
   "website": null,
@@ -21,12 +21,5 @@
     { "title": "Kinetic Drift", "kind": "Live performance", "year": 2024 },
     { "title": "Bodily Feedback", "kind": "Installation", "year": 2023 }
   ],
-  "gallery": [
-    "https://picsum.photos/seed/roipadan-g1/800/800",
-    "https://picsum.photos/seed/roipadan-g2/800/800",
-    "https://picsum.photos/seed/roipadan-g3/800/800",
-    "https://picsum.photos/seed/roipadan-g4/800/800",
-    "https://picsum.photos/seed/roipadan-g5/800/800",
-    "https://picsum.photos/seed/roipadan-g6/800/800"
-  ]
+  "gallery": ["", "", "", "", "", ""]
 }

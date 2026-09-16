@@ -43,9 +43,11 @@ export default function PublicProfileView({ profile, isOwner = false }: PublicPr
   const locationsText =
     profile.locations && profile.locations.length > 0 ? profile.locations.join(' · ') : ''
 
-  // Parse showreel embed URL if present
+  // Parse showreel embed URL if present. The dev-only preview fixture uses the
+  // sentinel "placeholder" to render a blank black player instead of real content.
+  const showreelPlaceholder = profile.showreel_url === 'placeholder'
   let embedUrl = ''
-  if (profile.showreel_url) {
+  if (profile.showreel_url && !showreelPlaceholder) {
     try {
       const url = new URL(profile.showreel_url)
       if (url.hostname.includes('youtube.com') || url.hostname.includes('youtu.be')) {
@@ -175,6 +177,11 @@ export default function PublicProfileView({ profile, isOwner = false }: PublicPr
       )}
 
       {/* 7. Showreel */}
+      {showreelPlaceholder && (
+        <div className="w-full aspect-video bg-bg rounded-[var(--radius)] border border-line flex items-end p-3">
+          <span className="t-meta text-muted">SHOWREEL</span>
+        </div>
+      )}
       {embedUrl && (
         <div className="w-full aspect-video bg-surface rounded-[var(--radius)] overflow-hidden border border-line">
           <iframe
@@ -192,16 +199,24 @@ export default function PublicProfileView({ profile, isOwner = false }: PublicPr
         <div className="flex flex-col gap-3">
           <div className="t-meta text-muted">GALLERY</div>
           <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
-            {galleryImages.map((src, idx) => (
-              /* eslint-disable-next-line @next/next/no-img-element */
-              <img
-                key={src + idx}
-                src={src}
-                alt={`${profile.full_name || 'Artist'} — gallery image ${idx + 1}`}
-                loading="lazy"
-                className="aspect-square w-full object-cover border border-line rounded-[var(--radius)]"
-              />
-            ))}
+            {galleryImages.map((src, idx) =>
+              src ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
+                  key={src + idx}
+                  src={src}
+                  alt={`${profile.full_name || 'Artist'} — gallery image ${idx + 1}`}
+                  loading="lazy"
+                  className="aspect-square w-full object-cover border border-line rounded-[var(--radius)]"
+                />
+              ) : (
+                <div
+                  key={`empty-${idx}`}
+                  aria-hidden
+                  className="aspect-square w-full bg-bg border border-line rounded-[var(--radius)]"
+                />
+              )
+            )}
           </div>
         </div>
       )}
