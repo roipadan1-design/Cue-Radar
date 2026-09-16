@@ -8,11 +8,24 @@ import type { HubFeedRow } from '@/lib/types'
 interface HubFeedViewProps {
   rows: HubFeedRow[]
   locked?: boolean
+  hasActiveFilters?: boolean
 }
 
-export default function HubFeedView({ rows, locked = true }: HubFeedViewProps) {
+export default function HubFeedView({
+  rows,
+  locked = true,
+  hasActiveFilters = false,
+}: HubFeedViewProps) {
   if (rows.length === 0) {
-    return <EmptyState title="No open calls match these filters." action={{ label: 'Reset', href: '/hub' }} />
+    if (hasActiveFilters) {
+      return (
+        <EmptyState
+          title="No open calls match these filters."
+          action={{ label: 'Reset', href: '/hub' }}
+        />
+      )
+    }
+    return <EmptyState title="The feed is being curated — check back soon." />
   }
 
   const { closingThisWeek, thisMonth, later, rolling } = groupHubRows(rows)
@@ -61,7 +74,7 @@ export default function HubFeedView({ rows, locked = true }: HubFeedViewProps) {
             <div>
               {groupRows.map((row, idx) => {
                 const overallIndex = groupStart + idx
-                const isAtBannerPoint = overallIndex === limitCount
+                const isAtBannerPoint = locked && overallIndex === limitCount
 
                 return (
                   <div key={row.opp_id}>
