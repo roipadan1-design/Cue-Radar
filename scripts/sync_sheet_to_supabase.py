@@ -166,6 +166,16 @@ def fetch_tab_records(sheet_id: str, tab_name: str, service_acc_json: str = None
         reader = csv.DictReader(io.StringIO(csv_text))
         return list(reader)
 
+def filter_demo_rows(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Skip rows where is_demo is True so sync never overwrites or alters demo seed rows."""
+    non_demo = []
+    for r in rows:
+        is_demo_val = r.get("is_demo")
+        if is_demo_val in (True, "true", "TRUE", 1, "1"):
+            continue
+        non_demo.append(r)
+    return non_demo
+
 def filter_columns(tab_name: str, rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     allowed = ALLOWED_COLUMNS.get(tab_name, set())
     filtered = []
@@ -240,8 +250,9 @@ def main():
                 print(f"  - {err}")
             sys.exit(1)
 
-        cleaned_rows = filter_columns(tab_name, valid_rows)
-        print(f"Tab {tab_name}: {len(cleaned_rows)} valid rows.")
+        non_demo_rows = filter_demo_rows(valid_rows)
+        cleaned_rows = filter_columns(tab_name, non_demo_rows)
+        print(f"Tab {tab_name}: {len(cleaned_rows)} valid non-demo rows.")
 
         if not args.dry_run:
             try:
