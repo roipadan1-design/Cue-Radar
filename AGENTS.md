@@ -5,7 +5,7 @@ Then read the task you were assigned in `docs/tasks/`. Do only what the task say
 
 ## Hard rules (a PR that breaks any of these will be closed without review)
 
-1. **No fabricated data.** No invented opportunities, sources, artists, names, bios, images, counts, or statistics anywhere — not in code, not in seed files, not in placeholder copy. If a value is unknown, render an empty state. The only allowed fake value is a `.env.example` placeholder.
+1. **No fabricated data (amended by Task 06).** No invented opportunities, sources, artists, names, bios, images, counts, or statistics anywhere — except for demo content strictly contained in `supabase/migrations/0003_demo_seed.sql` with `is_demo = true`, invented institution names, tagged `Demo` in UI, `apply_url` pointing to `/demo`, and controlled by `NEXT_PUBLIC_SHOW_DEMO=true|false`. The only allowed fake value in code is a `.env.example` placeholder.
 2. **No silent fallbacks.** If a required environment variable is missing, throw an error that names the variable. Never return `null`, never fall back to local data, never catch and continue.
 3. **No client-side persistence.** No `localStorage`, `sessionStorage`, `IndexedDB`, or cookies written by the app. User state lives in Supabase tables behind RLS.
 4. **No hard-coded lists that exist in the database.** Markets, vocab values, categories, cities, counts — all come from `markets`, `vocab`, or query results. A `FALLBACK_*` constant is a violation.
@@ -14,7 +14,7 @@ Then read the task you were assigned in `docs/tasks/`. Do only what the task say
 7. **All colors and fonts come from CSS variables in `app/globals.css`.** No hex values, no `rgb()`, no font names in `.tsx` files.
 8. **No new dependencies without the task saying so.** No component libraries (shadcn, base-ui, MUI, etc.). No state libraries. No second `package.json` anywhere in the repo.
 9. **No secrets.** `.env.local` is gitignored and stays that way.
-10. **Do not start deferred features.** Trip Radar, `/radar/*`, events UI, Fit score, Effort meter, Connect, Peer Calls, Digest, OG images, analytics — all of these are blocked until a task explicitly names them.
+10. **Do not start deferred features (amended by Task 06).** Trip Radar v1 (`/radar`) and a minimal events UI are unblocked by Task 06 in the reduced scope defined in Task 06. Connect, Peer Calls, Digest, analytics — all of these remain blocked until a task explicitly names them.
 
 ## When the task and your judgment disagree
 
