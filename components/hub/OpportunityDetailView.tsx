@@ -4,6 +4,7 @@ import Chip from '@/components/ui/Chip'
 import SaveOpportunityButton from '@/components/hub/SaveOpportunityButton'
 import { formatFunding, formatDeadline } from '@/components/hub/OpportunityRow'
 import { checkEligibility } from '@/lib/fit'
+import { effortLevel } from '@/lib/effort'
 import type { HubFeedRow, Profile, VocabEntry } from '@/lib/types'
 
 interface OpportunityDetailViewProps {
@@ -24,7 +25,6 @@ function formatVerifiedDate(dateStr?: string | null): string {
   }
 }
 
-/** Returns true if the verified_at date is more than 30 days ago */
 function isVerificationStale(dateStr?: string | null): boolean {
   if (!dateStr) return false
   try {
@@ -44,11 +44,26 @@ export default function OpportunityDetailView({
   userId,
   profile = null,
 }: OpportunityDetailViewProps) {
+  const feedbackEmail = process.env.NEXT_PUBLIC_FEEDBACK_EMAIL
+  if (!feedbackEmail) {
+    throw new Error('NEXT_PUBLIC_FEEDBACK_EMAIL environment variable is missing')
+  }
+
   let hostname = ''
-  try {
-    hostname = new URL(row.apply_url).hostname.replace(/^www\./, '')
-  } catch {
-    hostname = row.apply_url
+  let applyTargetUrl = row.apply_url
+  let applyLabel = 'Apply'
+
+  if (row.is_demo) {
+    applyTargetUrl = '/demo'
+    applyLabel = 'Sample call — see how it works'
+  } else {
+    try {
+      hostname = new URL(row.apply_url).hostname.replace(/^www\./, '')
+      applyLabel = `Apply on ${hostname}`
+    } catch {
+      hostname = row.apply_url
+      applyLabel = `Apply on ${hostname}`
+    }
   }
 
   // Resolve vocab label for type
@@ -69,15 +84,44 @@ export default function OpportunityDetailView({
   const fundingText = formatFunding(row)
 
   const symbol = row.currency === 'USD' ? '$' : row.currency === 'GBP' ? '£' : '€'
-  const feeText = row.application_fee > 0 ? `${symbol}${row.application_fee}` : '—'
+  const feeText = row.application_fee > 0 ? `${symbol}${row.application_fee}` : 'No fee'
 
   const eligibilityText =
     row.eligibility_geo && row.eligibility_geo.length > 0
       ? row.eligibility_geo.join(', ')
       : '—'
 
-  // Deliverable B: eligibility badge for signed-in users
+  const effort = effortLevel(row.materials_required)
+  const effortDescription =
+    effort === 'light'
+      ? 'Light · CV + showreel'
+      : effort === 'medium'
+      ? 'Medium · + motivation letter'
+      : 'Heavy · full proposal + budget'
+
   const eligibility = profile ? checkEligibility(profile, row) : null
+
+  // Interactive tag block items
+  const tags: Array<{ label: string; href?: string }> = []
+  if (typeLabel) tags.push({ label: typeLabel, href: `/hub?type=${encodeURIComponent(row.type)}` })
+  if (row.city) tags.push({ label: row.city_name || row.city, href: `/hub?city=${encodeURIComponent(row.city)}` })
+  if (row.discipline_flags) {
+    row.discipline_flags.forEach((flag) => {
+      const v = vocab.find((x) => x.category === 'discipline' && x.value === flag)
+      tags.push({ label: v ? v.label : flag, href: `/hub?discipline=${encodeURIComponent(flag)}` })
+    })
+  }
+  if (row.application_fee === 0) tags.push({ label: 'No fee', href: '/hub?no_fee=true' })
+  if (row.funding_min || row.funding_max || row.funding_type === 'grant') tags.push({ label: 'Funded', href: '/hub?funded=true' })
+  if (row.covers) {
+    if (row.covers.includes('housing')) tags.push({ label: 'Housing', href: '/hub?covers_housing=true' })
+    if (row.covers.includes('travel')) tags.push({ label: 'Travel', href: '/hub?covers_travel=true' })
+  }
+  tags.push({ label: `Effort: ${effort}`, href: `/hub?effort=${effort}` })
+  if (row.career_stage) tags.push({ label: row.career_stage })
+  if (row.is_demo) tags.push({ label: 'Demo' })
+
+  const reportMailto = `mailto:${feedbackEmail}?subject=${encodeURIComponent(`Report problem with call ${row.slug}`)}`
 
   return (
     <div className="max-w-[720px] mx-auto px-4 md:px-6 py-6 pb-[120px] md:pb-12">
@@ -91,7 +135,7 @@ export default function OpportunityDetailView({
       {/* 2. Meta line */}
       <div className="t-meta text-muted mb-1">{metaLine}</div>
 
-      {/* Trust line — Deliverable C */}
+      {/* Trust line */}
       <div className="t-meta text-muted mb-1">{trustLine}</div>
       {stale && (
         <div className="t-meta text-muted mb-4">
@@ -100,10 +144,19 @@ export default function OpportunityDetailView({
       )}
       {!stale && <div className="mb-4" />}
 
-      {/* 3. Title (sentence case) */}
+      {/* 3. Title */}
       <h1 className="t-title normal-case text-fg mb-3">{row.title}</h1>
 
-      {/* Deliverable B: eligibility badge */}
+      {/* Interactive Tag block under title */}
+      <div className="flex flex-wrap gap-2 mb-6">
+        {tags.map((tag, idx) => (
+          <Chip key={idx} href={tag.href}>
+            {tag.label}
+          </Chip>
+        ))}
+      </div>
+
+      {/* Eligibility badge */}
       {eligibility && (
         <div className="mb-6 flex items-center gap-2">
           <span
@@ -130,6 +183,9 @@ export default function OpportunityDetailView({
 
         <div className="t-meta text-muted">Funding</div>
         <div className="t-body text-fg t-num">{fundingText}</div>
+
+        <div className="t-meta text-muted">Application effort</div>
+        <div className="t-body text-fg">{effortDescription}</div>
 
         {row.covers && row.covers.length > 0 && (
           <>
@@ -163,12 +219,18 @@ export default function OpportunityDetailView({
         )}
       </div>
 
-      {/* Desktop action buttons (under fact block) */}
+      {/* Desktop action buttons */}
       <div className="hidden md:flex flex-col items-start gap-3 mb-8">
         <div className="flex items-center gap-3">
-          <a href={row.apply_url} target="_blank" rel="noopener noreferrer">
-            <Button variant="primary">Apply on {hostname}</Button>
-          </a>
+          {row.is_demo ? (
+            <Link href="/demo">
+              <Button variant="primary">{applyLabel}</Button>
+            </Link>
+          ) : (
+            <a href={applyTargetUrl} target="_blank" rel="noopener noreferrer">
+              <Button variant="primary">{applyLabel}</Button>
+            </a>
+          )}
           <SaveOpportunityButton
             oppId={row.opp_id}
             slug={row.slug}
@@ -185,6 +247,9 @@ export default function OpportunityDetailView({
             Add to calendar (Rolling)
           </Button>
         )}
+        <a href={reportMailto} className="t-meta text-muted hover:text-fg underline underline-offset-4 pt-1">
+          Report a problem with this call
+        </a>
       </div>
 
       {/* 5. Summary */}
@@ -208,13 +273,27 @@ export default function OpportunityDetailView({
         </div>
       )}
 
+      <div className="md:hidden my-6 pt-4 border-t border-line">
+        <a href={reportMailto} className="t-meta text-muted hover:text-fg underline underline-offset-4">
+          Report a problem with this call
+        </a>
+      </div>
+
       {/* 7. Mobile sticky bottom action bar */}
       <div className="md:hidden fixed bottom-[56px] left-0 right-0 z-30 bg-surface border-t border-line p-3 flex items-center justify-between gap-3 pb-[calc(12px+env(safe-area-inset-bottom))]">
-        <a href={row.apply_url} target="_blank" rel="noopener noreferrer" className="flex-1">
-          <Button variant="primary" className="w-full">
-            Apply on {hostname}
-          </Button>
-        </a>
+        {row.is_demo ? (
+          <Link href="/demo" className="flex-1">
+            <Button variant="primary" className="w-full">
+              {applyLabel}
+            </Button>
+          </Link>
+        ) : (
+          <a href={applyTargetUrl} target="_blank" rel="noopener noreferrer" className="flex-1">
+            <Button variant="primary" className="w-full">
+              {applyLabel}
+            </Button>
+          </a>
+        )}
         <SaveOpportunityButton
           oppId={row.opp_id}
           slug={row.slug}
