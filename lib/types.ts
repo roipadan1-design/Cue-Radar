@@ -93,6 +93,11 @@ export type ProfileView = Profile & {
   active_since: number | null
   languages: string[]
   works: ProfileWork[]
+  // Preview-only for now: no `gallery` column exists on the real `profiles` table yet
+  // (see docs/ROADMAP.md Task 09). Populated by the dev-only demo fixture
+  // (data/seed/profile_demo.json) so PublicProfileView can render a real gallery grid
+  // in /dev/preview/profile. Safe to leave undefined for real profiles.
+  gallery?: string[]
 }
 
 export interface EventRow {

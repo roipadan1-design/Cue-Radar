@@ -87,6 +87,7 @@ export function getDemoProfile(): ProfileView {
     },
     is_public: Boolean(json.is_public),
     works: json.works || [],
+    gallery: json.gallery || [],
   }
 }
 
