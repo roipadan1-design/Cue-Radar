@@ -1,36 +1,117 @@
 'use client'
 
-import { useState } from 'react'
+import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Field from '@/components/ui/Field'
 import Button from '@/components/ui/Button'
 import { profileSchema, type ProfileFormData } from '@/lib/schemas/profile'
+import { createClient } from '@/lib/supabase/client'
+import type { Profile } from '@/lib/types'
 
-export default function ProfileForm() {
+interface ProfileFormProps {
+  initialProfile?: Profile | null
+  userId?: string
+}
+
+export default function ProfileForm({ initialProfile, userId }: ProfileFormProps) {
   const [formData, setFormData] = useState<ProfileFormData>({
-    handle: '',
-    full_name: '',
-    role_label: '',
-    bio: '',
-    locations: '',
-    current_city: '',
-    current_city_until: '',
-    open_for_collab: false,
-    available_from: '',
-    showreel_url: '',
-    instagram: '',
-    website: '',
-    is_public: false,
+    handle: initialProfile?.handle || '',
+    full_name: initialProfile?.full_name || '',
+    role_label: initialProfile?.role_label || '',
+    bio: initialProfile?.bio || '',
+    locations: initialProfile?.locations ? initialProfile.locations.join(', ') : '',
+    current_city: initialProfile?.current_city || '',
+    current_city_until: initialProfile?.current_city_until || '',
+    open_for_collab: initialProfile?.open_for_collab || false,
+    available_from: initialProfile?.available_from || '',
+    showreel_url: initialProfile?.showreel_url || '',
+    instagram: initialProfile?.social_links?.instagram || '',
+    website: initialProfile?.social_links?.website || '',
+    is_public: initialProfile?.is_public || false,
   })
 
+  const [avatarUrl, setAvatarUrl] = useState<string>(initialProfile?.avatar_url || '')
+  const [uploading, setUploading] = useState(false)
+  const [saving, setSaving] = useState(false)
+  const [saveSuccess, setSaveSuccess] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
+  const [formError, setFormError] = useState<string | null>(null)
+  const [activeUserId, setActiveUserId] = useState<string | undefined>(userId)
+
+  useEffect(() => {
+    if (!activeUserId) {
+      const supabase = createClient()
+      supabase.auth.getUser().then(({ data: { user } }) => {
+        if (user) {
+          setActiveUserId(user.id)
+          supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .maybeSingle()
+            .then(({ data }) => {
+              if (data) {
+                const p = data as Profile
+                setFormData({
+                  handle: p.handle || '',
+                  full_name: p.full_name || '',
+                  role_label: p.role_label || '',
+                  bio: p.bio || '',
+                  locations: p.locations ? p.locations.join(', ') : '',
+                  current_city: p.current_city || '',
+                  current_city_until: p.current_city_until || '',
+                  open_for_collab: p.open_for_collab || false,
+                  available_from: p.available_from || '',
+                  showreel_url: p.showreel_url || '',
+                  instagram: p.social_links?.instagram || '',
+                  website: p.social_links?.website || '',
+                  is_public: p.is_public || false,
+                })
+                setAvatarUrl(p.avatar_url || '')
+              }
+            })
+        }
+      })
+    }
+  }, [activeUserId])
 
   function handleChange<K extends keyof ProfileFormData>(field: K, value: ProfileFormData[K]) {
     setFormData((prev) => ({ ...prev, [field]: value }))
   }
 
-  function handleSubmit(e: React.FormEvent) {
+  async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0]
+    if (!file || !activeUserId) return
+
+    setUploading(true)
+    setFormError(null)
+
+    try {
+      const supabase = createClient()
+      const fileExt = file.name.split('.').pop()
+      const filePath = `${activeUserId}/avatar-${Date.now()}.${fileExt}`
+
+      const { error: uploadError } = await supabase.storage
+        .from('avatars')
+        .upload(filePath, file, { upsert: true })
+
+      if (uploadError) throw uploadError
+
+      const { data } = supabase.storage.from('avatars').getPublicUrl(filePath)
+      setAvatarUrl(data.publicUrl)
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Error uploading avatar'
+      setFormError(message)
+    } finally {
+      setUploading(false)
+    }
+  }
+
+  async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
+    setFormError(null)
+    setSaveSuccess(false)
+
     const result = profileSchema.safeParse(formData)
     if (!result.success) {
       const formattedErrors: Record<string, string> = {}
@@ -40,13 +121,101 @@ export default function ProfileForm() {
         }
       })
       setErrors(formattedErrors)
+      return
+    }
+
+    if (!activeUserId) {
+      setFormError('You must be signed in to save profile updates.')
+      return
+    }
+
+    setSaving(true)
+    const supabase = createClient()
+
+    const locationsArray = formData.locations
+      ? formData.locations.split(',').map((l) => l.trim()).filter(Boolean)
+      : []
+
+    const socialLinks = {
+      instagram: formData.instagram || '',
+      website: formData.website || '',
+      spotify: initialProfile?.social_links?.spotify || '',
+      vimeo: initialProfile?.social_links?.vimeo || '',
+    }
+
+    const { error } = await supabase
+      .from('profiles')
+      .update({
+        handle: formData.handle,
+        full_name: formData.full_name,
+        role_label: formData.role_label || '',
+        bio: formData.bio || '',
+        avatar_url: avatarUrl,
+        locations: locationsArray,
+        current_city: formData.current_city || null,
+        current_city_until: formData.current_city_until || null,
+        open_for_collab: formData.open_for_collab,
+        available_from: formData.available_from || null,
+        showreel_url: formData.showreel_url || '',
+        social_links: socialLinks,
+        is_public: formData.is_public,
+      })
+      .eq('id', activeUserId)
+
+    setSaving(false)
+
+    if (error) {
+      setFormError(error.message)
     } else {
       setErrors({})
+      setSaveSuccess(true)
+      setTimeout(() => setSaveSuccess(false), 3000)
     }
   }
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
+      {formError && (
+        <div className="p-3 bg-surface border border-urgent rounded-[var(--radius)] t-body text-urgent text-sm">
+          {formError}
+        </div>
+      )}
+
+      {saveSuccess && (
+        <div className="p-3 bg-surface border border-line rounded-[var(--radius)] t-body text-fg text-sm">
+          Profile saved successfully!
+        </div>
+      )}
+
+      {/* Avatar upload section */}
+      <div className="flex items-center gap-4 py-2 border-b border-line">
+        {avatarUrl ? (
+          /* eslint-disable-next-line @next/next/no-img-element */
+          <img
+            src={avatarUrl}
+            alt="Avatar"
+            className="w-16 h-16 rounded-[var(--radius)] object-cover bg-surface border border-line"
+          />
+        ) : (
+          <div className="w-16 h-16 rounded-[var(--radius)] bg-surface border border-line flex items-center justify-center t-meta text-muted">
+            NO IMAGE
+          </div>
+        )}
+        <div className="flex flex-col gap-1">
+          <label className="t-meta text-fg cursor-pointer hover:underline">
+            {uploading ? 'Uploading...' : 'Upload avatar'}
+            <input
+              type="file"
+              accept="image/*"
+              onChange={handleAvatarUpload}
+              disabled={uploading || !activeUserId}
+              className="hidden"
+            />
+          </label>
+          <span className="t-meta text-muted">JPG or PNG (max 2MB)</span>
+        </div>
+      </div>
+
       <Field label="Handle" error={errors.handle}>
         <input
           type="text"
@@ -180,10 +349,12 @@ export default function ProfileForm() {
       {/* Sticky bottom bar */}
       <div className="fixed bottom-[56px] md:bottom-0 left-0 right-0 z-30 bg-surface border-t border-line p-4 flex items-center justify-between max-w-[720px] mx-auto">
         <div className="flex flex-col gap-1">
-          <Button type="submit" variant="primary" disabled>
-            Save
+          <Button type="submit" variant="primary" disabled={saving || !activeUserId}>
+            {saving ? 'Saving...' : 'Save'}
           </Button>
-          <span className="t-meta text-muted">Saving is enabled once you sign in.</span>
+          {!activeUserId && (
+            <span className="t-meta text-muted">Saving is enabled once you sign in.</span>
+          )}
         </div>
 
         <Link href={formData.handle ? `/a/${formData.handle}` : '/profile/edit'}>

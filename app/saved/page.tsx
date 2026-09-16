@@ -1,6 +1,7 @@
-import Link from 'next/link'
-import EmptyState from '@/components/hub/EmptyState'
-import type { SavedRow } from '@/lib/types'
+import { redirect } from 'next/navigation'
+import { createClient } from '@/lib/supabase/server'
+import SavedPipelineView from '@/components/saved/SavedPipelineView'
+import type { SavedRow, HubFeedRow } from '@/lib/types'
 
 interface PipelinePageProps {
   searchParams?: Promise<{ status?: string }>
@@ -10,63 +11,76 @@ export default async function PipelinePage(props: PipelinePageProps) {
   const searchParams = (await props.searchParams) || {}
   const activeStatus = searchParams.status || 'saved'
 
-  // Until Task 04: Saved rows come from DB (currently empty array)
-  const savedRows: SavedRow[] = []
+  const supabase = await createClient()
 
-  const counts: Record<string, number> = {}
-  savedRows.forEach((r) => {
-    counts[r.pipeline_status] = (counts[r.pipeline_status] || 0) + 1
-  })
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
-  const tabs = [
-    { label: 'Saved', status: 'saved' },
-    { label: 'Drafting', status: 'drafting' },
-    { label: 'Submitted', status: 'submitted' },
-    { label: 'Accepted', status: 'accepted' },
-    { label: 'Rejected', status: 'rejected' },
-  ].map((tab) => {
-    const count = counts[tab.status]
+  if (!user) {
+    redirect('/signin?next=/saved')
+  }
+
+  // Fetch user saved opportunities
+  const { data: userSaved } = await supabase
+    .from('user_saved_opportunities')
+    .select('*, opportunities(*, sources(name), markets(display_name))')
+    .eq('user_id', user.id)
+    .order('saved_at', { ascending: false })
+
+  const savedRows: SavedRow[] = (userSaved || []).map((item) => {
+    const opp = item.opportunities as unknown as {
+      opp_id: string
+      title: string
+      slug: string
+      type: string
+      city?: string | null
+      deadline?: string | null
+      funding_min?: number | null
+      funding_max?: number | null
+      currency?: string | null
+      funding_type?: string | null
+      sources?: { name: string } | null
+      markets?: { display_name: string } | null
+    } | null
+
+    let oppData: HubFeedRow | undefined = undefined
+
+    if (opp) {
+      oppData = {
+        ...opp,
+        source_id: opp.opp_id,
+        source_name: opp.sources?.name || 'Unknown Source',
+        city_name: opp.markets?.display_name || null,
+        covers: [],
+        application_fee: 0,
+        eligibility_geo: [],
+        materials_required: [],
+        apply_url: '',
+        status: 'live',
+        discipline_flags: [],
+        is_rolling: !opp.deadline,
+      } as HubFeedRow
+    }
+
     return {
-      ...tab,
-      displayLabel: count !== undefined ? `${tab.label} · ${count}` : tab.label,
+      user_id: item.user_id,
+      opp_id: item.opp_id,
+      pipeline_status: item.pipeline_status,
+      notes: item.notes,
+      saved_at: item.saved_at,
+      opportunity: oppData,
     }
   })
 
   return (
     <div className="max-w-[960px] mx-auto px-4 md:px-6 py-6">
       <h1 className="t-title text-fg mb-4">Pipeline</h1>
-
-      {/* Tabs */}
-      <div className="flex items-center gap-6 overflow-x-auto border-b border-line pb-[1px] no-scrollbar">
-        {tabs.map((tab) => {
-          const isActive = activeStatus === tab.status
-          return (
-            <Link
-              key={tab.status}
-              href={`/saved?status=${tab.status}`}
-              className={`t-meta py-2 whitespace-nowrap border-b-2 transition-colors ${
-                isActive
-                  ? 'text-fg border-fg font-semibold'
-                  : 'text-muted border-transparent hover:text-fg'
-              }`}
-            >
-              {tab.displayLabel}
-            </Link>
-          )
-        })}
-      </div>
-
-      {/* Empty state */}
-      <div className="mt-6">
-        <EmptyState
-          title="Nothing here yet."
-          action={
-            activeStatus === 'saved'
-              ? { label: 'Browse open calls', href: '/hub' }
-              : undefined
-          }
-        />
-      </div>
+      <SavedPipelineView
+        initialRows={savedRows}
+        activeStatus={activeStatus}
+        userId={user.id}
+      />
     </div>
   )
 }
