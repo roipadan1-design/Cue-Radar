@@ -11,14 +11,15 @@
   "disciplines": ["Dance", "Sound"],
   "active_since": 2016,
   "languages": ["Hebrew", "English", "German"],
-  "showreel_url": null,
-  "avatar_url": null,
-  "instagram": null,
+  "showreel_url": "placeholder",
+  "avatar_url": "https://picsum.photos/seed/roipadan-avatar/400/400",
+  "instagram": "https://www.instagram.com/roipadan",
   "website": null,
   "is_public": true,
   "works": [
     { "title": "Somatic Echoes", "kind": "Choreography", "year": 2025 },
     { "title": "Kinetic Drift", "kind": "Live performance", "year": 2024 },
     { "title": "Bodily Feedback", "kind": "Installation", "year": 2023 }
-  ]
+  ],
+  "gallery": ["", "", "", "", "", ""]
 }

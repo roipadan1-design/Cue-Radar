@@ -178,7 +178,7 @@ Workflow: `cron 0 */6 * * *` + `workflow_dispatch`; secrets `SUPABASE_URL, SUPAB
 2. Put the env vars above in Vercel and GitHub. Optionally give the agent `SUPABASE_ACCESS_TOKEN` so it can run migrations; otherwise paste `supabase/migrations/*.sql` into the SQL editor in order.
 3. Create a Google Cloud service account, share the sheet with it (Viewer), paste its JSON into the `GOOGLE_SERVICE_ACCOUNT_JSON` secret.
 4. In the sheet: delete example rows; paste `data/seed/markets.csv`, `vocab.csv`, `sources.csv` into the matching tabs; paste `opportunities_staging.csv` into `opportunities_staging`.
-5. **Verify opportunities**: open each `apply_url`, fix it to the actual call page, fill `deadline`, `verified_at`, set `status=live`, move to `opportunities`. Target ≥60 across Cologne, Berlin, Brussels, Tel Aviv, Vienna, Amsterdam. This is the only way the Hub gets real content.
+5. **Verify opportunities**: open each `apply_url`, fix it to the actual call page, fill `deadline`, `verified_at`, set `status=live`, move to `opportunities`. Target ≥60, focused on the pilot's 5 priority cities (see `docs/PILOT_PLAN.md`): Tel Aviv, Tokyo, Berlin, Vienna, Brussels — decided 2026-09-17, superseding the earlier Cologne/Amsterdam-inclusive list. This is the only way the Hub gets real content.
 6. Trigger the sync Action manually once; confirm the Hub shows rows.
 7. Merge PRs from `rebuild/nextjs` in order; in Vercel confirm Framework Preset = Next.js.
 8. Delete the Firebase project when Phase 3 is merged.

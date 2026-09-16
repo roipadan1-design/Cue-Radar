@@ -49,6 +49,7 @@ export function getSeedVocab(): VocabEntry[] {
     value: r.value,
     label: r.label,
     sort_order: Number(r.sort_order || 0),
+    deprecated: String(r.deprecated || '').toLowerCase() === 'true',
   }))
 }
 
@@ -86,6 +87,7 @@ export function getDemoProfile(): ProfileView {
     },
     is_public: Boolean(json.is_public),
     works: json.works || [],
+    gallery: json.gallery || [],
   }
 }
 
@@ -143,6 +145,7 @@ export function getSeedOpportunitiesStaging(): HubFeedRow[] {
       region: market?.region || null,
       days_left,
       is_rolling,
+      is_demo: false,
     }
   })
 }

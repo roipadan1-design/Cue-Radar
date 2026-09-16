@@ -131,6 +131,18 @@ export default function OpportunityDetailView({
         <div className="t-meta text-muted">Funding</div>
         <div className="t-body text-fg t-num">{fundingText}</div>
 
+        {row.discipline_flags && row.discipline_flags.length > 0 && (
+          <>
+            <div className="t-meta text-muted">Discipline</div>
+            <div className="flex flex-wrap gap-1.5 items-center">
+              {row.discipline_flags.map((code) => {
+                const entry = vocab.find((v) => v.category === 'discipline' && v.value === code)
+                return <Chip key={code}>{entry ? entry.label : code}</Chip>
+              })}
+            </div>
+          </>
+        )}
+
         {row.covers && row.covers.length > 0 && (
           <>
             <div className="t-meta text-muted">Covers</div>

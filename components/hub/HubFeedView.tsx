@@ -3,13 +3,14 @@ import GroupHeader from '@/components/hub/GroupHeader'
 import OpportunityRow from '@/components/hub/OpportunityRow'
 import EmptyState from '@/components/hub/EmptyState'
 import { groupHubRows } from '@/lib/seed'
-import type { HubFeedRow, Profile } from '@/lib/types'
+import type { HubFeedRow, Profile, VocabEntry } from '@/lib/types'
 
 interface HubFeedViewProps {
   rows: HubFeedRow[]
   locked?: boolean
   hasActiveFilters?: boolean
   profile?: Profile | null
+  vocab?: VocabEntry[]
 }
 
 export default function HubFeedView({
@@ -17,6 +18,7 @@ export default function HubFeedView({
   locked = true,
   hasActiveFilters = false,
   profile = null,
+  vocab = [],
 }: HubFeedViewProps) {
   if (rows.length === 0) {
     if (hasActiveFilters) {
@@ -40,9 +42,7 @@ export default function HubFeedView({
 
   const openDeadlinesCount = rows.filter((r) => r.deadline || r.is_rolling).length
   const closingThisWeekCount = closingThisWeek.length
-
-  const limitCount = 8
-  let renderedCount = 0
+  const citiesCount = new Set(rows.map((r) => r.city).filter(Boolean)).size
 
   const groups = [
     { label: 'CLOSING THIS WEEK', rows: closingThisWeek },
@@ -51,58 +51,43 @@ export default function HubFeedView({
     { label: 'ROLLING', rows: rolling },
   ].filter((g) => g.rows.length > 0)
 
+  const metaParts = [`${openDeadlinesCount} open`]
+  if (closingThisWeekCount > 0) {
+    metaParts.push(`${closingThisWeekCount} closing this week`)
+  }
+  metaParts.push(`${citiesCount} ${citiesCount === 1 ? 'city' : 'cities'}`)
+
   return (
     <div className="mt-2">
       <div className="mb-6 flex flex-col gap-1">
         <div className="t-meta text-muted">{todayFormatted}</div>
-        <h1 className="t-display text-[36px] md:text-[64px] text-fg">
-          {openDeadlinesCount} open deadlines
-        </h1>
-        {closingThisWeekCount > 0 && (
-          <div className="t-meta text-muted">
-            {closingThisWeekCount} closing this week
-          </div>
-        )}
+        <h1 className="t-title text-fg">Opportunities</h1>
+        <div className="t-body text-muted">{metaParts.join(' · ')}</div>
       </div>
 
-      {groups.map((group) => {
-        const groupRows = group.rows
-        const groupStart = renderedCount
-        renderedCount += groupRows.length
-
-        return (
-          <div key={group.label} className="mb-6">
-            <GroupHeader label={group.label} count={groupRows.length} />
-            <div>
-              {groupRows.map((row, idx) => {
-                const overallIndex = groupStart + idx
-                const isAtBannerPoint = locked && overallIndex === limitCount
-
-                return (
-                  <div key={row.opp_id}>
-                    {isAtBannerPoint && (
-                      <div className="my-6 p-6 bg-surface text-center">
-                        <h2 className="t-row text-fg">
-                          Sign in to see deadlines, funding and how to apply.
-                        </h2>
-                        <div className="mt-3">
-                          <Link
-                            href="/signin"
-                            className="t-body text-fg underline underline-offset-4 hover:opacity-80"
-                          >
-                            Sign in
-                          </Link>
-                        </div>
-                      </div>
-                    )}
-                    <OpportunityRow row={row} locked={locked} profile={profile} />
-                  </div>
-                )
-              })}
-            </div>
+      {groups.map((group, groupIdx) => (
+        <div key={group.label} className="mb-6">
+          <GroupHeader label={group.label} count={group.rows.length} />
+          <div className="flex flex-col gap-4">
+            {group.rows.map((row) => (
+              <OpportunityRow key={row.opp_id} row={row} locked={locked} profile={profile} vocab={vocab} />
+            ))}
           </div>
-        )
-      })}
+          {locked && groupIdx === 0 && (
+            <div className="mt-4 py-3 text-center">
+              <span className="t-body text-muted">
+                Sign in to save calls and see which ones you&apos;re eligible for.{' '}
+              </span>
+              <Link
+                href="/signin"
+                className="t-body text-fg underline underline-offset-4 hover:opacity-80"
+              >
+                Sign in
+              </Link>
+            </div>
+          )}
+        </div>
+      ))}
     </div>
   )
 }

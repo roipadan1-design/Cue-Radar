@@ -1,22 +1,25 @@
-category,value,label,sort_order
-type,open_call,Open Call,1
-type,residency,Residency,2
-type,grant,Grant / Funding,3
-type,co_production,Co-Production,4
-type,commission,Commission,5
-type,festival_submission,Festival Submission,6
-type,award,Award / Prize,7
-type,lab_workshop,Lab / Workshop,8
-type,audition_job,Audition / Job,9
-type,mentorship,Mentorship,10
-discipline,dance,Contemporary Dance,1
-discipline,choreography,Choreography,2
-discipline,performance,Performance Art,3
-discipline,sound,Experimental Sound,4
-discipline,live_electronics,Live Electronics,5
-discipline,installation,Sound & Light Installation,6
-discipline,interdisciplinary,Interdisciplinary / Hybrid,7
-funding_type,cash_grant,Cash Grant,1
+category,value,label,sort_order,deprecated
+type,open_call,Open Call,1,false
+type,residency,Residency,2,false
+type,grant,Grant / Funding,3,false
+type,co_production,Co-Production,4,false
+type,commission,Commission,5,false
+type,festival_submission,Festival Submission,6,false
+type,award,Award / Prize,7,false
+type,lab_workshop,Lab / Workshop,8,false
+type,audition_job,Audition / Job,9,false
+type,mentorship,Mentorship,10,false
+discipline,sound,Sound,1,false
+discipline,music,Music,2,false
+discipline,performance,Performance,3,false
+discipline,dance,Dance,4,false
+discipline,painting,Painting,5,false
+discipline,sculpture,Sculpture,6,false
+discipline,choreography,Choreography,21,true
+discipline,live_electronics,Live Electronics,22,true
+discipline,installation,Sound & Light Installation,23,true
+discipline,interdisciplinary,Interdisciplinary / Hybrid,24,true
+funding_type,cash_grant,Cash Grant,1,false
 funding_type,artist_fee,Artist Fee,2
 funding_type,stipend,Living Stipend,3
 funding_type,production_budget,Production Budget,4

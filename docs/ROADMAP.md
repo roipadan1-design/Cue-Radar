@@ -16,7 +16,8 @@ This file is the single index of where the project is going. If a task file and 
 | The exact scope of each task | `docs/tasks/TASK_NN_*.md` |
 | Judgment calls made by agents | `docs/DECISIONS.md` |
 | Things only the owner can do | `docs/OWNER_TASKS.md` |
-| Market research | `docs/RESEARCH_market_scan.md` |
+| Competitive landscape and product vision | `docs/RESEARCH_market_scan.md`, `docs/VISION.md` |
+| Trip Radar event-source mapping (23 cities, for Tasks 11–12) | `docs/RESEARCH_trip_radar_sources.md` |
 | Sequence and status of everything | this file |
 
 **Rule going forward:** no task is sent to an agent before its task file is committed to `docs/tasks/`. The chat is not a source of truth.

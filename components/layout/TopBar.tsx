@@ -2,6 +2,7 @@ import Link from 'next/link'
 import Wordmark from '@/components/brand/Wordmark'
 import SignOutButton from '@/components/layout/SignOutButton'
 import { createClient } from '@/lib/supabase/server'
+import { LayoutList, Radar, Bookmark, User } from 'lucide-react'
 
 export default async function TopBar() {
   const supabase = await createClient()
@@ -9,23 +10,32 @@ export default async function TopBar() {
     data: { user },
   } = await supabase.auth.getUser()
 
+  const navItems = [
+    { label: 'Hub', href: '/hub', icon: LayoutList },
+    { label: 'Radar', href: '/radar', icon: Radar },
+    { label: 'Saved', href: '/saved', icon: Bookmark },
+    { label: 'Profile', href: '/profile/edit', icon: User },
+  ]
+
   return (
     <header className="sticky top-0 z-40 h-[52px] bg-surface border-b border-line px-4 md:px-6 flex items-center justify-between">
       <Wordmark />
 
       <div className="flex items-center gap-6">
-        <nav className="hidden md:flex items-center gap-4 t-meta text-muted">
-          <Link href="/hub" className="hover:text-fg transition-colors">
-            Hub
-          </Link>
-          <span className="text-muted">·</span>
-          <Link href="/saved" className="hover:text-fg transition-colors">
-            Pipeline
-          </Link>
-          <span className="text-muted">·</span>
-          <Link href="/profile/edit" className="hover:text-fg transition-colors">
-            Profile
-          </Link>
+        <nav className="hidden md:flex items-center gap-5 t-meta text-muted">
+          {navItems.map((item) => {
+            const Icon = item.icon
+            return (
+              <Link
+                key={item.href}
+                href={item.href}
+                className="flex items-center gap-1.5 hover:text-fg transition-colors"
+              >
+                <Icon size={16} />
+                <span>{item.label}</span>
+              </Link>
+            )
+          })}
         </nav>
 
         {user ? (
@@ -33,7 +43,7 @@ export default async function TopBar() {
         ) : (
           <Link
             href="/signin"
-            className="inline-flex items-center justify-center h-8 px-3 text-fg border border-line-strong rounded-[var(--radius)] t-body font-medium hover:border-fg transition-colors"
+            className="inline-flex items-center justify-center h-8 px-3 text-fg border border-line-strong rounded-[var(--radius)] t-body text-xs font-medium hover:border-fg transition-colors"
           >
             Sign in
           </Link>

@@ -108,6 +108,7 @@ export default async function HubPage(props: HubPageProps) {
         locked={isGuest}
         hasActiveFilters={hasActiveFilters}
         profile={profile}
+        vocab={vocab}
       />
     </div>
   )

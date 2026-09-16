@@ -3,7 +3,12 @@ import { createClient } from '@/lib/supabase/server'
 import ProfileForm from '@/components/profile/ProfileForm'
 import type { Profile } from '@/lib/types'
 
-export default async function ProfileEditPage() {
+interface PageProps {
+  searchParams: Promise<{ welcome?: string }>
+}
+
+export default async function ProfileEditPage({ searchParams }: PageProps) {
+  const { welcome } = await searchParams
   const supabase = await createClient()
   const {
     data: { user },
@@ -21,6 +26,11 @@ export default async function ProfileEditPage() {
 
   return (
     <div className="max-w-[720px] mx-auto px-4 md:px-6 py-6 pb-[120px] md:pb-[80px]">
+      {welcome === '1' && (
+        <div className="mb-6 p-3 bg-surface border border-line rounded-[var(--radius)] t-body text-fg text-sm">
+          Add your disciplines so we can show what you&apos;re eligible for.
+        </div>
+      )}
       <h1 className="t-title text-fg mb-6">Profile</h1>
       <ProfileForm initialProfile={(profile as Profile) || null} userId={user.id} />
     </div>

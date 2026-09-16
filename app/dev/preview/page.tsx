@@ -87,7 +87,7 @@ export default function DevPreviewPage() {
           <Suspense fallback={<div className="h-[69px] py-4 border-b border-line" />}>
             <FilterBar markets={markets} vocab={vocab} />
           </Suspense>
-          <HubFeedView rows={allRows} locked={true} />
+          <HubFeedView rows={allRows} locked={true} vocab={vocab} />
         </div>
       </section>
 
@@ -101,7 +101,7 @@ export default function DevPreviewPage() {
           <Suspense fallback={<div className="h-[69px] py-4 border-b border-line" />}>
             <FilterBar markets={markets} vocab={vocab} />
           </Suspense>
-          <HubFeedView rows={allRows} locked={false} />
+          <HubFeedView rows={allRows} locked={false} vocab={vocab} />
         </div>
       </section>
 
@@ -111,22 +111,22 @@ export default function DevPreviewPage() {
           <span className="t-meta text-muted">DEV PREVIEW · DEADLINE STATES</span>
           <Chip>DRAFT</Chip>
         </div>
-        <div className="border-t border-line pt-4 flex flex-col gap-2">
+        <div className="border-t border-line pt-4 flex flex-col gap-4">
           <div>
             <span className="t-meta text-muted">&gt; 30 Days</span>
-            <OpportunityRow row={rowFar} locked={false} />
+            <OpportunityRow row={rowFar} locked={false} vocab={vocab} />
           </div>
           <div>
             <span className="t-meta text-muted">7 - 30 Days</span>
-            <OpportunityRow row={rowMedium} locked={false} />
+            <OpportunityRow row={rowMedium} locked={false} vocab={vocab} />
           </div>
           <div>
             <span className="t-meta text-muted">&lt; 7 Days (Urgent)</span>
-            <OpportunityRow row={rowUrgent} locked={false} />
+            <OpportunityRow row={rowUrgent} locked={false} vocab={vocab} />
           </div>
           <div>
             <span className="t-meta text-muted">Rolling</span>
-            <OpportunityRow row={rowRolling} locked={false} />
+            <OpportunityRow row={rowRolling} locked={false} vocab={vocab} />
           </div>
         </div>
       </section>
@@ -165,7 +165,7 @@ export default function DevPreviewPage() {
               const r = savedItem.opportunity!
               return (
                 <div key={`pipeline-${r.opp_id}`} className="py-2">
-                  <OpportunityRow row={r} locked={false} />
+                  <OpportunityRow row={r} locked={false} vocab={vocab} />
                   <div className="px-1 mt-1 flex items-center justify-between gap-4">
                     {savedItem.notes ? (
                       <p className="t-body text-muted text-xs line-clamp-1">

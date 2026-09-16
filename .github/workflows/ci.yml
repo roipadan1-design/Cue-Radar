@@ -15,6 +15,7 @@ jobs:
       NEXT_PUBLIC_SUPABASE_URL: https://placeholder.supabase.co
       NEXT_PUBLIC_SUPABASE_ANON_KEY: placeholder-anon-key
       NEXT_PUBLIC_SITE_URL: http://localhost:3000
+      NEXT_PUBLIC_FEEDBACK_EMAIL: feedback@cueradar.com
     steps:
       - uses: actions/checkout@v4
       - uses: actions/setup-node@v4
@@ -44,9 +45,6 @@ jobs:
       - name: No hex colors in TSX
         run: |
           ! grep -rnE "#[0-9A-Fa-f]{6}\b" app components --include=*.tsx --exclude=opengraph-image.tsx || { echo "colors must come from CSS variables"; exit 1; }
-      - name: No deferred features
-        run: |
-          test ! -d app/radar || { echo "app/radar is a deferred feature"; exit 1; }
       - name: No empty source files
         run: |
           empty=$(find app components lib scripts supabase data docs -type f -size 0 2>/dev/null)

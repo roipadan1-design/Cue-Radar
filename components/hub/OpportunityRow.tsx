@@ -1,12 +1,14 @@
 import Link from 'next/link'
+import Chip from '@/components/ui/Chip'
 import { checkEligibility } from '@/lib/fit'
-import type { HubFeedRow, Profile } from '@/lib/types'
+import type { HubFeedRow, Profile, VocabEntry } from '@/lib/types'
 
 interface OpportunityRowProps {
   row: HubFeedRow
   locked?: boolean
   saved?: boolean
   profile?: Profile | null
+  vocab?: VocabEntry[]
 }
 
 export function formatFunding(row: HubFeedRow): string {
@@ -47,41 +49,63 @@ export function formatDeadline(row: HubFeedRow): { text: string; isUrgent: boole
   return { text: row.deadline, isUrgent: false }
 }
 
+/**
+ * The single differentiator tag shown on a card face: whichever of
+ * "funded" or "no fee" is the more decision-relevant fact for this row.
+ * Returns null when neither applies, keeping the tag cap at two.
+ */
+export function getDifferentiatorTag(row: HubFeedRow): string | null {
+  const isFunded =
+    (row.funding_min ?? 0) > 0 ||
+    (row.funding_max ?? 0) > 0 ||
+    ['grant', 'stipend', 'artist_fee', 'salaried'].includes(row.funding_type ?? '')
+  if (isFunded) return 'Funded'
+  if (row.application_fee === 0) return 'No fee'
+  return null
+}
+
 export default function OpportunityRow({
   row,
   locked = false,
   profile = null,
+  vocab = [],
 }: OpportunityRowProps) {
-  const sourceCity = [row.source_name, row.city_name].filter(Boolean).join(' · ')
   const fundingText = formatFunding(row)
   const deadlineInfo = formatDeadline(row)
 
-  // Eligibility badge — only for signed-in users (profile present) on unlocked rows
-  const eligibility = !locked && profile ? checkEligibility(profile, row) : null
+  // Card-face tags — capped at three: discipline, city, one differentiator.
+  const disciplineCode = row.discipline_flags?.[0]
+  const disciplineLabel = disciplineCode
+    ? vocab.find((v) => v.category === 'discipline' && v.value === disciplineCode)?.label ||
+      disciplineCode
+    : null
+  const cityLabel = row.city_name || row.city || null
+  const differentiator = getDifferentiatorTag(row)
 
-  if (locked) {
-    return (
-      <div className="py-4 border-b border-line flex flex-col gap-1.5">
-        <h3 className="t-row text-muted line-clamp-2">{row.title}</h3>
-      </div>
-    )
-  }
+  // Eligibility badge — only for signed-in users (profile present)
+  const eligibility = !locked && profile ? checkEligibility(profile, row) : null
 
   return (
     <Link
       href={`/opportunities/${row.slug}`}
-      className="group block py-4 border-b border-line hover:bg-surface transition-colors"
+      className="block p-4 border border-line rounded-[var(--radius)] bg-bg hover:border-line-strong transition-colors"
     >
-      <div className="flex flex-col gap-1.5">
+      <div className="flex flex-col gap-2">
         <h3 className="t-row text-fg line-clamp-2">{row.title}</h3>
 
+        <div className="t-meta text-muted truncate">{row.source_name}</div>
+
+        {(disciplineLabel || cityLabel || differentiator) && (
+          <div className="flex flex-wrap items-center gap-2">
+            {disciplineLabel && <Chip>{disciplineLabel}</Chip>}
+            {cityLabel && <Chip>{cityLabel}</Chip>}
+            {differentiator && <Chip tone="accent">{differentiator}</Chip>}
+          </div>
+        )}
+
         <div className="flex flex-col md:flex-row md:items-center justify-between gap-1 md:gap-4">
-          <div className="flex items-center gap-2 t-body text-[14px] text-muted min-w-0">
-            <span className="truncate">{sourceCity}</span>
-            <span className="hidden md:inline text-muted">·</span>
-            <span className="hidden md:inline t-num text-[14px] text-fg font-medium">
-              {fundingText}
-            </span>
+          <div className="hidden md:block t-num text-[14px] text-fg font-medium">
+            {fundingText}
           </div>
 
           <div className="flex items-center justify-between md:justify-end gap-2">

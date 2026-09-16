@@ -1,5 +1,6 @@
 import React from 'react'
 import Link from 'next/link'
+import { Instagram } from 'lucide-react'
 import ShareLink from './ShareLink'
 import Button from '@/components/ui/Button'
 import type { ProfileView, Profile } from '@/lib/types'
@@ -42,9 +43,11 @@ export default function PublicProfileView({ profile, isOwner = false }: PublicPr
   const locationsText =
     profile.locations && profile.locations.length > 0 ? profile.locations.join(' · ') : ''
 
-  // Parse showreel embed URL if present
+  // Parse showreel embed URL if present. The dev-only preview fixture uses the
+  // sentinel "placeholder" to render a blank black player instead of real content.
+  const showreelPlaceholder = profile.showreel_url === 'placeholder'
   let embedUrl = ''
-  if (profile.showreel_url) {
+  if (profile.showreel_url && !showreelPlaceholder) {
     try {
       const url = new URL(profile.showreel_url)
       if (url.hostname.includes('youtube.com') || url.hostname.includes('youtu.be')) {
@@ -60,6 +63,7 @@ export default function PublicProfileView({ profile, isOwner = false }: PublicPr
   }
 
   const bioParagraphs = profile.bio ? profile.bio.split('\n\n') : []
+  const galleryImages = profile.gallery && profile.gallery.length > 0 ? profile.gallery : []
 
   // Facts rows calculation
   const factsRows: { label: string; value: string }[] = []
@@ -75,9 +79,6 @@ export default function PublicProfileView({ profile, isOwner = false }: PublicPr
     factsRows.push({ label: 'Available from', value: formatDateFull(profile.available_from) })
   }
 
-  // Demo gallery rule: show for handle 'roipadan' or if images exist
-  const isDemo = profile.handle === 'roipadan'
-
   return (
     <div className="max-w-[720px] mx-auto px-4 md:px-6 py-8 flex flex-col gap-[48px]">
       {/* 1. Header */}
@@ -87,10 +88,10 @@ export default function PublicProfileView({ profile, isOwner = false }: PublicPr
           <img
             src={profile.avatar_url}
             alt={profile.full_name || 'Profile avatar'}
-            className="w-[88px] h-[88px] rounded-[var(--radius)] object-cover bg-surface flex-shrink-0"
+            className="w-[112px] h-[112px] md:w-[128px] md:h-[128px] rounded-[var(--radius)] object-cover bg-surface flex-shrink-0"
           />
         ) : (
-          <div className="w-[88px] h-[88px] rounded-[var(--radius)] bg-surface border border-line flex items-center justify-center flex-shrink-0">
+          <div className="w-[112px] h-[112px] md:w-[128px] md:h-[128px] rounded-[var(--radius)] bg-surface border border-line flex items-center justify-center flex-shrink-0">
             {initials ? (
               <span className="t-title text-fg select-none">{initials}</span>
             ) : null}
@@ -99,7 +100,7 @@ export default function PublicProfileView({ profile, isOwner = false }: PublicPr
 
         <div className="flex flex-col gap-1.5">
           {profile.full_name && (
-            <h1 className="t-display text-[36px] md:text-[48px] text-fg leading-none">
+            <h1 className="t-display text-[40px] md:text-[64px] text-fg leading-none">
               {profile.full_name}
             </h1>
           )}
@@ -176,6 +177,11 @@ export default function PublicProfileView({ profile, isOwner = false }: PublicPr
       )}
 
       {/* 7. Showreel */}
+      {showreelPlaceholder && (
+        <div className="w-full aspect-video bg-bg rounded-[var(--radius)] border border-line flex items-end p-3">
+          <span className="t-meta text-muted">SHOWREEL</span>
+        </div>
+      )}
       {embedUrl && (
         <div className="w-full aspect-video bg-surface rounded-[var(--radius)] overflow-hidden border border-line">
           <iframe
@@ -189,18 +195,28 @@ export default function PublicProfileView({ profile, isOwner = false }: PublicPr
       )}
 
       {/* 8. Gallery */}
-      {isDemo && (
+      {galleryImages.length > 0 && (
         <div className="flex flex-col gap-3">
           <div className="t-meta text-muted">GALLERY</div>
-          <div className="grid grid-cols-2 gap-3">
-            {[1, 2, 3, 4].map((slot) => (
-              <div
-                key={slot}
-                className="aspect-square bg-surface border border-line rounded-[var(--radius)] flex items-center justify-center"
-              >
-                <span className="t-meta text-muted">IMAGE</span>
-              </div>
-            ))}
+          <div className="grid grid-cols-2 md:grid-cols-3 gap-3">
+            {galleryImages.map((src, idx) =>
+              src ? (
+                /* eslint-disable-next-line @next/next/no-img-element */
+                <img
+                  key={src + idx}
+                  src={src}
+                  alt={`${profile.full_name || 'Artist'} — gallery image ${idx + 1}`}
+                  loading="lazy"
+                  className="aspect-square w-full object-cover border border-line rounded-[var(--radius)]"
+                />
+              ) : (
+                <div
+                  key={`empty-${idx}`}
+                  aria-hidden
+                  className="aspect-square w-full bg-bg border border-line rounded-[var(--radius)]"
+                />
+              )
+            )}
           </div>
         </div>
       )}
@@ -213,9 +229,11 @@ export default function PublicProfileView({ profile, isOwner = false }: PublicPr
               href={profile.social_links.instagram}
               target="_blank"
               rel="noopener noreferrer"
-              className="t-body text-fg hover:underline hover:underline-offset-4"
+              aria-label="Instagram"
+              title="Instagram"
+              className="text-fg hover:text-muted"
             >
-              Instagram
+              <Instagram size={20} strokeWidth={1.75} />
             </a>
           )}
           {profile.social_links.website && (
