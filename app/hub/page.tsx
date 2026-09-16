@@ -2,6 +2,7 @@ import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import FilterBar from '@/components/hub/FilterBar'
 import HubFeedView from '@/components/hub/HubFeedView'
+import { effortLevel } from '@/lib/effort'
 import type { HubFeedRow, Market, Profile, VocabEntry } from '@/lib/types'
 
 interface HubPageProps {
@@ -13,6 +14,8 @@ interface HubPageProps {
     funded?: string
     covers_housing?: string
     covers_travel?: string
+    q?: string
+    effort?: string
   }>
 }
 
@@ -25,9 +28,11 @@ export default async function HubPage(props: HubPageProps) {
   const funded = searchParams.funded === 'true'
   const coversHousing = searchParams.covers_housing === 'true'
   const coversTravel = searchParams.covers_travel === 'true'
+  const q = searchParams.q?.trim()
+  const effort = searchParams.effort
 
   const hasActiveFilters = Boolean(
-    city || type || discipline || noFee || funded || coversHousing || coversTravel,
+    city || type || discipline || noFee || funded || coversHousing || coversTravel || q || effort,
   )
 
   const supabase = await createClient()
@@ -64,6 +69,11 @@ export default async function HubPage(props: HubPageProps) {
     .select('*')
     .order('deadline', { ascending: true, nullsFirst: false })
 
+  // Check demo flag
+  if (process.env.NEXT_PUBLIC_SHOW_DEMO === 'false') {
+    query = query.or('is_demo.eq.false,is_demo.is.null')
+  }
+
   if (city) {
     query = query.eq('city', city)
   }
@@ -74,7 +84,6 @@ export default async function HubPage(props: HubPageProps) {
     query = query.contains('discipline_flags', [discipline])
   }
 
-  // Deliverable A: financial & eligibility boolean filters
   if (noFee) {
     query = query.eq('application_fee', 0)
   }
@@ -90,12 +99,20 @@ export default async function HubPage(props: HubPageProps) {
     query = query.contains('covers', ['travel'])
   }
 
+  if (q) {
+    query = query.or(`title.ilike.%${q}%,source_name.ilike.%${q}%,city_name.ilike.%${q}%`)
+  }
+
   const { data: rowsData, error } = await query
   if (error) {
     console.error('Error querying hub_feed:', error.message)
   }
 
-  const rows = (rowsData || []) as HubFeedRow[]
+  let rows = (rowsData || []) as HubFeedRow[]
+
+  if (effort === 'light') {
+    rows = rows.filter((r) => effortLevel(r.materials_required) === 'light')
+  }
 
   return (
     <div className="max-w-[960px] mx-auto px-4 md:px-6 py-6">
@@ -108,6 +125,7 @@ export default async function HubPage(props: HubPageProps) {
         locked={isGuest}
         hasActiveFilters={hasActiveFilters}
         profile={profile}
+        vocab={vocab}
       />
     </div>
   )

@@ -2,21 +2,23 @@ import Link from 'next/link'
 import GroupHeader from '@/components/hub/GroupHeader'
 import OpportunityRow from '@/components/hub/OpportunityRow'
 import EmptyState from '@/components/hub/EmptyState'
-import { groupHubRows } from '@/lib/seed'
-import type { HubFeedRow, Profile } from '@/lib/types'
+import { groupHubRows } from '@/lib/hub'
+import type { HubFeedRow, Profile, VocabEntry } from '@/lib/types'
 
 interface HubFeedViewProps {
   rows: HubFeedRow[]
   locked?: boolean
   hasActiveFilters?: boolean
   profile?: Profile | null
+  vocab?: VocabEntry[]
 }
 
 export default function HubFeedView({
   rows,
-  locked = true,
+  locked = false,
   hasActiveFilters = false,
   profile = null,
+  vocab = [],
 }: HubFeedViewProps) {
   if (rows.length === 0) {
     if (hasActiveFilters) {
@@ -38,11 +40,17 @@ export default function HubFeedView({
     month: 'long',
   }).format(new Date())
 
-  const openDeadlinesCount = rows.filter((r) => r.deadline || r.is_rolling).length
+  const openCount = rows.filter((r) => r.deadline || r.is_rolling).length
   const closingThisWeekCount = closingThisWeek.length
+  const citiesCount = new Set(rows.map((r) => r.city).filter(Boolean)).size
 
-  const limitCount = 8
-  let renderedCount = 0
+  const metaCounts = [
+    `${openCount} open`,
+    closingThisWeekCount > 0 ? `${closingThisWeekCount} closing this week` : null,
+    `${citiesCount} ${citiesCount === 1 ? 'city' : 'cities'}`,
+  ]
+    .filter(Boolean)
+    .join('  ·  ')
 
   const groups = [
     { label: 'CLOSING THIS WEEK', rows: closingThisWeek },
@@ -52,54 +60,50 @@ export default function HubFeedView({
   ].filter((g) => g.rows.length > 0)
 
   return (
-    <div className="mt-2">
+    <div className="mt-4">
+      {/* Header */}
       <div className="mb-6 flex flex-col gap-1">
         <div className="t-meta text-muted">{todayFormatted}</div>
-        <h1 className="t-display text-[36px] md:text-[64px] text-fg">
-          {openDeadlinesCount} open deadlines
+        <h1 className="t-title text-fg text-2xl md:text-3xl font-semibold">
+          Opportunities
         </h1>
-        {closingThisWeekCount > 0 && (
-          <div className="t-meta text-muted">
-            {closingThisWeekCount} closing this week
-          </div>
-        )}
+        <div className="t-body text-muted text-sm">{metaCounts}</div>
       </div>
 
-      {groups.map((group) => {
+      {groups.map((group, groupIdx) => {
         const groupRows = group.rows
-        const groupStart = renderedCount
-        renderedCount += groupRows.length
 
         return (
           <div key={group.label} className="mb-6">
             <GroupHeader label={group.label} count={groupRows.length} />
             <div>
-              {groupRows.map((row, idx) => {
-                const overallIndex = groupStart + idx
-                const isAtBannerPoint = locked && overallIndex === limitCount
-
-                return (
-                  <div key={row.opp_id}>
-                    {isAtBannerPoint && (
-                      <div className="my-6 p-6 bg-surface text-center">
-                        <h2 className="t-row text-fg">
-                          Sign in to see deadlines, funding and how to apply.
-                        </h2>
-                        <div className="mt-3">
-                          <Link
-                            href="/signin"
-                            className="t-body text-fg underline underline-offset-4 hover:opacity-80"
-                          >
-                            Sign in
-                          </Link>
-                        </div>
-                      </div>
-                    )}
-                    <OpportunityRow row={row} locked={locked} profile={profile} />
-                  </div>
-                )
-              })}
+              {groupRows.map((row) => (
+                <OpportunityRow
+                  key={row.opp_id}
+                  row={row}
+                  locked={false}
+                  profile={profile}
+                  vocab={vocab}
+                />
+              ))}
             </div>
+
+            {/* Guest mode inline banner after the first group */}
+            {locked && groupIdx === 0 && (
+              <div className="my-6 p-4 bg-surface border border-line text-center rounded-[var(--radius)]">
+                <div className="t-body text-fg text-sm">
+                  Sign in to save calls and see which ones you&apos;re eligible for.
+                </div>
+                <div className="mt-2">
+                  <Link
+                    href="/signin"
+                    className="t-meta text-fg underline underline-offset-4 hover:opacity-80"
+                  >
+                    Sign in
+                  </Link>
+                </div>
+              </div>
+            )}
           </div>
         )
       })}
