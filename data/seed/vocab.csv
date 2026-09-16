@@ -1,0 +1,44 @@
+category,value,label,sort_order
+type,open_call,Open Call,1
+type,residency,Residency,2
+type,grant,Grant / Funding,3
+type,co_production,Co-Production,4
+type,commission,Commission,5
+type,festival_submission,Festival Submission,6
+type,award,Award / Prize,7
+type,lab_workshop,Lab / Workshop,8
+type,audition_job,Audition / Job,9
+type,mentorship,Mentorship,10
+discipline,dance,Contemporary Dance,1
+discipline,choreography,Choreography,2
+discipline,performance,Performance Art,3
+discipline,sound,Experimental Sound,4
+discipline,live_electronics,Live Electronics,5
+discipline,installation,Sound & Light Installation,6
+discipline,interdisciplinary,Interdisciplinary / Hybrid,7
+funding_type,cash_grant,Cash Grant,1
+funding_type,artist_fee,Artist Fee,2
+funding_type,stipend,Living Stipend,3
+funding_type,production_budget,Production Budget,4
+funding_type,in_kind,In-Kind Support,5
+funding_type,none,Unfunded,6
+covers,housing,Housing / Accommodation,1
+covers,travel,Travel Expenses,2
+covers,studio,Studio Space,3
+covers,tech,Technical Equipment,4
+covers,mentorship,Mentorship / Dramaturgy,5
+covers,per_diem,Per Diem,6
+covers,presentation,Public Presentation,7
+career_stage,emerging,Emerging,1
+career_stage,mid,Mid-Career,2
+career_stage,established,Established,3
+career_stage,any,Any Stage,4
+region,DACH,"DACH (Germany, Austria, Switzerland)",1
+region,Benelux,"Benelux (Belgium, Netherlands, Luxembourg)",2
+region,France,France,3
+region,Nordics,Nordics,4
+region,Med,Mediterranean & Southern Europe,5
+region,CEE,Central & Eastern Europe,6
+region,Caucasus,Caucasus,7
+region,East_Asia,East Asia,8
+region,remote,Remote / Global,9
