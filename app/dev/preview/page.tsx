@@ -16,7 +16,10 @@ import {
 import type { Profile, SavedRow } from '@/lib/types'
 
 export default function DevPreviewPage() {
-  if (process.env.NODE_ENV === 'production') {
+  // NODE_ENV is 'production' on every Vercel build, including previews —
+  // gate on VERCEL_ENV instead so this stays visible on preview deployments
+  // for review, and only 404s on the real production domain.
+  if (process.env.VERCEL_ENV === 'production') {
     notFound()
   }
 
