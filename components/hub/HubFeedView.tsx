@@ -3,16 +3,31 @@ import GroupHeader from '@/components/hub/GroupHeader'
 import OpportunityRow from '@/components/hub/OpportunityRow'
 import EmptyState from '@/components/hub/EmptyState'
 import { groupHubRows } from '@/lib/seed'
-import type { HubFeedRow } from '@/lib/types'
+import type { HubFeedRow, Profile } from '@/lib/types'
 
 interface HubFeedViewProps {
   rows: HubFeedRow[]
   locked?: boolean
+  hasActiveFilters?: boolean
+  profile?: Profile | null
 }
 
-export default function HubFeedView({ rows, locked = true }: HubFeedViewProps) {
+export default function HubFeedView({
+  rows,
+  locked = true,
+  hasActiveFilters = false,
+  profile = null,
+}: HubFeedViewProps) {
   if (rows.length === 0) {
-    return <EmptyState title="No open calls match these filters." action={{ label: 'Reset', href: '/hub' }} />
+    if (hasActiveFilters) {
+      return (
+        <EmptyState
+          title="No open calls match these filters."
+          action={{ label: 'Reset', href: '/hub' }}
+        />
+      )
+    }
+    return <EmptyState title="The feed is being curated — check back soon." />
   }
 
   const { closingThisWeek, thisMonth, later, rolling } = groupHubRows(rows)
@@ -61,7 +76,7 @@ export default function HubFeedView({ rows, locked = true }: HubFeedViewProps) {
             <div>
               {groupRows.map((row, idx) => {
                 const overallIndex = groupStart + idx
-                const isAtBannerPoint = overallIndex === limitCount
+                const isAtBannerPoint = locked && overallIndex === limitCount
 
                 return (
                   <div key={row.opp_id}>
@@ -80,7 +95,7 @@ export default function HubFeedView({ rows, locked = true }: HubFeedViewProps) {
                         </div>
                       </div>
                     )}
-                    <OpportunityRow row={row} locked={locked} />
+                    <OpportunityRow row={row} locked={locked} profile={profile} />
                   </div>
                 )
               })}

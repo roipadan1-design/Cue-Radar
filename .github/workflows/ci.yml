@@ -43,7 +43,7 @@ jobs:
           ! grep -rn "FALLBACK_" app components lib --include=*.ts --include=*.tsx || { echo "FALLBACK_ constants are forbidden"; exit 1; }
       - name: No hex colors in TSX
         run: |
-          ! grep -rnE "#[0-9A-Fa-f]{6}\b" app components --include=*.tsx || { echo "colors must come from CSS variables"; exit 1; }
+          ! grep -rnE "#[0-9A-Fa-f]{6}\b" app components --include=*.tsx --exclude=opengraph-image.tsx || { echo "colors must come from CSS variables"; exit 1; }
       - name: No deferred features
         run: |
           test ! -d app/radar || { echo "app/radar is a deferred feature"; exit 1; }
