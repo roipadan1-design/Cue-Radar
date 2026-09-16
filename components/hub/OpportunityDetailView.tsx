@@ -1,12 +1,15 @@
 import Link from 'next/link'
 import Button from '@/components/ui/Button'
 import Chip from '@/components/ui/Chip'
+import SaveOpportunityButton from '@/components/hub/SaveOpportunityButton'
 import { formatFunding, formatDeadline } from '@/components/hub/OpportunityRow'
 import type { HubFeedRow, VocabEntry } from '@/lib/types'
 
 interface OpportunityDetailViewProps {
   row: HubFeedRow
   vocab?: VocabEntry[]
+  isSaved?: boolean
+  userId?: string
 }
 
 function formatVerifiedDate(dateStr?: string | null): string {
@@ -19,7 +22,12 @@ function formatVerifiedDate(dateStr?: string | null): string {
   }
 }
 
-export default function OpportunityDetailView({ row, vocab = [] }: OpportunityDetailViewProps) {
+export default function OpportunityDetailView({
+  row,
+  vocab = [],
+  isSaved = false,
+  userId,
+}: OpportunityDetailViewProps) {
   let hostname = ''
   try {
     hostname = new URL(row.apply_url).hostname.replace(/^www\./, '')
@@ -119,11 +127,22 @@ export default function OpportunityDetailView({ row, vocab = [] }: OpportunityDe
           <a href={row.apply_url} target="_blank" rel="noopener noreferrer">
             <Button variant="primary">Apply on {hostname}</Button>
           </a>
-          <Button variant="secondary">Save</Button>
+          <SaveOpportunityButton
+            oppId={row.opp_id}
+            slug={row.slug}
+            initialSaved={isSaved}
+            userId={userId}
+          />
         </div>
-        <Button variant="ghost" disabled>
-          Add to calendar
-        </Button>
+        {row.deadline ? (
+          <a href={`/opportunities/${row.slug}/ics`} download={`${row.slug}.ics`}>
+            <Button variant="ghost">Add to calendar</Button>
+          </a>
+        ) : (
+          <Button variant="ghost" disabled>
+            Add to calendar (Rolling)
+          </Button>
+        )}
       </div>
 
       {/* 5. Summary */}
@@ -154,7 +173,12 @@ export default function OpportunityDetailView({ row, vocab = [] }: OpportunityDe
             Apply on {hostname}
           </Button>
         </a>
-        <Button variant="secondary">Save</Button>
+        <SaveOpportunityButton
+          oppId={row.opp_id}
+          slug={row.slug}
+          initialSaved={isSaved}
+          userId={userId}
+        />
       </div>
     </div>
   )

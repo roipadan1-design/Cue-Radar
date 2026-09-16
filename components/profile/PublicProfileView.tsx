@@ -1,5 +1,7 @@
 import React from 'react'
+import Link from 'next/link'
 import ShareLink from './ShareLink'
+import Button from '@/components/ui/Button'
 import type { ProfileView, Profile } from '@/lib/types'
 
 interface PublicProfileViewProps {
@@ -35,7 +37,7 @@ function getInitials(name?: string): string {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
 }
 
-export default function PublicProfileView({ profile }: PublicProfileViewProps) {
+export default function PublicProfileView({ profile, isOwner = false }: PublicProfileViewProps) {
   const initials = getInitials(profile.full_name)
   const locationsText =
     profile.locations && profile.locations.length > 0 ? profile.locations.join(' · ') : ''
@@ -125,8 +127,13 @@ export default function PublicProfileView({ profile }: PublicProfileViewProps) {
       </div>
 
       {/* 3. Actions */}
-      <div>
+      <div className="flex items-center gap-3">
         <ShareLink />
+        {isOwner && (
+          <Link href="/profile/edit">
+            <Button variant="secondary">Edit profile</Button>
+          </Link>
+        )}
       </div>
 
       {/* 4. Bio */}

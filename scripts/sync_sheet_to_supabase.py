@@ -206,12 +206,19 @@ def main():
     print(f"Starting Sheet to Supabase sync pipeline (dry-run: {args.dry_run})...")
 
     sheet_id = os.environ.get("GOOGLE_SHEETS_ID")
+    if not sheet_id and os.environ.get("GOOGLE_SHEET_URL"):
+        sheet_url = os.environ.get("GOOGLE_SHEET_URL", "")
+        if "/d/" in sheet_url:
+            sheet_id = sheet_url.split("/d/")[1].split("/")[0]
+        else:
+            sheet_id = sheet_url
+
     service_acc_json = os.environ.get("GOOGLE_SERVICE_ACCOUNT_JSON")
     supabase_url = os.environ.get("SUPABASE_URL")
     supabase_key = os.environ.get("SUPABASE_SERVICE_ROLE_KEY")
 
     if not sheet_id:
-        print("GOOGLE_SHEETS_ID is required.")
+        print("GOOGLE_SHEETS_ID or GOOGLE_SHEET_URL is required.")
         sys.exit(1)
 
     if not args.dry_run and not (supabase_url and supabase_key):
