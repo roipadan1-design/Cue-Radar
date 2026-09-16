@@ -9,7 +9,7 @@ interface DeadlineChipProps {
 export function DeadlineChip({ deadline, daysLeft, isRolling }: DeadlineChipProps) {
   if (isRolling || !deadline) {
     return (
-      <span className="inline-flex items-center px-2 py-0.5 text-xs font-mono border border-[#26262A] text-[#EDEDED] bg-[#141416]">
+      <span className="inline-flex items-center px-2 py-0.5 text-xs border border-gray-800 text-gray-200 bg-gray-950">
         Rolling
       </span>
     );
@@ -17,7 +17,7 @@ export function DeadlineChip({ deadline, daysLeft, isRolling }: DeadlineChipProp
 
   if (daysLeft === null) {
     return (
-      <span className="inline-flex items-center px-2 py-0.5 text-xs font-mono border border-[#26262A] text-[#8A8A93] bg-[#141416]">
+      <span className="inline-flex items-center px-2 py-0.5 text-xs border border-gray-800 text-gray-400 bg-gray-950">
         {deadline}
       </span>
     );
@@ -25,7 +25,7 @@ export function DeadlineChip({ deadline, daysLeft, isRolling }: DeadlineChipProp
 
   if (daysLeft < 0) {
     return (
-      <span className="inline-flex items-center px-2 py-0.5 text-xs font-mono border border-[#26262A] text-[#8A8A93] line-through bg-[#141416]">
+      <span className="inline-flex items-center px-2 py-0.5 text-xs border border-gray-800 text-gray-400 line-through bg-gray-950">
         Expired ({deadline})
       </span>
     );
@@ -33,7 +33,7 @@ export function DeadlineChip({ deadline, daysLeft, isRolling }: DeadlineChipProp
 
   if (daysLeft < 7) {
     return (
-      <span className="inline-flex items-center px-2 py-0.5 text-xs font-mono border border-[#FF5A3C] text-[#FF5A3C] bg-[#FF5A3C]/10 font-bold">
+      <span className="inline-flex items-center px-2 py-0.5 text-xs border border-red-500 text-red-500 bg-red-500/10 font-bold">
         {daysLeft}d left ({deadline})
       </span>
     );
@@ -41,14 +41,14 @@ export function DeadlineChip({ deadline, daysLeft, isRolling }: DeadlineChipProp
 
   if (daysLeft <= 30) {
     return (
-      <span className="inline-flex items-center px-2 py-0.5 text-xs font-mono border border-[#D7FF3F] text-[#D7FF3F] bg-[#D7FF3F]/10 font-bold">
+      <span className="inline-flex items-center px-2 py-0.5 text-xs border border-purple-400 text-purple-400 bg-purple-400/10 font-bold">
         {daysLeft}d left ({deadline})
       </span>
     );
   }
 
   return (
-    <span className="inline-flex items-center px-2 py-0.5 text-xs font-mono border border-[#26262A] text-[#EDEDED] bg-[#141416]">
+    <span className="inline-flex items-center px-2 py-0.5 text-xs border border-gray-800 text-gray-200 bg-gray-950">
       {daysLeft}d left ({deadline})
     </span>
   );
