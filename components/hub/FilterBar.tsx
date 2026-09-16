@@ -10,6 +10,15 @@ interface FilterBarProps {
   vocab: VocabEntry[]
 }
 
+const BOOL_FILTERS = [
+  { key: 'no_fee', label: 'No fee' },
+  { key: 'funded', label: 'Funded' },
+  { key: 'covers_housing', label: 'Housing' },
+  { key: 'covers_travel', label: 'Travel' },
+] as const
+
+type BoolKey = (typeof BOOL_FILTERS)[number]['key']
+
 export default function FilterBar({ markets, vocab }: FilterBarProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
@@ -19,7 +28,17 @@ export default function FilterBar({ markets, vocab }: FilterBarProps) {
   const currentType = searchParams.get('type') || ''
   const currentDiscipline = searchParams.get('discipline') || ''
 
-  const activeCount = [currentCity, currentType, currentDiscipline].filter(Boolean).length
+  const boolValues: Record<BoolKey, boolean> = {
+    no_fee: searchParams.get('no_fee') === 'true',
+    funded: searchParams.get('funded') === 'true',
+    covers_housing: searchParams.get('covers_housing') === 'true',
+    covers_travel: searchParams.get('covers_travel') === 'true',
+  }
+
+  const activeBoolCount = Object.values(boolValues).filter(Boolean).length
+  const activeCount =
+    [currentCity, currentType, currentDiscipline].filter(Boolean).length +
+    activeBoolCount
 
   const typeOptions = vocab.filter((v) => v.category === 'type')
   const disciplineOptions = vocab.filter((v) => v.category === 'discipline')
@@ -34,13 +53,96 @@ export default function FilterBar({ markets, vocab }: FilterBarProps) {
     router.push(`/hub?${params.toString()}`)
   }
 
+  function toggleBool(key: BoolKey) {
+    const params = new URLSearchParams(searchParams.toString())
+    if (boolValues[key]) {
+      params.delete(key)
+    } else {
+      params.set(key, 'true')
+    }
+    router.push(`/hub?${params.toString()}`)
+  }
+
   function handleReset() {
     router.push('/hub')
     setIsSheetOpen(false)
   }
 
   return (
-    <div className="py-4 border-b border-line flex items-center justify-between">
+    <div className="py-4 border-b border-line">
+      {/* Desktop layout */}
+      <div className="hidden md:flex flex-col gap-3">
+        {/* Row 1: selects */}
+        <div className="flex items-center gap-4">
+          <select
+            value={currentCity}
+            onChange={(e) => updateParam('city', e.target.value)}
+            className="bg-surface border border-line rounded-[var(--radius)] h-9 px-3 t-body text-xs text-fg focus:outline-none focus:border-fg"
+          >
+            <option value="">All cities</option>
+            {markets.map((m) => (
+              <option key={m.slug} value={m.slug}>
+                {m.display_name}
+              </option>
+            ))}
+          </select>
+
+          <select
+            value={currentType}
+            onChange={(e) => updateParam('type', e.target.value)}
+            className="bg-surface border border-line rounded-[var(--radius)] h-9 px-3 t-body text-xs text-fg focus:outline-none focus:border-fg"
+          >
+            <option value="">All types</option>
+            {typeOptions.map((t) => (
+              <option key={t.value} value={t.value}>
+                {t.label}
+              </option>
+            ))}
+          </select>
+
+          <select
+            value={currentDiscipline}
+            onChange={(e) => updateParam('discipline', e.target.value)}
+            className="bg-surface border border-line rounded-[var(--radius)] h-9 px-3 t-body text-xs text-fg focus:outline-none focus:border-fg"
+          >
+            <option value="">All disciplines</option>
+            {disciplineOptions.map((d) => (
+              <option key={d.value} value={d.value}>
+                {d.label}
+              </option>
+            ))}
+          </select>
+
+          {activeCount > 0 && (
+            <button
+              type="button"
+              onClick={handleReset}
+              className="t-meta text-muted hover:text-fg underline underline-offset-4"
+            >
+              Reset
+            </button>
+          )}
+        </div>
+
+        {/* Row 2: boolean toggle pills */}
+        <div className="flex items-center gap-2">
+          {BOOL_FILTERS.map(({ key, label }) => (
+            <button
+              key={key}
+              type="button"
+              onClick={() => toggleBool(key)}
+              className={`h-7 px-3 rounded-[var(--radius)] t-meta transition-colors border ${
+                boolValues[key]
+                  ? 'bg-accent text-bg border-accent'
+                  : 'bg-transparent text-muted border-line hover:border-fg hover:text-fg'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+      </div>
+
       {/* Mobile filter button */}
       <div className="md:hidden flex items-center gap-3">
         <button
@@ -50,58 +152,6 @@ export default function FilterBar({ markets, vocab }: FilterBarProps) {
         >
           {activeCount > 0 ? `Filter · ${activeCount}` : 'Filter'}
         </button>
-        {activeCount > 0 && (
-          <button
-            type="button"
-            onClick={handleReset}
-            className="t-meta text-muted hover:text-fg underline underline-offset-4"
-          >
-            Reset
-          </button>
-        )}
-      </div>
-
-      {/* Desktop inline selects */}
-      <div className="hidden md:flex items-center gap-4">
-        <select
-          value={currentCity}
-          onChange={(e) => updateParam('city', e.target.value)}
-          className="bg-surface border border-line rounded-[var(--radius)] h-9 px-3 t-body text-xs text-fg focus:outline-none focus:border-fg"
-        >
-          <option value="">All cities</option>
-          {markets.map((m) => (
-            <option key={m.slug} value={m.slug}>
-              {m.display_name}
-            </option>
-          ))}
-        </select>
-
-        <select
-          value={currentType}
-          onChange={(e) => updateParam('type', e.target.value)}
-          className="bg-surface border border-line rounded-[var(--radius)] h-9 px-3 t-body text-xs text-fg focus:outline-none focus:border-fg"
-        >
-          <option value="">All types</option>
-          {typeOptions.map((t) => (
-            <option key={t.value} value={t.value}>
-              {t.label}
-            </option>
-          ))}
-        </select>
-
-        <select
-          value={currentDiscipline}
-          onChange={(e) => updateParam('discipline', e.target.value)}
-          className="bg-surface border border-line rounded-[var(--radius)] h-9 px-3 t-body text-xs text-fg focus:outline-none focus:border-fg"
-        >
-          <option value="">All disciplines</option>
-          {disciplineOptions.map((d) => (
-            <option key={d.value} value={d.value}>
-              {d.label}
-            </option>
-          ))}
-        </select>
-
         {activeCount > 0 && (
           <button
             type="button"
@@ -162,6 +212,26 @@ export default function FilterBar({ markets, vocab }: FilterBarProps) {
                 </option>
               ))}
             </select>
+          </div>
+
+          <div className="flex flex-col gap-1.5">
+            <label className="t-meta text-muted">Financial</label>
+            <div className="flex flex-wrap gap-2">
+              {BOOL_FILTERS.map(({ key, label }) => (
+                <button
+                  key={key}
+                  type="button"
+                  onClick={() => toggleBool(key)}
+                  className={`h-9 px-3 rounded-[var(--radius)] t-meta transition-colors border ${
+                    boolValues[key]
+                      ? 'bg-accent text-bg border-accent'
+                      : 'bg-transparent text-muted border-line'
+                  }`}
+                >
+                  {label}
+                </button>
+              ))}
+            </div>
           </div>
 
           <div className="flex items-center justify-between pt-4 border-t border-line">

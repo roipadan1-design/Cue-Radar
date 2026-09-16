@@ -1,10 +1,12 @@
 import Link from 'next/link'
-import type { HubFeedRow } from '@/lib/types'
+import { checkEligibility } from '@/lib/fit'
+import type { HubFeedRow, Profile } from '@/lib/types'
 
 interface OpportunityRowProps {
   row: HubFeedRow
   locked?: boolean
   saved?: boolean
+  profile?: Profile | null
 }
 
 export function formatFunding(row: HubFeedRow): string {
@@ -45,10 +47,17 @@ export function formatDeadline(row: HubFeedRow): { text: string; isUrgent: boole
   return { text: row.deadline, isUrgent: false }
 }
 
-export default function OpportunityRow({ row, locked = false }: OpportunityRowProps) {
+export default function OpportunityRow({
+  row,
+  locked = false,
+  profile = null,
+}: OpportunityRowProps) {
   const sourceCity = [row.source_name, row.city_name].filter(Boolean).join(' · ')
   const fundingText = formatFunding(row)
   const deadlineInfo = formatDeadline(row)
+
+  // Eligibility badge — only for signed-in users (profile present) on unlocked rows
+  const eligibility = !locked && profile ? checkEligibility(profile, row) : null
 
   if (locked) {
     return (
@@ -79,10 +88,16 @@ export default function OpportunityRow({ row, locked = false }: OpportunityRowPr
             <span className="md:hidden t-num text-[14px] text-fg font-medium">
               {fundingText}
             </span>
+            {eligibility && (
+              <span
+                className={`t-meta ${eligibility.isEligible ? 'text-accent' : 'text-muted'}`}
+                title={eligibility.reasons.join(' · ')}
+              >
+                {eligibility.isEligible ? 'Eligible ✓' : 'Check terms'}
+              </span>
+            )}
             <span
-              className={`t-meta ${
-                deadlineInfo.isUrgent ? 'text-urgent' : 'text-muted'
-              }`}
+              className={`t-meta ${deadlineInfo.isUrgent ? 'text-urgent' : 'text-muted'}`}
             >
               {deadlineInfo.text}
             </span>

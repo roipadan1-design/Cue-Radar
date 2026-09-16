@@ -26,3 +26,11 @@ This log records conservative choices made autonomously when requirements allowe
   - Accent C (`#B39DFF`, lavender): ~8.2:1 contrast ratio (Selected by owner).
   All candidate colors pass WCAG 2.1 AAA (>= 7:1) for text and button fills.
 - **Auth Strategy Alignment**: Expanded authentication providers to support Google, Apple, and Email/Password per task instructions, superseding the Google-only spec from HANDOFF_V3.
+
+## Deliverables A–D (Financial Filters, Fit Score, Trust Stamps, OG Images)
+
+- **OG-Image-Hex-Exception**: `app/opportunities/[slug]/opengraph-image.tsx` and `app/a/[handle]/opengraph-image.tsx` use raw hex color literals (`#0A0A0A`, `#F2F2F2`, `#B39DFF`, `#8C8C8C`, `#1F1F1F`) inside `ImageResponse` JSX style objects. This is an architectural necessity: `ImageResponse` renders to a PNG canvas via Satori — CSS custom properties (`var(--accent)` etc.) are not resolved in this context. The hex values are exact copies of the tokens defined in `app/globals.css`. The repo guardrail audit `grep` must exclude `opengraph-image.tsx` files when checking for raw hex values in TSX. This is not a violation of Rule 7's intent (which targets component-level DOM rendering).
+- **Eligibility Check is Informational**: `lib/fit.ts` → `checkEligibility()` is non-blocking and informational. The `Profile` type has no `career_stage` field, so the check uses `disciplines` and `eligibility_geo` only for the isEligible boolean; career stage produces a reason string as guidance. This matches the spec intent ("subtle eligibility status badge").
+- **`funded` Filter Uses Supabase `.or()`**: The funded filter string `'funding_min.gt.0,funding_type.in.(grant,stipend,artist_fee,salaried)'` uses the Supabase PostgREST `.or()` syntax exactly as specified in the deliverable. The word `salaried` is included in the `in()` list per spec, even though it is not in the controlled vocab table.
+- **FilterBar active-pill colour**: Boolean toggle pills use `bg-accent text-bg` when active. `bg-accent` maps to `var(--accent)` via Tailwind v4 `@theme inline` — no raw hex in TSX.
+- **`isVerificationStale` computed at render time**: The 30-day staleness check uses `Date.now()` at server render. No DB field is added. This is consistent with the "migrations only add" and "no new columns without a task" rules.

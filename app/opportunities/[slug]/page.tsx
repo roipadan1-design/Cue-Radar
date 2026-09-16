@@ -1,7 +1,7 @@
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import OpportunityDetailView from '@/components/hub/OpportunityDetailView'
-import type { HubFeedRow, VocabEntry } from '@/lib/types'
+import type { HubFeedRow, Profile, VocabEntry } from '@/lib/types'
 
 interface PageProps {
   params: Promise<{ slug: string }>
@@ -58,15 +58,21 @@ export default async function OpportunityDetailPage({ params }: PageProps) {
   } = await supabase.auth.getUser()
 
   let isSaved = false
-  if (user && finalOpp) {
-    const { data: savedItem } = await supabase
-      .from('user_saved_opportunities')
-      .select('opp_id')
-      .eq('user_id', user.id)
-      .eq('opp_id', finalOpp.opp_id)
-      .maybeSingle()
+  let profile: Profile | null = null
 
-    isSaved = !!savedItem
+  if (user && finalOpp) {
+    const [savedResult, profileResult] = await Promise.all([
+      supabase
+        .from('user_saved_opportunities')
+        .select('opp_id')
+        .eq('user_id', user.id)
+        .eq('opp_id', finalOpp.opp_id)
+        .maybeSingle(),
+      supabase.from('profiles').select('*').eq('id', user.id).maybeSingle(),
+    ])
+
+    isSaved = !!savedResult.data
+    profile = profileResult.data as Profile | null
   }
 
   return (
@@ -75,6 +81,7 @@ export default async function OpportunityDetailPage({ params }: PageProps) {
       vocab={(vocabData || []) as VocabEntry[]}
       isSaved={isSaved}
       userId={user?.id}
+      profile={profile}
     />
   )
 }
