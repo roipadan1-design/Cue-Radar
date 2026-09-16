@@ -10,14 +10,29 @@ export async function GET(request: Request) {
     const supabase = await createClient()
     const { error } = await supabase.auth.exchangeCodeForSession(code)
     if (!error) {
+      const { data: { user } } = await supabase.auth.getUser()
+      let targetNext = next
+
+      if (user) {
+        const { data: profile } = await supabase
+          .from('profiles')
+          .select('role_label, disciplines')
+          .eq('id', user.id)
+          .maybeSingle()
+
+        if (!profile || !profile.role_label || !profile.disciplines || profile.disciplines.length === 0) {
+          targetNext = '/profile/edit?welcome=1'
+        }
+      }
+
       const forwardedHost = request.headers.get('x-forwarded-host')
       const isLocalEnv = process.env.NODE_ENV === 'development'
       if (isLocalEnv) {
-        return NextResponse.redirect(`${origin}${next}`)
+        return NextResponse.redirect(`${origin}${targetNext}`)
       } else if (forwardedHost) {
-        return NextResponse.redirect(`https://${forwardedHost}${next}`)
+        return NextResponse.redirect(`https://${forwardedHost}${targetNext}`)
       } else {
-        return NextResponse.redirect(`${origin}${next}`)
+        return NextResponse.redirect(`${origin}${targetNext}`)
       }
     }
   }

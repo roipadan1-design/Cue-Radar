@@ -8,10 +8,24 @@ import Field from '@/components/ui/Field'
 import { signInSchema, type SignInFormData } from '@/lib/schemas/auth'
 import { createClient } from '@/lib/supabase/client'
 
+function mapAuthError(message: string): string {
+  if (message.includes('Invalid login credentials')) {
+    return 'Incorrect email or password. Please try again.'
+  }
+  if (message.includes('Email not confirmed')) {
+    return 'Your email address has not been confirmed yet. Please check your inbox.'
+  }
+  if (message.includes('User already registered')) {
+    return 'An account with this email already exists. Try signing in instead.'
+  }
+  return message
+}
+
 function SignInContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
   const nextParam = searchParams.get('next') || '/hub'
+  const showApple = process.env.NEXT_PUBLIC_AUTH_APPLE === 'true'
 
   const [formData, setFormData] = useState<SignInFormData>({
     email: '',
@@ -53,7 +67,7 @@ function SignInContent() {
       },
     })
     if (error) {
-      setFormError(error.message)
+      setFormError(mapAuthError(error.message))
     }
   }
 
@@ -83,7 +97,7 @@ function SignInContent() {
     setLoading(false)
 
     if (error) {
-      setFormError(error.message)
+      setFormError(mapAuthError(error.message))
     } else {
       router.push(nextParam)
       router.refresh()
@@ -106,7 +120,7 @@ function SignInContent() {
     })
     setLoading(false)
     if (error) {
-      setFormError(error.message)
+      setFormError(mapAuthError(error.message))
     } else {
       setMagicLinkSent(true)
     }
@@ -138,14 +152,16 @@ function SignInContent() {
         >
           Continue with Google
         </Button>
-        <Button
-          variant="secondary"
-          onClick={() => handleOAuthSignIn('apple')}
-          disabled={loading}
-          className="w-full"
-        >
-          Continue with Apple
-        </Button>
+        {showApple && (
+          <Button
+            variant="secondary"
+            onClick={() => handleOAuthSignIn('apple')}
+            disabled={loading}
+            className="w-full"
+          >
+            Continue with Apple
+          </Button>
+        )}
       </div>
 
       {/* OR Divider */}

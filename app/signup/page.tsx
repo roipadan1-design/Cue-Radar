@@ -8,10 +8,24 @@ import Field from '@/components/ui/Field'
 import { signUpSchema, type SignUpFormData } from '@/lib/schemas/auth'
 import { createClient } from '@/lib/supabase/client'
 
+function mapAuthError(message: string): string {
+  if (message.includes('Invalid login credentials')) {
+    return 'Incorrect email or password. Please try again.'
+  }
+  if (message.includes('Email not confirmed')) {
+    return 'Your email address has not been confirmed yet. Please check your inbox.'
+  }
+  if (message.includes('User already registered')) {
+    return 'An account with this email already exists. Try signing in instead.'
+  }
+  return message
+}
+
 function SignUpContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const nextParam = searchParams.get('next') || '/profile/edit'
+  const nextParam = searchParams.get('next') || '/profile/edit?welcome=1'
+  const showApple = process.env.NEXT_PUBLIC_AUTH_APPLE === 'true'
 
   const [formData, setFormData] = useState<SignUpFormData>({
     full_name: '',
@@ -54,7 +68,7 @@ function SignUpContent() {
       },
     })
     if (error) {
-      setFormError(error.message)
+      setFormError(mapAuthError(error.message))
     }
   }
 
@@ -90,7 +104,7 @@ function SignUpContent() {
     setLoading(false)
 
     if (error) {
-      setFormError(error.message)
+      setFormError(mapAuthError(error.message))
     } else if (data.session) {
       router.push(nextParam)
       router.refresh()
@@ -125,14 +139,16 @@ function SignUpContent() {
         >
           Continue with Google
         </Button>
-        <Button
-          variant="secondary"
-          onClick={() => handleOAuthSignUp('apple')}
-          disabled={loading}
-          className="w-full"
-        >
-          Continue with Apple
-        </Button>
+        {showApple && (
+          <Button
+            variant="secondary"
+            onClick={() => handleOAuthSignUp('apple')}
+            disabled={loading}
+            className="w-full"
+          >
+            Continue with Apple
+          </Button>
+        )}
       </div>
 
       {/* OR Divider */}
