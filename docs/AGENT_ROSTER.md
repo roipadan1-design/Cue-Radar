@@ -1,4 +1,4 @@
-# Cue Radar — Agent roster
+# Fellow. — Agent roster
 
 Team of specialized agents the owner and the main Claude Code session dispatch work to. Definitions live in `.claude/agents/`.
 

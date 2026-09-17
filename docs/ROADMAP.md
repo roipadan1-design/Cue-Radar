@@ -1,4 +1,4 @@
-# Cue Radar — Roadmap and task ledger
+# Fellow. — Roadmap and task ledger
 
 Reconstructed 2026-09-15 from `docs/HANDOFF_V3.md`, `docs/CUE_RADAR_Product_Plan_v2.md`, `docs/tasks/TASK_01_*.md`, the Task 02 spec, and PR #3 / PR #6. Sections marked **(recorded)** are taken from documents in the repo or from the Task 02 spec. Sections marked **(reconstructed)** are best-effort drafts of material that was planned but never committed; the owner should review them before they become task files.
 
@@ -116,7 +116,7 @@ Draft scope:
 - **Wordmark and mark.** Replace the `.t-meta` placeholder `CUE RADAR` in TopBar and Footer with the final wordmark (SVG, currentColor, no raster). Mark as an SVG component `components/brand/Mark.tsx`. Favicon + `app/icon.svg` + `apple-icon`.
 - **Accent color.** Change only the value of `--accent` in `globals.css`. Constraint: not yellow/amber/lime; must pass 4.5:1 as text on `--bg` *and* `--bg` text on it as a button fill; must read as distinct from `--urgent` red. Record the chosen value and its contrast numbers in DECISIONS. Verify every screen still has at most one accent element.
 - **Landing motion.** Fill `<div id="mark-slot" />` on `/` with the mark's entrance: one animation, ≤600ms, CSS only, fully disabled under `prefers-reduced-motion`. No marquee, no video, no gradient text. Nothing else on the site animates.
-- **Metadata.** `app/layout.tsx` title template `%s · Cue Radar`, description, `theme-color` = `--bg`. No OG images yet (that is a later task).
+- **Metadata.** `app/layout.tsx` title template `%s · Fellow.`, description, `theme-color` = `--bg`. No OG images yet (that is a later task).
 - **Verification:** build/lint; greps for `D7FF3F|yellow|amber|lime`, hex in tsx; screenshot of `/` at 390px twice (before and after the animation).
 - **Out of scope:** any layout or copy change, Supabase, OG images, new dependencies.
 

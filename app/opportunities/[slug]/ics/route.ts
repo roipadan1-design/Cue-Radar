@@ -22,7 +22,7 @@ export async function GET(request: Request, props: RouteProps) {
     return new NextResponse('Opportunity deadline not found', { status: 404 })
   }
 
-  const sourceName = (opp.sources as { name: string } | null)?.name || 'Cue Radar'
+  const sourceName = (opp.sources as { name: string } | null)?.name || 'Fellow.'
 
   const icsContent = buildIcsCalendar({
     kind: 'all-day',

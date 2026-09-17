@@ -6,7 +6,7 @@ Owner: ux-ui-designer role. Status: proposed, not built. No code changes in this
 
 `docs/VISION.md` (Pillar 3, point 2) is explicit about why this matters: Polywork raised
 $40M+ to build a "portfolio, not job titles" identity network for the same psychographic
-Cue Radar targets, and shut down in January 2025 after a standalone profile-building pivot
+Fellow. targets, and shut down in January 2025 after a standalone profile-building pivot
 gave people no reason to come back. The vision document's own conclusion: *"profile
 completeness should be nudged from Hub/Trip Radar moments... rather than a standalone
 'complete your profile' campaign."*

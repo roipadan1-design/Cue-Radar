@@ -1,7 +1,7 @@
-# Cue Radar — Design Brief
+# Fellow. — Design Brief
 
 Status: brief only. No code, tokens, or components changed by this document.
-Purpose: a single, self-contained document to hand to a focused design session ("Claude Design") refining Cue Radar's actual visual design. Written so someone with zero prior context can read this once and start making concrete visual decisions, without reading any other file first.
+Purpose: a single, self-contained document to hand to a focused design session ("Claude Design") refining Fellow.'s actual visual design. Written so someone with zero prior context can read this once and start making concrete visual decisions, without reading any other file first.
 Consolidates: `docs/VISION.md`, `docs/design/AESTHETIC_REFERENCES.md`, `docs/HANDOFF_V3.md`, `app/globals.css`.
 Date: 2026-09-17.
 
@@ -9,13 +9,13 @@ Date: 2026-09-17.
 
 ## 1. The product, in one paragraph
 
-Cue Radar is a Career OS for independent contemporary dance, performance, and experimental-sound artists working across roughly 23 European/Mediterranean/East-Asian scenes. It has three pillars. **The Hub** is a verified, deadline-sorted feed of opportunities — open calls, residencies, grants, co-productions, commissions, festival submissions, awards, lab/workshops, auditions, mentorships — built to be checked habitually, like a music-discovery app, not a reference desk visited twice a year. **Trip Radar** proactively surfaces what's on in a city while an artist is there or headed there — performances, workshops, festivals, studio drop-ins — across discipline boundaries, a gap no existing tool fills. **The artist profile** is one page that shows who an artist is — current/upcoming location as the organizing fact, discipline, showreel, who inspires them — deliberately not LinkedIn's job-title shape, and deliberately not a standalone destination (Polywork's failure is the cautionary tale): it's meant to fill in as a byproduct of using the other two pillars. The throughline across all three is trust: verified data, curated-not-algorithmic surfacing, and an identity layer that never asks an artist to perform a career they don't have. Nothing is ever fabricated — no placeholder opportunities, sources, or people.
+Fellow. is a Career OS for independent contemporary dance, performance, and experimental-sound artists working across roughly 23 European/Mediterranean/East-Asian scenes. It has three pillars. **The Hub** is a verified, deadline-sorted feed of opportunities — open calls, residencies, grants, co-productions, commissions, festival submissions, awards, lab/workshops, auditions, mentorships — built to be checked habitually, like a music-discovery app, not a reference desk visited twice a year. **Trip Radar** proactively surfaces what's on in a city while an artist is there or headed there — performances, workshops, festivals, studio drop-ins — across discipline boundaries, a gap no existing tool fills. **The artist profile** is one page that shows who an artist is — current/upcoming location as the organizing fact, discipline, showreel, who inspires them — deliberately not LinkedIn's job-title shape, and deliberately not a standalone destination (Polywork's failure is the cautionary tale): it's meant to fill in as a byproduct of using the other two pillars. The throughline across all three is trust: verified data, curated-not-algorithmic surfacing, and an identity layer that never asks an artist to perform a career they don't have. Nothing is ever fabricated — no placeholder opportunities, sources, or people.
 
 ---
 
 ## 2. The aesthetic direction, as a design thesis
 
-Cue Radar's existing register is dark editorial — "museum wall label": precise, quiet, curated, never cluttered, generic, robotic, or "AI-generated"-looking. The owner has confirmed this dark base stays, and has asked to push the register further: not toward a different look, but toward **Japanese minimalist restraint** applied as a discipline, using the tokens that already exist. Four ideas carry that discipline:
+Fellow.'s existing register is dark editorial — "museum wall label": precise, quiet, curated, never cluttered, generic, robotic, or "AI-generated"-looking. The owner has confirmed this dark base stays, and has asked to push the register further: not toward a different look, but toward **Japanese minimalist restraint** applied as a discipline, using the tokens that already exist. Four ideas carry that discipline:
 
 1. **Space is content, not leftover (Ma).** A screen with fewer things, spaced more generously, reads as more considered than one with everything visible at once — even holding the same information constant. Reach for the larger end of the existing spacing scale between sections rather than compressing to fit more in.
 2. **Every mark must carry meaning, or it goes.** No ornamental lines, no decorative fills, no color used for "rhythm." A divider, a weight, a color change is only there if it answers a specific question about the content (is this urgent, is this funded) — never to add visual interest for its own sake. This is a wayfinding-system level of discipline: a signal should mean the same thing everywhere it appears, with no exceptions.
@@ -100,7 +100,7 @@ Nine researched references plus the owner's own two. "Borrow" is literal — not
 | Linear (linear.app) | Strict two-tier text hierarchy (near-white primary, mid-gray secondary, no third gray); generous vertical padding instead of a divider *between* large sections, hairlines only *within* a section. |
 | Tokyo Metro / JR wayfinding | Absolute signal discipline — a color or number always means the same one thing, everywhere, no exceptions. The standard to audit `--accent`, `--urgent`, and chip states against. |
 | **Perform Europe** (owner's ref — `performeurope.eu/category/news/`) | Dark card canvas close to our own `--bg`/`--fg`; outlined-not-shadowed cards; one small capitalized category label per card, top-left. **Do not copy:** four decorative colored dots on its filter tabs — that's undisciplined color, the opposite of the wayfinding rule. |
-| **Backstage** (owner's ref — `backstage.com/casting/`) | Anatomy only: title → meta facts (pay/location/date) → tags in their own distinct band, not folded into a run-on line. **Honest verdict: do not copy the palette or chrome.** The actual page is close to textbook generic SaaS — three-plus competing accent colors, heavy chrome (dropdowns, tooltip popovers, a chat bubble), cards nested inside cards, and checkmark icons on tags repeating what the text already says. This is the exact "generic/AI-template" reflex the owner asked Cue Radar to avoid. Borrow the skeleton, not the surface. |
+| **Backstage** (owner's ref — `backstage.com/casting/`) | Anatomy only: title → meta facts (pay/location/date) → tags in their own distinct band, not folded into a run-on line. **Honest verdict: do not copy the palette or chrome.** The actual page is close to textbook generic SaaS — three-plus competing accent colors, heavy chrome (dropdowns, tooltip popovers, a chat bubble), cards nested inside cards, and checkmark icons on tags repeating what the text already says. This is the exact "generic/AI-template" reflex the owner asked Fellow. to avoid. Borrow the skeleton, not the surface. |
 
 ---
 
@@ -111,7 +111,7 @@ Nine researched references plus the owner's own two. "Borrow" is literal — not
 - Multi-color decoration — no per-category colored dots, no palette of accent colors; one accent, used sparingly, per Section 3.
 - Stock or placeholder imagery filling empty card space where no real photo exists.
 - Gradient CTAs, or gradients anywhere — none exist in the token system; keep it that way.
-- Hover-lift, drop shadows, soft/large border-radius — the default reflexes of generic card templates; Cue Radar's 2px radius and shadow-free system already rule these out structurally.
+- Hover-lift, drop shadows, soft/large border-radius — the default reflexes of generic card templates; Fellow.'s 2px radius and shadow-free system already rule these out structurally.
 - A "second summary" on any card or row — tag lines or chip rows that re-list everything instead of surfacing the one or two decision-relevant facts.
 - Anything that reads as generic SaaS or AI-generated template — the explicit standard the owner named: distinctive and professional, not banal.
 

@@ -13,12 +13,12 @@ export default function PrivacyPage() {
       <span className="t-meta text-muted">[Privacy]</span>
       <h1 className="t-title text-fg">Privacy</h1>
       <p className="t-body text-muted">
-        Cue Radar stores your email address, the profile fields you choose to fill in (name, role,
+        Fellow. stores your email address, the profile fields you choose to fill in (name, role,
         bio, disciplines, links and the rest of the profile form), and the calls you save to your
         pipeline. That is all. Nothing is sold or shared with advertisers or data brokers. If you
         want your data deleted, write to{' '}
         <a
-          href={`mailto:${feedbackEmail}?subject=${encodeURIComponent('Delete my Cue Radar data')}`}
+          href={`mailto:${feedbackEmail}?subject=${encodeURIComponent('Delete my Fellow. data')}`}
           className="text-fg underline underline-offset-4 hover:opacity-80"
         >
           {feedbackEmail}

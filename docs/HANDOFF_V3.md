@@ -1,4 +1,4 @@
-# Cue Radar — HANDOFF v3 (supersedes v1 and v2)
+# Fellow. — HANDOFF v3 (supersedes v1 and v2)
 Written 2026-09-10 after reading every file in `github.com/roipadan1-design/Cue-Radar` (28 files, ~10,400 lines, 14 commits). Commit this file to the repo as `docs/HANDOFF_V3.md` so the agent can read it.
 
 ---

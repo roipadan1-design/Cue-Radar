@@ -87,7 +87,7 @@ export default async function OpportunityOGImage({ params }: PageProps) {
               color: C.muted,
             }}
           >
-            間 CUE RADAR
+            間 FELLOW.
           </span>
         </div>
 
