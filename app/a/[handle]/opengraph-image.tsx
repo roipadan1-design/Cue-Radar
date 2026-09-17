@@ -80,7 +80,7 @@ export default async function ProfileOGImage({ params }: PageProps) {
               color: C.muted,
             }}
           >
-            間 CUE RADAR
+            間 FELLOW.
           </span>
         </div>
 

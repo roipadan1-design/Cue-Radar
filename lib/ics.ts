@@ -51,7 +51,7 @@ export function buildIcsCalendar(event: IcsEventInput): string {
   const lines = [
     'BEGIN:VCALENDAR',
     'VERSION:2.0',
-    'PRODID:-//Cue Radar//Calendar//EN',
+    'PRODID:-//Fellow.//Calendar//EN',
     'CALSCALE:GREGORIAN',
     'METHOD:PUBLISH',
     'BEGIN:VEVENT',

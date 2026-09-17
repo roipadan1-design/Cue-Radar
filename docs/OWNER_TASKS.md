@@ -56,6 +56,9 @@ After applying, verify with: `select category, value, label, sort_order, depreca
 ### Step 4b: `/radar/[city]` and event calendar links need `0003` applied (2026-09-17)
 Confirmed live (queried the DB directly): `supabase/migrations/0003_demo_seed.sql` from Step 2 above is still **not applied** — the `events` table is empty, `vocab` has no `event_type` category, and `hub_feed` has no `is_demo` column. The new `/radar/[city]` page (Trip Radar v1, Task 06 §7.2) and `app/events/[id]/ics/route.ts` are built and were verified against the live `hub_feed` data (real opportunities show up correctly), but the "Workshops & classes" and "On stage & exhibitions" sections will stay empty — correctly rendering nothing rather than an error — until `0003` is applied. Same fix as Step 2 / Step 4a: paste `0003_demo_seed.sql` into the Supabase SQL Editor (it's additive/idempotent), or run `npx supabase migration repair --status applied 0001 0002` then `npx supabase db push` to apply both `0003` and `0004` via the CLI.
 
+### Rebrand follow-up: custom domain for the new name "Fellow." (2026-09-17)
+The app-facing product name was renamed from "Cue Radar" to "Fellow." (see `docs/DECISIONS.md` "Rebrand" entry) — code/UI only. The site still lives at the existing `cue-radar.vercel.app` URL (and `feedback@cueradar.com`, Supabase `Site URL`, GitHub repo name, and Vercel project name were all deliberately left untouched — out of scope for this task). Whether/when to buy and wire up a domain matching "Fellow." (and whether to update the Supabase Auth **Site URL**/**Redirect URLs** in Step 1 and `NEXT_PUBLIC_SITE_URL`/`NEXT_PUBLIC_FEEDBACK_EMAIL` in Step 3 to match) is a future decision for the owner — not done here.
+
 ### Step 4: Google Service Account & Sheet Setup
 1. Create a Google Cloud Service Account and download its JSON key.
 2. Store the JSON key contents in GitHub Secret `GOOGLE_SERVICE_ACCOUNT_JSON`.
