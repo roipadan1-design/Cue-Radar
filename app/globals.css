@@ -38,33 +38,35 @@
   --radius-sm: var(--radius);
 }
 
-* {
-  border-color: var(--line);
-}
+@layer base {
+  * {
+    border-color: var(--line);
+  }
 
-html {
-  background: var(--bg);
-}
+  html {
+    background: var(--bg);
+  }
 
-body {
-  background: var(--bg);
-  color: var(--fg);
-  font-family: var(--font-body), sans-serif;
-}
+  body {
+    background: var(--bg);
+    color: var(--fg);
+    font-family: var(--font-body), sans-serif;
+  }
 
-a {
-  color: inherit;
-  text-decoration: none;
-}
+  a {
+    color: inherit;
+    text-decoration: none;
+  }
 
-button {
-  font: inherit;
-  cursor: pointer;
-}
+  button {
+    font: inherit;
+    cursor: pointer;
+  }
 
-:focus-visible {
-  outline: 2px solid var(--fg);
-  outline-offset: 2px;
+  :focus-visible {
+    outline: 2px solid var(--fg);
+    outline-offset: 2px;
+  }
 }
 
 @keyframes mark-fade-in {
