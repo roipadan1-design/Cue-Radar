@@ -4,11 +4,11 @@ import Link from 'next/link'
 import { usePathname } from 'next/navigation'
 import { LayoutList, Route, Bookmark, User } from 'lucide-react'
 
-interface MobileNavProps {
-  isSignedIn?: boolean
+interface TopBarNavProps {
+  isSignedIn: boolean
 }
 
-export default function MobileNav({ isSignedIn = false }: MobileNavProps) {
+export default function TopBarNav({ isSignedIn }: TopBarNavProps) {
   const pathname = usePathname()
 
   const items = [
@@ -22,7 +22,7 @@ export default function MobileNav({ isSignedIn = false }: MobileNavProps) {
   ]
 
   return (
-    <nav className="md:hidden fixed bottom-0 left-0 right-0 z-40 h-[calc(56px+env(safe-area-inset-bottom))] bg-surface border-t border-line px-2 flex items-center justify-around pb-[env(safe-area-inset-bottom)]">
+    <nav className="hidden md:flex items-center gap-1 t-meta">
       {items.map((item) => {
         const Icon = item.icon
         const isActive =
@@ -34,16 +34,12 @@ export default function MobileNav({ isSignedIn = false }: MobileNavProps) {
           <Link
             key={item.href}
             href={item.href}
-            className="flex-1 h-full min-h-[44px] flex items-center justify-center"
+            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-[var(--radius)] transition-colors ${
+              isActive ? 'bg-fg text-bg' : 'text-muted hover:text-fg'
+            }`}
           >
-            <span
-              className={`flex flex-col items-center justify-center gap-1 t-meta px-3 py-1 rounded-[var(--radius)] transition-colors ${
-                isActive ? 'bg-fg text-bg font-semibold' : 'text-muted hover:text-fg'
-              }`}
-            >
-              <Icon size={20} />
-              <span className="text-[10px] tracking-normal leading-none">{item.label}</span>
-            </span>
+            <Icon size={16} />
+            <span>{item.label}</span>
           </Link>
         )
       })}

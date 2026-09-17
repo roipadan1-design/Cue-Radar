@@ -55,7 +55,7 @@ export default async function RootLayout({
       className={`${archivo.variable} ${manrope.variable} ${notoSansJP.variable}`}
     >
       <body className="min-h-screen flex flex-col bg-bg text-fg font-body antialiased">
-        <TopBar />
+        <TopBar isSignedIn={Boolean(user)} />
         <main className="flex-1 w-full mx-auto pb-[72px] md:pb-0">
           {children}
         </main>
