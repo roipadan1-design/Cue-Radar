@@ -101,6 +101,12 @@ export default function OpportunityDetailView({
         {row.city_name ? `  ·  ${row.city_name}` : ''}
       </div>
 
+      <div className="mb-1">
+        <Link href="/sources" className="t-meta text-muted hover:text-fg hover:underline hover:underline-offset-4">
+          Browse institutions
+        </Link>
+      </div>
+
       {/* Trust line — Deliverable C */}
       <div className="t-meta text-muted mb-1">{trustLine}</div>
       {stale && (
