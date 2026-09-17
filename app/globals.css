@@ -82,6 +82,79 @@
   animation: mark-fade-in 400ms ease-out forwards;
 }
 
+/* Landing intro: lockup fades in on the page background, beats twice, slides
+   off and the page is revealed. Total 4000ms, matched by INTRO_MS in
+   IntroSplash.tsx. */
+.intro-splash {
+  position: fixed;
+  inset: 0;
+  z-index: 60;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: none;
+  background: var(--bg);
+  animation: intro-curtain 4000ms linear forwards;
+}
+
+.intro-splash__lockup {
+  will-change: transform, opacity;
+  animation: intro-lockup 4000ms linear forwards;
+}
+
+@keyframes intro-curtain {
+  0%,
+  70% {
+    opacity: 1;
+  }
+  100% {
+    opacity: 0;
+  }
+}
+
+@keyframes intro-lockup {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 0, 0) scale(0.94);
+    animation-timing-function: cubic-bezier(0.22, 1, 0.36, 1);
+  }
+  22% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+    animation-timing-function: cubic-bezier(0.4, 0, 0.6, 1);
+  }
+  31% {
+    transform: translate3d(0, 0, 0) scale(1.1);
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  43% {
+    transform: translate3d(0, 0, 0) scale(1);
+    animation-timing-function: cubic-bezier(0.4, 0, 0.6, 1);
+  }
+  52% {
+    transform: translate3d(0, 0, 0) scale(1.1);
+    animation-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+  }
+  66% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+    animation-timing-function: cubic-bezier(0.55, 0, 0.1, 1);
+  }
+  100% {
+    opacity: 0;
+    /* Half the viewport plus its own half-width: clears the screen at any size. */
+    transform: translate3d(calc(-50vw - 50%), 0, 0) scale(0.98);
+  }
+}
+
+/* Pre-hydration guard: the global reduce rule below kills the animation but
+   would leave the black curtain sitting there, so hide it outright. */
+@media (prefers-reduced-motion: reduce) {
+  .intro-splash {
+    display: none;
+  }
+}
+
 @layer components {
   .t-display {
     font-family: var(--font-display), sans-serif;
