@@ -95,11 +95,12 @@ export default function OpportunityRow({
 
         <div className="t-meta text-muted truncate">{row.source_name}</div>
 
-        {(disciplineLabel || cityLabel || differentiator) && (
+        {(disciplineLabel || cityLabel || differentiator || row.is_demo) && (
           <div className="flex flex-wrap items-center gap-2">
             {disciplineLabel && <Chip>{disciplineLabel}</Chip>}
             {cityLabel && <Chip>{cityLabel}</Chip>}
             {differentiator && <Chip tone="accent">{differentiator}</Chip>}
+            {row.is_demo && <Chip>Demo</Chip>}
           </div>
         )}
 

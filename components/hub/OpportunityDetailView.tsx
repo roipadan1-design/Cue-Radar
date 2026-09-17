@@ -103,6 +103,12 @@ export default function OpportunityDetailView({
       {/* 3. Title (sentence case) */}
       <h1 className="t-title normal-case text-fg mb-3">{row.title}</h1>
 
+      {row.is_demo && (
+        <div className="mb-3">
+          <Chip>Demo</Chip>
+        </div>
+      )}
+
       {/* Deliverable B: eligibility badge */}
       {eligibility && (
         <div className="mb-6 flex items-center gap-2">

@@ -38,7 +38,7 @@ export default async function CircuitPage() {
   return (
     <div className="max-w-[720px] mx-auto px-4 md:px-6 py-8">
       <div className="mb-[32px] flex flex-col gap-2">
-        <h1 className="t-display text-fg">Circuit</h1>
+        <h1 className="t-display text-fg">Currently</h1>
         <div className="t-body text-muted">What&apos;s on where you&apos;ll be.</div>
       </div>
 

@@ -13,12 +13,9 @@ export default function MobileNav({ isSignedIn = false }: MobileNavProps) {
 
   const items = [
     { label: 'Hub', href: '/hub', icon: LayoutList },
-    { label: 'Circuit', href: '/circuit', icon: Route },
+    { label: 'Currently', href: '/circuit', icon: Route },
     { label: 'Saved', href: '/saved', icon: Bookmark },
-    // Guests land on the demo profile (not a real /signin wall) so the app can
-    // be shown/demoed without an account. See docs/DECISIONS.md — re-gate
-    // before the pilot opens to real users.
-    { label: 'Profile', href: isSignedIn ? '/profile/edit' : '/dev/preview/profile', icon: User },
+    { label: 'Profile', href: isSignedIn ? '/profile/edit' : '/signin?next=/profile/edit', icon: User },
   ]
 
   return (

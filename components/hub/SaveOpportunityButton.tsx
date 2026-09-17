@@ -61,10 +61,10 @@ export default function SaveOpportunityButton({
 
   return (
     <Button
-      variant={isSaved ? 'primary' : 'secondary'}
+      variant="secondary"
       onClick={handleToggleSave}
       disabled={loading}
-      className={className}
+      className={isSaved ? `border-accent text-accent ${className}` : className}
     >
       {isSaved ? 'Saved' : 'Save'}
     </Button>
