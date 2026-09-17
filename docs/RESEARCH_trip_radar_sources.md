@@ -1,6 +1,6 @@
 > Moved here unchanged from `docs/RESEARCH_market_scan.md` on 2026-09-16, so that filename could be repurposed for the competitive-landscape / gap-analysis research described in `docs/VISION.md`. This file's content (23-city event-source mapping for Trip Radar, Tasks 11–12) is unrelated to that competitive research and is still the source referenced by the Task 12 draft scope in `docs/ROADMAP.md`. Nothing below was changed.
 
-# Cue Radar — Trip Radar "event_sources" Seed Mapping (23 cities)
+# Fellow. — Trip Radar "event_sources" Seed Mapping (23 cities)
 
 The single most important finding: across all 23 markets **almost no source publishes a public ICS/RSS/JSON feed**, so the crawler must be architected around HTML/DOM scraping and JSON-LD (`schema.org/Event`) extraction rather than feed ingestion — plan for per-site scrapers, not a feed reader. The pilot six (Berlin, Cologne, Brussels, Tel Aviv, Vienna, Amsterdam) are covered in depth below; the other 17 more briefly. Rows are marked **verified** (page opened, live dated calendar seen) or **unverified** (correct official domain/program path identified, live calendar not directly confirmed — validate before production crawl).
 

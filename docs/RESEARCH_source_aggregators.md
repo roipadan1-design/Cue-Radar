@@ -1,4 +1,4 @@
-# Cue Radar — Source Aggregator Research (dancingopportunities.com and beyond)
+# Fellow. — Source Aggregator Research (dancingopportunities.com and beyond)
 
 Written 2026-09-16. Scope: (1) what dancingopportunities.com actually is and where its content comes from, (2) other major aggregators/directories across dance, performance art, experimental sound/live electronics and interdisciplinary work, and (3) a consolidated list of real, individually-verifiable institutions surfaced through that research, as candidates for `data/seed/sources.csv` / the sheet's `sources` tab.
 
@@ -20,7 +20,7 @@ Written 2026-09-16. Scope: (1) what dancingopportunities.com actually is and whe
 - **No visual-arts-default bias, unlike most of the aggregators in the earlier market scan.** DO is dance-native by design — that's the whole point of the site. But it has **no discipline breadth beyond dance/screendance**; performance art and experimental sound aren't covered.
 - **80,000 visits/month is self-reported**, not independently verified — flagged, not treated as fact.
 
-**Bottom line for the owner:** dancingopportunities.com is essentially what Cue Radar's sync pipeline would look like if it had no verification step — a trust-the-submitter classifieds board that real, well-known European dance institutions already use to get the word out. That's useful two ways: (1) its client-logo wall is itself a small, real, verifiable seed list (used in Part 3 below), and (2) it's evidence that the institutions Cue Radar wants to track *already* value this kind of channel enough to submit to a small independent site — a reachability signal, not just a competitor.
+**Bottom line for the owner:** dancingopportunities.com is essentially what Fellow.'s sync pipeline would look like if it had no verification step — a trust-the-submitter classifieds board that real, well-known European dance institutions already use to get the word out. That's useful two ways: (1) its client-logo wall is itself a small, real, verifiable seed list (used in Part 3 below), and (2) it's evidence that the institutions Fellow. wants to track *already* value this kind of channel enough to submit to a small independent site — a reachability signal, not just a competitor.
 
 ---
 
@@ -30,12 +30,12 @@ Written 2026-09-16. Scope: (1) what dancingopportunities.com actually is and whe
 |---|---|---|---|
 | **European Dancehouse Network (EDN)** ([old.ednetwork.eu/members](https://old.ednetwork.eu/members)) | An EU-funded network of **54 contemporary-dance development organisations in 28 European countries** — dance houses, national choreographic centres, production houses. Not an open-call feed itself, but each member independently runs open calls, residencies and auditions, and EDN's own site publishes cross-network opportunities. This is by far the highest-value find of this research: it is a **membership directory with a full public list**, one country filter and individual member profile pages, all real, all checkable. | Full — I read the member directory directly (55+ organisations with city/country, each linking to a profile page). | ~50 new institutions, see Part 3. |
 | **Aerowaves** ([aerowaves.org/about-us/partners](https://aerowaves.org/about-us/partners/)) — already covered as a *program* in the market scan, but its **Partners page** (not analyzed there) lists the full network: **46 partner/member organisations across 34 countries** that host the annual "Aerowaves Twenty" touring program and feed the annual open call. | Full partner list with cities. Retrieved via a page fetch (AI-summarized extraction of the live partners page, not manually re-verified line-by-line — flagged as **secondary-confidence**, spot-check a few before bulk-adding). | ~25 institutions not already in EDN's list, see Part 3. |
-| **Contemporary Performance Network** ([contemporaryperformance.com](https://contemporaryperformance.com/category/opportunities/open-calls/)) | A curated open-call/residency/grant hub specifically for **performance art** (broader than dance) — exactly the discipline gap the earlier market scan flagged as unclaimed. Subscription/Patreon-supported; ownership/governance not disclosed on the page. | Credits individual listings to their source org but doesn't publish its own "who we work with" list. Institutions seen in current listings (fetched via page summary, **secondary-confidence**): Athens Epidaurus Festival, CTM Festival (already a Cue Radar source), K3 Choreography Residency, Tanztage Berlin, Villa Medici (Rome), Baryshnikov Arts Center (NYC, out of Cue Radar's market scope). | A few EU-relevant leads; mostly reinforces institutions already known or out-of-region. Worth periodic monitoring, not a bulk source of new names. |
+| **Contemporary Performance Network** ([contemporaryperformance.com](https://contemporaryperformance.com/category/opportunities/open-calls/)) | A curated open-call/residency/grant hub specifically for **performance art** (broader than dance) — exactly the discipline gap the earlier market scan flagged as unclaimed. Subscription/Patreon-supported; ownership/governance not disclosed on the page. | Credits individual listings to their source org but doesn't publish its own "who we work with" list. Institutions seen in current listings (fetched via page summary, **secondary-confidence**): Athens Epidaurus Festival, CTM Festival (already a Fellow. source), K3 Choreography Residency, Tanztage Berlin, Villa Medici (Rome), Baryshnikov Arts Center (NYC, out of Fellow.'s market scope). | A few EU-relevant leads; mostly reinforces institutions already known or out-of-region. Worth periodic monitoring, not a bulk source of new names. |
 | **ArtRabbit** ([artrabbit.com/artist-opportunities](https://www.artrabbit.com/artist-opportunities)) | International open-call directory, visual-art-first but explicitly includes "Performance (dance, theatre, circus)"; ~57 live listings, weekly email reaching a self-reported 23,500 practitioners. | Credits source institutions per listing (fetched via page summary, **secondary-confidence**). Real institutions visible: Sadler's Wells (Rose Choreographic School), Ars Electronica (sound/media-art relevant), Royal Academy of Arts. | Reinforces Sadler's Wells (already surfaced via EDN) and adds Ars Electronica as an experimental-sound/media-art lead worth checking directly in a follow-up pass. |
 | **netEX — calls & deadlines** ([netex.nmartproject.net](https://netex.nmartproject.net/?cat=5)), hosted by the New Museum of Networked Art | A small, apparently low-activity sound-art/net-art calls listing. Confirms the market scan's finding that **experimental sound has no large dedicated aggregator** — this is the closest thing found and it's niche/low-scale, not comparable to EDN or Res Artis in reach. | Sparse; institutions mentioned in past calls include Sonica Glasgow and MA/IN Festival (Matera, Italy) — both real but not independently re-verified beyond the page fetch. **Not recommended as a bulk source**; flagged as a lead only. |
 | **On the Move network** ([on-the-move.org](https://on-the-move.org/)) | Already covered as a product in the market scan. Its current membership page (75+ organisations across 25+ countries) exists but did not render a full current list on the page fetched — only 2007 founding members were extractable. **Needs a direct follow-up visit** to `on-the-move.org/network/members` to pull the current list; not done in this pass due to time, flagged as an open item. | Partial/outdated only. | None added from this source this round — see Open Questions. |
 
-**Confirmed finding, consistent with the existing market scan:** experimental sound / live electronics / installation art has **no dance-scale aggregator**. The two sound-specific hubs found (netEX, and US-focused Artist Communities Alliance / Sound and Music UK from earlier searches) are small, national, or niche. For this discipline, Cue Radar's existing strategy of adding individual institutions directly (Q-O2, IRCAM, CTM Festival, NOTAM, EMS Elektronmusikstudion — all already in `sources.csv`) remains the only real path; there is no directory to harvest in bulk the way EDN/Aerowaves work for dance.
+**Confirmed finding, consistent with the existing market scan:** experimental sound / live electronics / installation art has **no dance-scale aggregator**. The two sound-specific hubs found (netEX, and US-focused Artist Communities Alliance / Sound and Music UK from earlier searches) are small, national, or niche. For this discipline, Fellow.'s existing strategy of adding individual institutions directly (Q-O2, IRCAM, CTM Festival, NOTAM, EMS Elektronmusikstudion — all already in `sources.csv`) remains the only real path; there is no directory to harvest in bulk the way EDN/Aerowaves work for dance.
 
 ---
 
@@ -49,18 +49,18 @@ Website URLs are only included where I directly saw or confidently know the inst
 
 | Name | City / Market fit | Notes |
 |---|---|---|
-| P.A.R.T.S. | Brussels — **direct Cue Radar market** | Anne Teresa De Keersmaeker's school; also on DO's client wall and Aerowaves' partner list (triple cross-verified). Likely website: parts.be — confirm before adding. |
-| Tanzhaus Zürich | Zürich — **direct Cue Radar market** | Production/residency house. |
-| Krakow Choreographic Centre (Nowohuckie Centrum Kultury) | Krakow — **direct Cue Radar market** | |
-| Tanec Praha / PONEC dance venue | Prague — **direct Cue Radar market** | |
-| Maison de la danse | Lyon — **direct Cue Radar market** | |
-| Duncan Dance Research Center (DDRC) | Athens (Vyronas) — **direct Cue Radar market** | |
-| Royal Swedish Opera / Operan | Stockholm — **direct Cue Radar market** | Also on DO's client wall. Opera house with dance programming, not dance-only — verify discipline fit. |
+| P.A.R.T.S. | Brussels — **direct Fellow. market** | Anne Teresa De Keersmaeker's school; also on DO's client wall and Aerowaves' partner list (triple cross-verified). Likely website: parts.be — confirm before adding. |
+| Tanzhaus Zürich | Zürich — **direct Fellow. market** | Production/residency house. |
+| Krakow Choreographic Centre (Nowohuckie Centrum Kultury) | Krakow — **direct Fellow. market** | |
+| Tanec Praha / PONEC dance venue | Prague — **direct Fellow. market** | |
+| Maison de la danse | Lyon — **direct Fellow. market** | |
+| Duncan Dance Research Center (DDRC) | Athens (Vyronas) — **direct Fellow. market** | |
+| Royal Swedish Opera / Operan | Stockholm — **direct Fellow. market** | Also on DO's client wall. Opera house with dance programming, not dance-only — verify discipline fit. |
 | Condeduque (Centro de Cultura Contemporánea) | Madrid — near Barcelona market, new Spanish city | |
 | Tanzhaus nrw | Düsseldorf — near Cologne market, new German city | |
 | HELLERAU (European Centre for the Arts) | Dresden — new German city | |
 | K3 Zentrum für Choreographie / Kampnagel | Hamburg — new German city | |
-| Theater an der Parkaue | Berlin — **direct Cue Radar market** | Children/youth-theatre focused — verify discipline/audience fit before adding. |
+| Theater an der Parkaue | Berlin — **direct Fellow. market** | Children/youth-theatre focused — verify discipline/audience fit before adding. |
 | STUK (House for Dance, Image and Sound) | Leuven, Belgium — near Brussels market | |
 | VierNulVier (404) | Ghent, Belgium | |
 | Korzo theater | Den Haag, Netherlands — near Amsterdam market | |
@@ -104,14 +104,14 @@ Website URLs are only included where I directly saw or confidently know the inst
 
 | Name | City / Market fit | Notes |
 |---|---|---|
-| Albania Dance Meeting Festival | Tirana, Albania | New country for Cue Radar. |
+| Albania Dance Meeting Festival | Tirana, Albania | New country for Fellow. |
 | D.ID Dance Identity | Eisenstadt, Austria | Near Vienna market. |
 | Mediterranean Dance Centre | Zagreb, Croatia | |
 | Sõltumatu Tantsu Lava (STL) | Tallinn, Estonia | New country. |
 | Latvian Dance Information Center | Riga, Latvia | New country. |
 | La Place de la Danse | Toulouse, France | |
 | Hessisches Staatsballett | Darmstadt, Germany | |
-| Arc for Dance | Athens, Greece — **direct Cue Radar market** | |
+| Arc for Dance | Athens, Greece — **direct Fellow. market** | |
 | Reykjavík Dance Festival | Reykjavík, Iceland | New country. |
 | Firkin Crane | Cork, Ireland | |
 | Art Stations Foundation | Poznań, Poland — near Warsaw market | |
@@ -135,7 +135,7 @@ Website URLs are only included where I directly saw or confidently know the inst
 
 | Name | City / Market fit | Notes |
 |---|---|---|
-| DV8 Physical Theatre (Lloyd Newson) | UK | Physical-theatre / interdisciplinary — good discipline fit for Cue Radar even though UK is outside the 22-market list. |
+| DV8 Physical Theatre (Lloyd Newson) | UK | Physical-theatre / interdisciplinary — good discipline fit for Fellow. even though UK is outside the 22-market list. |
 | East London Dance (ELD) | London, UK | |
 | Rambert | London, UK | |
 | TripSpace Projects | London, UK | |
@@ -149,7 +149,7 @@ Website URLs are only included where I directly saw or confidently know the inst
 | Ballet Junior de Genève (BJG) | Genève, Switzerland | |
 | Henny Jurriëns Studio | Netherlands | |
 | University of Chichester | UK | Academic — verify it posts real open calls vs. only student programs. |
-| Gaga / Batsheva-adjacent | Israel — **direct Cue Radar market (tel_aviv)** | "Gaga" is Ohad Naharin's movement language, closely associated with Batsheva Dance Company; verify the actual organisational entity and URL before adding — do not conflate with Batsheva itself without confirming. |
+| Gaga / Batsheva-adjacent | Israel — **direct Fellow. market (tel_aviv)** | "Gaga" is Ohad Naharin's movement language, closely associated with Batsheva Dance Company; verify the actual organisational entity and URL before adding — do not conflate with Batsheva itself without confirming. |
 | Kibbutz Contemporary Dance Company (Rami Be'er) | Kibbutz Ga'aton, Israel | Near but not literally in Tel Aviv — verify market tagging (could be its own market or tagged to the nearest hub). |
 | Staatstheater Kassel | Kassel, Germany | |
 | Art Factory International | Location unconfirmed from the page — needs a direct site visit before adding. | |

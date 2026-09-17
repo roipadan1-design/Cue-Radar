@@ -1,4 +1,4 @@
-# Cue Radar — Path to Pilot (v1)
+# Fellow. — Path to Pilot (v1)
 
 Written 2026-09-16. This is the single plan for getting from today's state to a closed pilot with real users. It supersedes `docs/ROADMAP.md` for sequencing purposes until the pilot ships; `ROADMAP.md` remains the historical task ledger.
 
