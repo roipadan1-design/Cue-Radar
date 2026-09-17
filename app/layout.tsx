@@ -4,6 +4,7 @@ import TopBar from '@/components/layout/TopBar'
 import MobileNav from '@/components/layout/MobileNav'
 import Footer from '@/components/layout/Footer'
 import { BRAND } from '@/lib/brand'
+import { createClient } from '@/lib/supabase/server'
 import './globals.css'
 
 const archivo = Archivo({
@@ -38,11 +39,16 @@ export const viewport: Viewport = {
   themeColor: BRAND.themeColor,
 }
 
-export default function RootLayout({
+export default async function RootLayout({
   children,
 }: {
   children: React.ReactNode
 }) {
+  const supabase = await createClient()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
+
   return (
     <html
       lang="en"
@@ -54,7 +60,7 @@ export default function RootLayout({
           {children}
         </main>
         <Footer />
-        <MobileNav />
+        <MobileNav isSignedIn={Boolean(user)} />
       </body>
     </html>
   )

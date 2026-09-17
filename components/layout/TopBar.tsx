@@ -14,7 +14,10 @@ export default async function TopBar() {
     { label: 'Hub', href: '/hub', icon: LayoutList },
     { label: 'Radar', href: '/radar', icon: Radar },
     { label: 'Saved', href: '/saved', icon: Bookmark },
-    { label: 'Profile', href: '/profile/edit', icon: User },
+    // Guests land on the demo profile (not a real /signin wall) so the app can
+    // be shown/demoed without an account. See docs/DECISIONS.md — re-gate
+    // before the pilot opens to real users.
+    { label: 'Profile', href: user ? '/profile/edit' : '/dev/preview/profile', icon: User },
   ]
 
   return (
