@@ -2,7 +2,7 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutList, Radar, Bookmark, User } from 'lucide-react'
+import { LayoutList, Route, Bookmark, User } from 'lucide-react'
 
 interface MobileNavProps {
   isSignedIn?: boolean
@@ -13,7 +13,7 @@ export default function MobileNav({ isSignedIn = false }: MobileNavProps) {
 
   const items = [
     { label: 'Hub', href: '/hub', icon: LayoutList },
-    { label: 'Radar', href: '/radar', icon: Radar },
+    { label: 'Circuit', href: '/circuit', icon: Route },
     { label: 'Saved', href: '/saved', icon: Bookmark },
     // Guests land on the demo profile (not a real /signin wall) so the app can
     // be shown/demoed without an account. See docs/DECISIONS.md — re-gate
@@ -28,7 +28,7 @@ export default function MobileNav({ isSignedIn = false }: MobileNavProps) {
         const isActive =
           pathname === item.href ||
           (item.href === '/hub' && pathname === '/') ||
-          (item.href === '/radar' && pathname.startsWith('/radar'))
+          (item.href === '/circuit' && pathname.startsWith('/circuit'))
 
         return (
           <Link

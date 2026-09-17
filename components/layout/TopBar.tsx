@@ -2,7 +2,7 @@ import Link from 'next/link'
 import Wordmark from '@/components/brand/Wordmark'
 import SignOutButton from '@/components/layout/SignOutButton'
 import { createClient } from '@/lib/supabase/server'
-import { LayoutList, Radar, Bookmark, User } from 'lucide-react'
+import { LayoutList, Route, Bookmark, User } from 'lucide-react'
 
 export default async function TopBar() {
   const supabase = await createClient()
@@ -12,7 +12,7 @@ export default async function TopBar() {
 
   const navItems = [
     { label: 'Hub', href: '/hub', icon: LayoutList },
-    { label: 'Radar', href: '/radar', icon: Radar },
+    { label: 'Circuit', href: '/circuit', icon: Route },
     { label: 'Saved', href: '/saved', icon: Bookmark },
     // Guests land on the demo profile (not a real /signin wall) so the app can
     // be shown/demoed without an account. See docs/DECISIONS.md — re-gate
