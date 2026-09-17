@@ -2,14 +2,14 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutList, Radar, Bookmark, User } from 'lucide-react'
+import { LayoutList, Route, Bookmark, User } from 'lucide-react'
 
 export default function MobileNav() {
   const pathname = usePathname()
 
   const items = [
     { label: 'Hub', href: '/hub', icon: LayoutList },
-    { label: 'Radar', href: '/radar', icon: Radar },
+    { label: 'Circuit', href: '/circuit', icon: Route },
     { label: 'Saved', href: '/saved', icon: Bookmark },
     { label: 'Profile', href: '/profile/edit', icon: User },
   ]
@@ -21,7 +21,7 @@ export default function MobileNav() {
         const isActive =
           pathname === item.href ||
           (item.href === '/hub' && pathname === '/') ||
-          (item.href === '/radar' && pathname.startsWith('/radar'))
+          (item.href === '/circuit' && pathname.startsWith('/circuit'))
 
         return (
           <Link

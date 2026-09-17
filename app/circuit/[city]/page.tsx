@@ -2,6 +2,7 @@ import Link from 'next/link'
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import OpportunityRow from '@/components/hub/OpportunityRow'
+import GroupHeader from '@/components/hub/GroupHeader'
 import EventRow from '@/components/radar/EventRow'
 import EmptyState from '@/components/hub/EmptyState'
 import type { HubFeedRow, EventRow as EventRowType, Profile, VocabEntry } from '@/lib/types'
@@ -36,7 +37,15 @@ function formatHeaderDate(dateStr: string): string {
   }
 }
 
-export default async function RadarCityPage(props: PageProps) {
+function computeDayCount(fromStr: string, toStr: string): number {
+  const from = new Date(fromStr)
+  const to = new Date(toStr)
+  if (Number.isNaN(from.getTime()) || Number.isNaN(to.getTime())) return 0
+  const diffDays = Math.round((to.getTime() - from.getTime()) / (1000 * 60 * 60 * 24))
+  return diffDays + 1
+}
+
+export default async function CircuitCityPage(props: PageProps) {
   const params = await props.params
   const searchParams = (await props.searchParams) || {}
   const citySlug = params.city
@@ -86,7 +95,7 @@ export default async function RadarCityPage(props: PageProps) {
 
   const { data: oppData, error: oppError } = await oppQuery
   if (oppError) {
-    console.error('Error querying hub_feed for radar:', oppError.message)
+    console.error('Error querying hub_feed for circuit:', oppError.message)
   }
   const closingOpportunities = (oppData || []) as HubFeedRow[]
 
@@ -105,7 +114,7 @@ export default async function RadarCityPage(props: PageProps) {
 
   const { data: eventData, error: eventError } = await eventQuery
   if (eventError) {
-    console.error('Error querying events for radar:', eventError.message)
+    console.error('Error querying events for circuit:', eventError.message)
   }
   const events = (eventData || []) as EventRowType[]
 
@@ -117,15 +126,20 @@ export default async function RadarCityPage(props: PageProps) {
     workshopsAndClasses.length > 0 ||
     stageAndExhibitions.length > 0
 
+  const dayCount = computeDayCount(from, to)
+
   return (
     <div className="max-w-[720px] mx-auto px-4 md:px-6 py-8 pb-24">
-      <div className="mb-6 flex flex-col gap-1.5">
-        <Link href="/radar" className="t-meta text-muted hover:text-fg transition-colors">
-          ← Radar
+      <div className="mb-[32px] flex flex-col">
+        <Link href="/circuit" className="t-meta text-muted hover:text-fg transition-colors">
+          ← Circuit
         </Link>
-        <h1 className="t-title text-fg text-2xl font-semibold">
-          {market.display_name} · {formatHeaderDate(from)} – {formatHeaderDate(to)}
-        </h1>
+        <h1 className="t-title text-fg mt-[8px]">{market.display_name}</h1>
+        <div className="t-body text-muted mt-[4px]">
+          <span className="t-num">{formatHeaderDate(from)}</span> &ndash;{' '}
+          <span className="t-num">{formatHeaderDate(to)}</span>
+          {dayCount > 0 && ` · ${dayCount} ${dayCount === 1 ? 'day' : 'days'}`}
+        </div>
       </div>
 
       {!hasAnyContent && (
@@ -137,10 +151,8 @@ export default async function RadarCityPage(props: PageProps) {
 
       {closingOpportunities.length > 0 && (
         <section className="mb-8">
-          <h2 className="t-meta text-muted mb-1 pb-2 border-b border-line">
-            Closing while you&apos;re there · {closingOpportunities.length}
-          </h2>
-          <div>
+          <GroupHeader label="Closing while you're there" count={closingOpportunities.length} />
+          <div className="flex flex-col gap-4 mt-4">
             {closingOpportunities.map((row) => (
               <OpportunityRow key={row.opp_id} row={row} profile={profile} vocab={vocab} />
             ))}
@@ -150,10 +162,8 @@ export default async function RadarCityPage(props: PageProps) {
 
       {workshopsAndClasses.length > 0 && (
         <section className="mb-8">
-          <h2 className="t-meta text-muted mb-1 pb-2 border-b border-line">
-            Workshops & classes · {workshopsAndClasses.length}
-          </h2>
-          <div>
+          <GroupHeader label="Workshops & classes" count={workshopsAndClasses.length} />
+          <div className="flex flex-col gap-4 mt-4">
             {workshopsAndClasses.map((event) => (
               <EventRow key={event.event_id} event={event} vocab={vocab} />
             ))}
@@ -163,10 +173,8 @@ export default async function RadarCityPage(props: PageProps) {
 
       {stageAndExhibitions.length > 0 && (
         <section className="mb-8">
-          <h2 className="t-meta text-muted mb-1 pb-2 border-b border-line">
-            On stage & exhibitions · {stageAndExhibitions.length}
-          </h2>
-          <div>
+          <GroupHeader label="On stage & exhibitions" count={stageAndExhibitions.length} />
+          <div className="flex flex-col gap-4 mt-4">
             {stageAndExhibitions.map((event) => (
               <EventRow key={event.event_id} event={event} vocab={vocab} />
             ))}

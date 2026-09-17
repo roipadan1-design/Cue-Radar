@@ -1,4 +1,5 @@
 import type { EventRow as EventRowType, VocabEntry } from '@/lib/types'
+import Chip from '@/components/ui/Chip'
 
 interface EventRowProps {
   event: EventRowType
@@ -21,9 +22,10 @@ function formatEventTime(timeStr?: string | null): string | null {
   return `${hh.padStart(2, '0')}:${mm.padStart(2, '0')}`
 }
 
-function formatPrice(priceMin?: number | null): string {
-  if (priceMin === null || priceMin === undefined) return '—'
-  if (priceMin === 0) return 'Free'
+// Only rendered when there's an actual figure to show — a free event's price
+// fact already lives in the "Free" tag above, not repeated here.
+function formatPriceFigure(priceMin?: number | null): string | null {
+  if (priceMin === null || priceMin === undefined || priceMin === 0) return null
   return `From €${priceMin}`
 }
 
@@ -33,22 +35,25 @@ export default function EventRow({ event, vocab = [] }: EventRowProps) {
 
   const dateText = formatEventDate(event.date)
   const timeText = formatEventTime(event.time)
-  const priceText = formatPrice(event.price_min)
-
-  const metaLine = [
-    typeLabel,
-    timeText ? `${dateText} · ${timeText}` : dateText,
-    priceText,
-    event.is_demo ? 'Demo' : null,
-  ]
-    .filter(Boolean)
-    .join('  ·  ')
+  const dateTimeText = timeText ? `${dateText} · ${timeText}` : dateText
+  const isFree = event.price_min === 0
+  const priceFigure = formatPriceFigure(event.price_min)
 
   return (
-    <div className="py-4 border-b border-line flex flex-col gap-1.5">
+    <div className="p-4 border border-line rounded-[var(--radius)] bg-bg flex flex-col gap-2">
       <h3 className="t-row text-fg line-clamp-2">{event.title}</h3>
       <div className="t-body text-[14px] text-muted truncate">{event.venue_name}</div>
-      <div className="t-meta text-muted text-[11px] line-clamp-2">{metaLine}</div>
+
+      <div className="flex flex-wrap items-center gap-2">
+        <Chip>{typeLabel}</Chip>
+        {isFree && <Chip tone="accent">Free</Chip>}
+        {event.is_demo && <Chip>Demo</Chip>}
+      </div>
+
+      <div className="flex items-center justify-between gap-4">
+        <div className="t-num text-fg font-medium">{dateTimeText}</div>
+        {priceFigure && <div className="t-meta text-muted">{priceFigure}</div>}
+      </div>
 
       <div className="flex items-center gap-4 pt-1">
         {event.ticket_url && (

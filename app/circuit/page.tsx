@@ -1,8 +1,8 @@
 import { createClient } from '@/lib/supabase/server'
 import type { Market } from '@/lib/types'
-import RadarForm from './RadarForm'
+import CircuitForm from './CircuitForm'
 
-export default async function RadarPage() {
+export default async function CircuitPage() {
   const supabase = await createClient()
 
   const {
@@ -37,12 +37,12 @@ export default async function RadarPage() {
 
   return (
     <div className="max-w-[720px] mx-auto px-4 md:px-6 py-8">
-      <div className="mb-6 flex flex-col gap-1">
-        <h1 className="t-title text-fg text-2xl font-semibold">Radar</h1>
+      <div className="mb-[32px] flex flex-col gap-2">
+        <h1 className="t-display text-fg">Circuit</h1>
         <div className="t-body text-muted">What&apos;s on where you&apos;ll be.</div>
       </div>
 
-      <RadarForm
+      <CircuitForm
         markets={markets}
         defaultCity={defaultCity}
         defaultFrom={defaultFrom}
