@@ -1,9 +1,9 @@
 # Task 07 UX audit — filter density, accent presence, "Currently" nav check
 
 Status: audit + spec. No application code changed by this document.
-Scope: three items from the ux-ui-designer brief for Task 07 — (1) Hub filter-chip default density, (2) `--accent` additional placements, (5) a plain go/no-go on "Currently" in nav context. Items 3 and 4 (Discover v1, Source detail) are separate documents: `docs/design/DISCOVER_V1_SPEC.md`, `docs/design/SOURCE_DETAIL_SPEC.md`.
-Read against: `docs/design/DESIGN_BRIEF.md`, `app/globals.css`, and the current code in `components/hub/FilterBar.tsx`, `components/hub/OpportunityRow.tsx`, `components/hub/OpportunityDetailView.tsx`, `components/hub/SaveOpportunityButton.tsx`, `components/ui/{Chip,Button}.tsx`, `app/page.tsx`, `components/layout/{MobileNav,TopBarNav}.tsx`.
-Date: 2026-09-17.
+Scope: three items from the ux-ui-designer brief for Task 07 — (1) Hub filter-chip default density, (2) `--accent` additional placements, (5) a plain go/no-go on "Currently" in nav context. Items 3 and 4 (Discover v1, Source detail) are separate documents: `docs/design/DISCOVER_V1_SPEC.md`, `docs/design/SOURCE_DETAIL_SPEC.md`. §6 (added 2026-09-18, per `docs/DECISIONS.md` Task 12 §4) is a companion ArtConnect structural benchmark for buttons/tabs/tags/filters/modals, requested alongside the Israel-only pivot.
+Read against: `docs/design/DESIGN_BRIEF.md`, `app/globals.css`, and the current code in `components/hub/FilterBar.tsx`, `components/hub/OpportunityRow.tsx`, `components/hub/OpportunityDetailView.tsx`, `components/hub/SaveOpportunityButton.tsx`, `components/ui/{Chip,Button,Sheet}.tsx`, `app/page.tsx`, `components/layout/{MobileNav,TopBarNav}.tsx`. §6 additionally reads `docs/design/DISCOVER_V1_SPEC.md` and `docs/design/SOURCES_DIRECTORY_SPEC.md`, and was browsed directly against [artconnect.com](https://www.artconnect.com) (mobile 375px + desktop) 2026-09-18.
+Date: 2026-09-17, amended 2026-09-18 (§6 added).
 
 ---
 
@@ -59,3 +59,31 @@ Checked `components/layout/MobileNav.tsx` and `components/layout/TopBarNav.tsx` 
 - It sits in the same visual slot and type treatment (`t-meta`, active state = solid `bg-fg text-bg` pill) as `Hub`, `Saved`, `Profile` — nothing about its presentation is different from its neighbors, so nothing marks it out as "a different kind of UI element" the way a status widget would be.
 
 No change needed to nav markup or spacing for this rename. This is a fit check only, per the instruction — not a new research pass, and I found nothing at the nav-context level that contradicts the prior name-collision clearance.
+
+---
+
+## 6. ArtConnect structural benchmark — buttons, tabs, tags, filters, modals (added 2026-09-18)
+
+Per `docs/DECISIONS.md` ("Task 12 — Israel-only pilot pivot," §4/§6), a focused companion pass benchmarking Fellow.'s buttons/tabs/tags/filters/modal-sheet patterns against ArtConnect's actual structural choices — browsed directly (mobile 375px, then desktop for detail) 2026-09-18: the opportunities search page, an opportunity detail page, the three-way Discover directory (Artists/Curators/Organizations), and an institution profile page. As with `docs/design/DISCOVER_V1_SPEC.md` §0 and `docs/design/SOURCES_DIRECTORY_SPEC.md` §0, this is a structure-only benchmark — no ArtConnect color, font, copy, logo, or icon is proposed for adoption anywhere below.
+
+### 6.1 Filters — confirmed, no change
+
+ArtConnect's own filter mechanics are: per-field dropdowns (Type / Artistic field / Reward) plus a few toggle chips (Free to apply / No fees / Rolling deadline) on desktop, collapsed behind a single filter-icon button on narrow widths, opening a full-panel overlay. This is structurally the same shape `components/hub/FilterBar.tsx` already ships (5 quick-toggle chips + one `Filters` button opening a `Sheet`) — no redesign indicated. The one already-known bug (§1 above, the `h-9` trigger under the 44px tap-target minimum) still stands as the only fix; `docs/design/DISCOVER_V1_SPEC.md` and `docs/design/SOURCES_DIRECTORY_SPEC.md` both already specify the corrected `min-h-[44px]` height for their own `Filters` triggers so neither new screen repeats the bug.
+
+### 6.2 Tags — confirmed, one thing correctly NOT adopted
+
+ArtConnect renders two kinds of tag on an opportunity card: a filled, saturated "Type" pill (e.g. pink `OPEN CALL`) and a filled green "Fees: FREE" pill. Structurally, this is "one tag names the category, one tag names the one decision-relevant differentiator" — which is exactly the split Fellow. already has between the (currently text-only, un-typed) type label and the accent differentiator chip (`Funded`/`No fee`, `Chip tone="accent"`). **Not adopted**: the filled/saturated pill treatment itself. `DESIGN_BRIEF.md` §4.1 rule 2 (outline, not fill) and the Backstage reference's explicit "do not copy the palette or chrome" verdict already ruled this out before this pass started; ArtConnect's version of the same generic-SaaS colored-pill pattern doesn't change that conclusion. No action item — confirms the existing rule rather than adding a new one.
+
+### 6.3 Tabs — new pattern, one concrete addition
+
+Fellow. has no tab component anywhere in the app today (`grep -rn "role=\"tab\"" components app` returns nothing). ArtConnect uses a real tab bar in exactly one place worth borrowing: an institution's own profile page (`Overview | Opportunities | About`), letting a visitor choose "about this place" vs. "what's open here" without scrolling past one to reach the other. (Its other tab-shaped UI — the three-way Artists/Curators/Organizations switcher at the top of Discover — is explicitly not borrowed; see `docs/design/DISCOVER_V1_SPEC.md` §0.)
+
+**Action item, already specified, not just proposed**: `docs/design/SOURCE_DETAIL_SPEC.md` §1a now specifies a two-tab structure for `/sources/[id]` (`Overview` / `Past & open calls`), built as a plain two-button `role="tablist"` row using Fellow.'s own existing "selected" visual language (`bg-fg text-bg`, the same treatment nav/chips/city-list rows already use) rather than a new underline or pill-color convention. This is the one genuinely new structural element this benchmark pass introduces into the component set — flagging it here explicitly since it's a first: if a future screen also needs to switch between two or more views of the same entity, reuse this exact markup/class pattern rather than inventing a second tab visual language.
+
+### 6.4 Modal / sheet — confirmed, no change
+
+ArtConnect's mobile filter interaction is a full-panel overlay functionally identical to `components/ui/Sheet.tsx` (bottom-anchored panel, backdrop, closes on backdrop tap or an explicit action). No structural gap found. `Sheet.tsx` remains the only overlay primitive needed for `docs/design/DISCOVER_V1_SPEC.md` and `docs/design/SOURCES_DIRECTORY_SPEC.md`'s filter panels, per each spec's own §1.
+
+### 6.5 Buttons / card CTAs — confirmed, one thing correctly NOT adopted
+
+ArtConnect's result cards (opportunities and institutions alike) pair a plain text/heart "Save" control with a separate trailing "See more →" / "View Profile →" button — the row itself is not the link. Fellow.'s cards (`OpportunityRow`, and per spec the new Discover and Sources cards) make the whole card the link, with `Save`/`Follow` as the one exception that must be its own tappable control (since it performs a different action than navigating). **Not adopted**: adding a second, redundant "See more" affordance to an already-fully-clickable card — this would be exactly the repeated-affordance pattern `DESIGN_BRIEF.md` §6 rules out for icons-on-tags, applied to a second link doing the same job as the card itself. `docs/design/SOURCES_DIRECTORY_SPEC.md` §1 states this explicitly for its own card. No change to `OpportunityRow` or `DISCOVER_V1_SPEC.md`'s card.

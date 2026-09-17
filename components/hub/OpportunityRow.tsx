@@ -86,20 +86,31 @@ export default function OpportunityRow({
   const eligibility = !locked && profile ? checkEligibility(profile, row) : null
 
   return (
-    <Link
-      href={`/opportunities/${row.slug}`}
-      className="block p-4 border border-line rounded-[var(--radius)] bg-bg hover:border-line-strong transition-colors"
-    >
-      <div className="flex flex-col gap-2">
+    <div className="relative p-4 border border-line rounded-[var(--radius)] bg-bg hover:border-line-strong transition-colors">
+      {/* Stretched link: makes the whole card clickable while still letting the
+          source_name link below sit above it (z-10) as its own tap target —
+          avoids nesting an <a> inside an <a>. */}
+      <Link
+        href={`/opportunities/${row.slug}`}
+        className="absolute inset-0 z-0"
+        aria-label={row.title}
+      />
+      <div className="relative flex flex-col gap-2">
         <h3 className="t-row text-fg line-clamp-2">{row.title}</h3>
 
-        <div className="t-meta text-muted truncate">{row.source_name}</div>
+        <Link
+          href={`/sources/${row.source_id}`}
+          className="relative z-10 t-meta text-muted truncate hover:underline hover:underline-offset-4 w-fit"
+        >
+          {row.source_name}
+        </Link>
 
-        {(disciplineLabel || cityLabel || differentiator) && (
+        {(disciplineLabel || cityLabel || differentiator || row.is_demo) && (
           <div className="flex flex-wrap items-center gap-2">
             {disciplineLabel && <Chip>{disciplineLabel}</Chip>}
             {cityLabel && <Chip>{cityLabel}</Chip>}
             {differentiator && <Chip tone="accent">{differentiator}</Chip>}
+            {row.is_demo && <Chip>Demo</Chip>}
           </div>
         )}
 
@@ -128,6 +139,6 @@ export default function OpportunityRow({
           </div>
         </div>
       </div>
-    </Link>
+    </div>
   )
 }

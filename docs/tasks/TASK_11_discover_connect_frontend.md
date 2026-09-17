@@ -8,6 +8,8 @@ Repository: `roipadan1-design/Cue-Radar`, base branch `main`. Owner department: 
 1. Task 10's migration (`supabase/migrations/0006_follows.sql`) merged and applied to the live database.
 2. A ux-ui-designer screen spec for the Discover directory layout. If no such spec exists in `docs/design/` (or wherever it's published) when this task starts, **stop and report** rather than inventing a layout — reuse the Hub's existing filter-panel and row patterns as a structural placeholder only if explicitly told to proceed without the spec.
 
+**Third dependency, added by Task 12 (2026-09-18 Israel-only pilot pivot — see `docs/DECISIONS.md`):** the pilot's geographic scope narrowed from the prior multi-city list to Israel only. This does **not** change this task's code — the city filter already reads its options only from the `markets` table (zero hardcoded lists, per `AGENTS.md` rule 4), so no code edit is needed here. It **does** mean end-to-end verification against real Israeli cities is blocked until the Researcher confirms which Israeli cities (beyond Tel Aviv) have real, verifiable art/culture activity and the owner adds them to the Google Sheet's `markets` tab for the sync pipeline to pick up. If that hasn't landed yet when this task is built, verify the city filter mechanism against whatever `markets` rows exist live (it will still work correctly — the filter is data-driven, not city-specific) and say so explicitly in the PR rather than blocking on it.
+
 Work on branch `task/discover-connect-frontend`, open **one PR** titled `Task 11: Discover/Connect v1 frontend` against `main`.
 
 ---

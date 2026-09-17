@@ -6,6 +6,8 @@ Repository: `roipadan1-design/Cue-Radar`, base branch `main`. Owner department: 
 
 Work on branch `task/source-detail-page`, open **one PR** titled `Task 09: Source detail page` against `main`.
 
+**Note added by Task 12 (2026-09-18 Israel-only pilot pivot — see `docs/DECISIONS.md`):** the pilot's geographic scope narrowed to Israel only. This page's scope does not change — it is a downstream view of whatever `sources`/`opportunities` rows exist in the DB, with no city logic of its own to narrow. Stated here explicitly so it's clear this is implicitly Israel-scoped like the rest of the pilot, not overlooked.
+
 ---
 
 ## 1. Route

@@ -17,8 +17,13 @@ ALTER TABLE public.opportunities
 -- 2. Recreate hub_feed to expose the two new columns.
 -- The current live view (from 0003_demo_seed.sql) selects an explicit column
 -- list rather than `o.*`, so the new columns do not flow through automatically
--- and must be added explicitly here. This is otherwise byte-for-byte the same
--- view definition as 0003_demo_seed.sql.
+-- and must be added explicitly here. Postgres's CREATE OR REPLACE VIEW only
+-- allows appending new output columns at the end of an existing view's column
+-- list (it errors on renaming/reordering any existing positional column), so
+-- `recurrence`/`expected_next_open` are appended last, after `is_demo`, rather
+-- than inlined next to the other `opportunities` columns. Every other column,
+-- in its original position, is otherwise byte-for-byte the same view
+-- definition as 0003_demo_seed.sql.
 CREATE OR REPLACE VIEW public.hub_feed AS
   SELECT
     o.opp_id,
@@ -45,14 +50,14 @@ CREATE OR REPLACE VIEW public.hub_feed AS
     o.verified_by,
     o.created_at,
     o.updated_at,
-    o.recurrence,
-    o.expected_next_open,
     s.name AS source_name,
     m.display_name AS city_name,
     m.region,
     (o.deadline - current_date) AS days_left,
     (o.deadline IS NULL) AS is_rolling,
-    o.is_demo
+    o.is_demo,
+    o.recurrence,
+    o.expected_next_open
   FROM public.opportunities o
   JOIN public.sources s USING (source_id)
   LEFT JOIN public.markets m ON m.slug = o.city

@@ -55,10 +55,6 @@ export default function OpportunityDetailView({
   const typeEntry = vocab.find((v) => v.category === 'type' && v.value === row.type)
   const typeLabel = typeEntry ? typeEntry.label : row.type
 
-  const metaLine = [typeLabel, row.source_name, row.city_name]
-    .filter(Boolean)
-    .join('  ·  ')
-
   const verifiedFormatted = formatVerifiedDate(row.verified_at)
   const stale = isVerificationStale(row.verified_at)
   const trustLine = verifiedFormatted
@@ -89,7 +85,21 @@ export default function OpportunityDetailView({
       </div>
 
       {/* 2. Meta line */}
-      <div className="t-meta text-muted mb-1">{metaLine}</div>
+      <div className="t-meta text-muted mb-1">
+        {typeLabel}
+        {row.source_name && (
+          <>
+            {'  ·  '}
+            <Link
+              href={`/sources/${row.source_id}`}
+              className="text-muted hover:underline hover:underline-offset-4"
+            >
+              {row.source_name}
+            </Link>
+          </>
+        )}
+        {row.city_name ? `  ·  ${row.city_name}` : ''}
+      </div>
 
       {/* Trust line — Deliverable C */}
       <div className="t-meta text-muted mb-1">{trustLine}</div>
@@ -101,7 +111,13 @@ export default function OpportunityDetailView({
       {!stale && <div className="mb-4" />}
 
       {/* 3. Title (sentence case) */}
-      <h1 className="t-title normal-case text-fg mb-3">{row.title}</h1>
+      <h1 className="t-title normal-case text-fg mb-1">{row.title}</h1>
+      {row.is_demo && (
+        <div className="mb-3">
+          <Chip>Demo</Chip>
+        </div>
+      )}
+      {!row.is_demo && <div className="mb-3" />}
 
       {/* Deliverable B: eligibility badge */}
       {eligibility && (

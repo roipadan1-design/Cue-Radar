@@ -2,8 +2,24 @@
 
 Status: spec only. No application code changed by this document.
 Audience: written for a Frontend Engineer agent to implement `app/discover/page.tsx` and the Follow button on `/a/[handle]` without guessing.
-Reads against: `docs/design/DESIGN_BRIEF.md`, `app/globals.css`, `docs/tasks/TASK_11_discover_connect_frontend.md`, and the current code in `components/hub/FilterBar.tsx`, `components/ui/{Sheet,Chip,Button}.tsx`, `components/profile/{PublicProfileView,ShareLink}.tsx`. Reuses these components; introduces no new ones.
-Date: 2026-09-17.
+Reads against: `docs/design/DESIGN_BRIEF.md`, `app/globals.css`, `docs/tasks/TASK_11_discover_connect_frontend.md`, `docs/DECISIONS.md` ("Task 12 — Israel-only pilot pivot," §§4/6), and the current code in `components/hub/FilterBar.tsx`, `components/ui/{Sheet,Chip,Button}.tsx`, `components/profile/{PublicProfileView,ShareLink}.tsx`. Reuses these components; introduces no new ones.
+Structural reference: [artconnect.com/discover/artists](https://www.artconnect.com/discover/artists) — browsed directly (mobile 375px and desktop) 2026-09-18. See §0 (added 2026-09-18) for exactly what is and isn't borrowed. The rest of this document is the original 2026-09-17 spec, amended in place where the pivot changes something concrete (marked inline).
+Date: 2026-09-17, amended 2026-09-18.
+
+Mobile is the primary target throughout this spec: every measurement and layout decision below is written for ~375–390px first. The `md:` breakpoints that appear are widenings for desktop, never the baseline.
+
+---
+
+## 0. What was studied on ArtConnect, and what changes here because of it
+
+ArtConnect's own artist directory (`/discover/artists`, one of three tabs alongside Curators and Organizations) confirms the shape this spec already had, rather than requiring a rewrite:
+
+- Header (bold title + one factual sub-line) → search/filter row → a plain vertical list of result rows, each a name, a one-word role label, a location line, and a "View Profile →" action.
+- Filtering collapses to a single icon-triggered panel on narrow widths — exactly the `Sheet`-based pattern this spec already specifies in §2.3.
+
+**What is confirmed, not changed:** the overall page shape and the row anatomy (identity block → one role fact → one location fact → action) were already right. **What is explicitly not borrowed:** ArtConnect's three-way Artists/Curators/Organizations tab switcher. Fellow. has one profile table and one directory (`/discover`) — adding tabs here would imply content that doesn't exist (Fellow. has no separate "curator" role or organization-profile type to switch to; institutions get their own, separate directory, `docs/design/SOURCES_DIRECTORY_SPEC.md`, per `docs/DECISIONS.md` Task 12 §4/Task 14 §4's explicit instruction not to merge the two). One deliberate simplification kept from the original spec, now confirmed rather than reconsidered: Fellow.'s card is a single clickable card (no separate "View Profile" button), never a row-plus-trailing-button — see §2.4 below, unchanged.
+
+**Israel scoping**: the City filter in §2.3 already read exclusively from the `markets` table with zero hard-coded city names — this satisfies the Israel-only pivot's own instruction (`docs/DECISIONS.md` Task 12 §1) not to hardcode which cities appear. No spec change was needed here; it was already correct. It cannot be verified end-to-end against real Israeli cities until the Researcher's confirmed city list lands in `markets` (per `docs/DECISIONS.md` Task 12 §6's note on Task 11), but the code/spec side needs no change for that to happen.
 
 ---
 

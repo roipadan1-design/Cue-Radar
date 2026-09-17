@@ -37,7 +37,7 @@ export default async function LandingPage() {
 
       <div className="my-[32px] border-b border-line" />
 
-      <p className="t-body text-muted max-w-[52ch] mx-auto md:mx-0 text-center md:text-left">
+      <p id="about" className="t-body text-muted max-w-[52ch] mx-auto md:mx-0 text-center md:text-left scroll-mt-16">
         Verified open calls, residencies and grants &#8212; plus what&apos;s worth catching in each city &#8212; for artists who work between places.
       </p>
 
@@ -70,7 +70,7 @@ export default async function LandingPage() {
           {remainingCount > 0 && (
             <Link
               href="/hub"
-              className="t-meta text-accent border border-line-strong rounded-[var(--radius)] px-2 py-1"
+              className="t-meta text-muted border border-line-strong rounded-[var(--radius)] px-2 py-1"
             >
               +{remainingCount} more
             </Link>

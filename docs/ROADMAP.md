@@ -40,16 +40,18 @@ This file is the single index of where the project is going. If a task file and 
 
 The product plan defines seven phases. Tasks are the unit of work; each belongs to a phase.
 
-**Numbering note (2026-09-17):** the task numbers in this section were drafted 2026-09-15 as placeholders for work that was still only outlined, before most of it actually shipped (see `docs/DECISIONS.md`) — largely ad hoc, without ever being committed as the numbered task file this table implies. The task-numbers `06`–`11` below the table are therefore historical placeholders, superseded where noted in §3. **The authoritative numbering is whichever files actually exist in `docs/tasks/`** (currently 01, 03, 06, 07, 08, 09, 10, 11) — see §3 and §6 for what each real number is.
+**Numbering note (2026-09-17):** the task numbers in this section were drafted 2026-09-15 as placeholders for work that was still only outlined, before most of it actually shipped (see `docs/DECISIONS.md`) — largely ad hoc, without ever being committed as the numbered task file this table implies. The task-numbers `06`–`11` below the table are therefore historical placeholders, superseded where noted in §3. **The authoritative numbering is whichever files actually exist in `docs/tasks/`** (currently 01, 03, 06, 07, 08, 09, 10, 11, 13, 14) — see §3 and §6 for what each real number is.
+
+**Pilot scope note (2026-09-18):** the pilot's geography narrowed to **Israel only** (Tel Aviv, Haifa, Jerusalem, plus any additional cities the Researcher confirms) and its content broadened beyond opportunities into "what's happening in the city" (workshops, lectures, masterclasses, courses, performances, theatre, dance, layered onto the events UI Task 06 already unblocked). English-only UI is now a decided, permanent choice, not a v1-only recommendation. Design direction now explicitly permits studying ArtConnect's UI/interaction structure (tabs, filters, search-then-detail flow) as a pattern reference — never its copy, brand mark, or colors. Mobile-first (~375–390px) is the primary target for every new screen, not a secondary check. Full detail, and exactly what does/doesn't change per task, is in `docs/DECISIONS.md`, "Task 12 — Israel-only pilot pivot and content-scope broadening." Two new tasks came out of this pivot: **Task 13** (event-type vocab gap check) and **Task 14** (sources directory screen).
 
 | Phase | Goal | Success metric | Tasks |
 |---|---|---|---|
 | **P1 · Foundation** | Schema, sync, seed, clean repo, design system | Sync runs green; Hub shows ≥60 live rows | 01, 02, 03, 05 |
 | **P2 · Hub v1** | List, filters, detail, save, ICS, auth, Fit, No-fee/Funded toggles, trust stamps | A new artist finds and saves a call within 60 seconds on mobile | 04, 06, 07 (brand/visual polish) |
-| **P2b · Source recurrence** | `opportunities.recurrence`/`expected_next_open` + `/sources/[id]` | An artist can tell from a source page when a dormant call usually reopens | 08, 09 |
+| **P2b · Source recurrence + directory** | `opportunities.recurrence`/`expected_next_open` + `/sources/[id]` + `/sources` search directory | An artist can tell from a source page when a dormant call usually reopens, and can find an institution by browsing/searching | 08, 09, 14 |
 | **P3 · Profile v2** | Full profile brief (plan §4) + say-hi via email handoff | 20 real public profiles | outlined, not yet numbered (see §3) |
-| **P4 · Trip Radar pilot** | trips + 6 cities × ~15 manual event sources + Trip screen + trip brief | An artist travelling to Berlin finds ≥10 relevant workshops/shows for their dates | city+date screen shipped under Task 06 (reduced scope); remaining scope outlined, not yet numbered |
-| **P5 · Agent** | `scan_events` daily + `scan_opportunities` every 3 days → staging → approval | ≥70% of agent-proposed rows approved without edits | 13, 14 |
+| **P4 · Trip Radar pilot / city content** | trips + manual event sources + Trip screen + trip brief; event-type vocab breadth for the Israel-only content pivot | An artist finds ≥10 relevant workshops/shows for their dates and city | city+date screen shipped under Task 06 (reduced scope); event-type vocab gap check is Task 13; remaining trip-data-model scope outlined, not yet numbered |
+| **P5 · Agent** | `scan_events` daily + `scan_opportunities` every 3 days → staging → approval | ≥70% of agent-proposed rows approved without edits | outlined, not yet numbered (13/14 now belong to the event-type vocab check and sources directory — see §3) |
 | **P6 · Connect** | Discover v1 (unblocked slice) now; in-app intros, peer calls, digest still blocked | 30% of active users sent or received an intro in a month (later, once intros ship) | 10, 11 (Discover v1, unblocked); 15–18 (still blocked) |
 | **P7 · Scale** | 23 cities, Pro tier, institutions, Circles | — | later |
 
@@ -150,7 +152,7 @@ Draft scope:
 - Confirm `scripts/sync_sheet_to_supabase.py` reads tabs `vocab, markets, sources, opportunities, events` exactly as the owner's sheet names them; fix header mismatches on the script side, never by renaming DB columns.
 - Sync only `status in (approved, live)` and `sync_ready == YES`; log skips; upsert in order `vocab → markets → sources → opportunities → events`; never delete; then expire past-deadline `live` rows; `--dry-run`.
 - Unit tests for every validation rule (`scripts/test_*.py`), offline, using `data/seed/*.csv`.
-- `data/seed/opportunities_staging.csv` stays draft. The owner verifies each `apply_url`, fills `deadline` and `verified_at`, sets `status=live`, moves to `opportunities`. Target ≥60 across Cologne, Berlin, Brussels, Tel Aviv, Vienna, Amsterdam. This is owner work; the task only makes the pipeline ready and documents the checklist in `OWNER_TASKS.md`.
+- `data/seed/opportunities_staging.csv` stays draft. The owner verifies each `apply_url`, fills `deadline` and `verified_at`, sets `status=live`, moves to `opportunities`. Target ≥60. **Superseded 2026-09-18** (see `docs/DECISIONS.md`, "Task 12 — Israel-only pilot pivot"): city sourcing is now Israel-only (Tel Aviv, Haifa, Jerusalem, plus any additional cities the Researcher confirms), not the original Cologne/Berlin/Brussels/Tel Aviv/Vienna/Amsterdam list. This is owner/Researcher work; the task only makes the pipeline ready and documents the checklist in `OWNER_TASKS.md`.
 - `.github/workflows/sync.yml`: cron every 6h + manual, summary artifact. Delete any remaining crawler workflow.
 - **Verification:** `python -m unittest`, `python scripts/sync_sheet_to_supabase.py --dry-run` output pasted, workflow run link.
 - **Out of scope:** any change under `app/` or `components/`.
@@ -171,6 +173,7 @@ Pulled forward from what P5/Task 14 originally scoped (recurrence + source pages
 
 - **Task 08 — Source recurrence migration.** Additive migration: `opportunities.recurrence` (`annual|biennial|rolling|one_off`, nullable), `opportunities.expected_next_open` (date, nullable). `lib/types.ts` updated. See `docs/tasks/TASK_08_source_recurrence_migration.md`.
 - **Task 09 — Source detail page.** `/sources/[id]`: institution info, past-calls archive, "Usually opens in {month}" computed from `expected_next_open`. Depends on Task 08 landing first. See `docs/tasks/TASK_09_source_detail_page.md`.
+- **Task 14 — Sources directory (2026-09-18, added by the Israel-only pivot).** `/sources`: search + city/discipline filters over `sources`, modeled structurally on ArtConnect's institution-search pattern (structure only — not its copy, brand, or colors, per `docs/DECISIONS.md` Task 12 §4). Depends on Task 09 (links into `/sources/[id]`) and a ux-ui-designer spec. See `docs/tasks/TASK_14_sources_directory.md`.
 
 ### P3 — Profile v2 (reconstructed from plan §4 — outlined, not yet numbered)
 
@@ -188,8 +191,10 @@ The city + date-range screen and three-section results view (originally drafted 
 
 ### P5 — Agent (reconstructed from plan §3.4, §6.2)
 
-- **Task 13 — Agent skeleton on one source.** `scripts/agent/{fetch,extract,dedupe,write_staging}.py`; Claude API structured output; writes only to staging; `run_log` table; no `source_url` → no row. Demonstrate one row landing in staging.
-- **Task 14 — Scheduled scans and approval.** `scan_events` daily, `scan_opportunities` every 3 days; owner approval flow in the sheet. (The `recurrence`/`expected_next_open` columns and the `/sources/[id]` page originally scoped here were pulled forward and shipped as Task 08/09 — see P1 below — since they don't require the agent to exist first.)
+**Numbers `13`/`14` originally drafted for this phase now belong to different, real tasks** (event-type vocab gap check; sources directory, respectively — both from the 2026-09-18 Israel-only pivot, see `docs/DECISIONS.md` "Task 12"). This phase's items will get the next free numbers when actually scheduled:
+
+- **Agent skeleton on one source.** `scripts/agent/{fetch,extract,dedupe,write_staging}.py`; Claude API structured output; writes only to staging; `run_log` table; no `source_url` → no row. Demonstrate one row landing in staging.
+- **Scheduled scans and approval.** `scan_events` daily, `scan_opportunities` every 3 days; owner approval flow in the sheet. (The `recurrence`/`expected_next_open` columns and the `/sources/[id]` page originally scoped here were pulled forward and shipped as Task 08/09 — see P1 below — since they don't require the agent to exist first.)
 
 ### P6 — Connect
 
@@ -210,7 +215,7 @@ The city + date-range screen and three-section results view (originally drafted 
 
 ## 4. Open questions still unanswered (recorded, plan §8)
 
-1. English-only UI for v1? (recommended: yes)
+1. ~~English-only UI for v1? (recommended: yes)~~ **Decided 2026-09-18: yes, permanently** — explicit owner instruction, unconditional even under the Israel-only geographic pilot (see `docs/DECISIONS.md`, "Task 12," §5). No Hebrew UI, no i18n work implied by the geographic narrowing.
 2. Peer calls — manual moderation or publish-then-report? (recommended: manual until 100 users)
 3. "Also applying" — opt-in or opt-out? (recommended: opt-in)
 4. Say-hi quota — 5/week? Does Pro remove it?
@@ -246,4 +251,7 @@ Not lost: everything in `docs/`, both task specs (01 in repo, 02 in the owner's 
 | 09 Source detail page | P2b | not started — depends on 08 | — |
 | 10 Discover/Connect v1 backend | P6 | not started | — |
 | 11 Discover/Connect v1 frontend | P6 | not started — depends on 10 and a ux-ui-designer spec | — |
-| 12–18 (Profile v2, Trip Radar remainder, Pipeline v2, Peer calls, Intros, Digest) | P3–P6 | outlined, not yet numbered or started | — |
+| 12 Israel-only pilot pivot and content-scope broadening | planning/decision (no code) | logged in `docs/DECISIONS.md`, 2026-09-18 — not a code task file | — |
+| 13 Event-type vocab gap check | P4/P5 | not started | — |
+| 14 Sources directory | P2b | not started — depends on 09 and a ux-ui-designer spec | — |
+| 15–18 (Profile v2, Trip Radar remainder, Pipeline v2, Peer calls, Intros, Digest) | P3–P6 | outlined, not yet numbered or started | — |

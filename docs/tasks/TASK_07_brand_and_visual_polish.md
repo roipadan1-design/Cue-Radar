@@ -50,6 +50,12 @@ Do **not** rename: the route path `/circuit`, the file/directory names (`app/cir
 
 Do: grep the codebase (command in §9 below) to confirm this is still true at the time this task is executed, and if any `--accent-a`, `--accent-b`, `--accent-c`, or preview-switcher code has reappeared, delete it. Otherwise make no change here and note "already satisfied" in the PR description — do not invent a switcher to then remove it.
 
+## 5b. New, separate ux-ui-designer dependency — ArtConnect UI-pattern audit (added by Task 12, 2026-09-18)
+
+The owner's Israel-only pilot pivot (`docs/DECISIONS.md`, "Task 12 — Israel-only pilot pivot and content-scope broadening") authorizes [ArtConnect](https://www.artconnect.com) as a **UI-pattern reference only** — buttons, typography treatment, modal/window patterns, tabs, tag/chip styling, filter UI — explicitly **not** as a content, positioning, or feature-scope reference (see `docs/research/ARTCONNECT_DISCOVER_LAUNCH_FINDINGS.md` and `docs/RESEARCH_market_scan.md` for the underlying competitive research). This is **new, separate work for the ux-ui-designer**, distinct from the accent-placement and filter-density specs already referenced in §6/§7 below — a companion round specifically auditing Fellow.'s current buttons, tabs, tags/chips, filters, and modal/sheet patterns against ArtConnect's, and recommending concrete changes.
+
+**This task does not spec or implement that audit.** Per this planning role's own scope, the audit itself must be produced by the ux-ui-designer as a spec (in `docs/design/` or wherever specs are already published, matching the existing pattern for §6/§7). Until that spec exists, the Frontend Engineer executing this task does not guess at ArtConnect-inspired changes — same "do not invent" rule as §6/§7 below. If the spec has landed by the time this task is executed, implement it literally, exactly as §6/§7 already instruct for their respective specs, and flag any conflict with the existing one-accent-family rule (Task 07's own §6 entry in `docs/DECISIONS.md`) rather than resolving it silently.
+
 ## 6. Additional `--accent` placements — blocked on the ux-ui-designer's spec
 
 The owner wants more places in the UI to use `--accent`, beyond the current single-per-screen uses (primary buttons, the `Funded`/`No fee` differentiator chip, the `Eligible ✓` label). **Do not invent new placements.** This section of the task is a placeholder until `docs/design/` (or wherever the ux-ui-designer publishes it) contains a specific spec naming exact elements. When that spec lands:
@@ -75,7 +81,7 @@ The `間` mark (`components/brand/Mark.tsx`) is a placeholder for the "Fellow." 
 4. §4 Circuit → Currently copy.
 5. §5 accent verification.
 6. §10 end-to-end signup verification.
-7. §6, §7, §8 — check whether the dependency (ux-ui-designer spec / creative-director mark) has landed; implement only if it has, otherwise skip and note in the PR.
+7. §5b, §6, §7, §8 — check whether the dependency (ux-ui-designer spec / creative-director mark) has landed; implement only if it has, otherwise skip and note in the PR.
 
 ## 10. End-to-end signup verification (item d)
 
