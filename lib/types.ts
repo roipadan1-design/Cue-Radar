@@ -118,6 +118,23 @@ export interface EventRow {
   is_demo: boolean
 }
 
+export interface Source {
+  source_id: string
+  name: string
+  source_type: string
+  market?: string | null
+  discipline_focus: string[]
+  tier: number
+  website_url?: string | null
+  opencalls_url?: string | null
+  instagram_url?: string | null
+  scrape_method?: string | null
+  status: 'active' | 'dormant' | 'closed'
+  needs_verification: boolean
+  notes?: string | null
+  is_demo: boolean
+}
+
 export interface Follow {
   follower_id: string
   followee_id: string

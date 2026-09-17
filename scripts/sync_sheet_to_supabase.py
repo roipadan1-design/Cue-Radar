@@ -16,7 +16,7 @@ import urllib.error
 from typing import List, Dict, Any, Tuple
 from datetime import datetime
 
-VALID_VOCAB_CATEGORIES = {"type", "discipline", "funding_type", "covers", "career_stage", "region"}
+VALID_VOCAB_CATEGORIES = {"type", "discipline", "funding_type", "covers", "career_stage", "region", "event_type"}
 
 ALLOWED_COLUMNS = {
     "markets": {"slug", "display_name", "country", "region", "timezone", "currency", "lat", "lng"},
@@ -236,7 +236,16 @@ def main():
         print("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required for live sync.")
         sys.exit(1)
 
-    tabs = ["markets", "sources", "opportunities"]
+    # "vocab" is intentionally NOT in this list yet: the live Sheet's "vocab"
+    # worksheet (see TAB_GIDS) is not in the category/value/label/sort_order
+    # format validate_rows()/ALLOWED_COLUMNS expect for this tab -- it is a
+    # wide, one-column-per-category dropdown-reference sheet instead. Adding
+    # "vocab" here as-is would fail validation on every row and, since a
+    # validation error calls sys.exit(1), would abort this entire script run
+    # (not just skip that one tab) on every scheduled sync. See
+    # docs/DECISIONS.md, "Task 13 follow-up" for the read-only check that
+    # found this and what needs to happen before vocab can be added safely.
+    tabs = ["markets", "sources", "opportunities", "events"]
     for tab_name in tabs:
         try:
             records = fetch_tab_records(sheet_id, tab_name, service_acc_json)
