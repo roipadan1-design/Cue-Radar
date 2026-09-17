@@ -2,12 +2,15 @@ import React from 'react'
 import Link from 'next/link'
 import { Instagram } from 'lucide-react'
 import ShareLink from './ShareLink'
+import FollowButton from './FollowButton'
 import Button from '@/components/ui/Button'
 import type { ProfileView, Profile } from '@/lib/types'
 
 interface PublicProfileViewProps {
   profile: Partial<ProfileView> & Profile
   isOwner?: boolean
+  viewerId?: string | null
+  initialFollowing?: boolean
 }
 
 function formatDateShort(dateStr?: string | null): string {
@@ -38,7 +41,12 @@ function getInitials(name?: string): string {
   return (parts[0][0] + parts[parts.length - 1][0]).toUpperCase()
 }
 
-export default function PublicProfileView({ profile, isOwner = false }: PublicProfileViewProps) {
+export default function PublicProfileView({
+  profile,
+  isOwner = false,
+  viewerId = null,
+  initialFollowing = false,
+}: PublicProfileViewProps) {
   const initials = getInitials(profile.full_name)
   const locationsText =
     profile.locations && profile.locations.length > 0 ? profile.locations.join(' · ') : ''
@@ -130,6 +138,14 @@ export default function PublicProfileView({ profile, isOwner = false }: PublicPr
       {/* 3. Actions */}
       <div className="flex items-center gap-3">
         <ShareLink />
+        {!isOwner && viewerId && (
+          <FollowButton
+            viewerId={viewerId}
+            profileId={profile.id}
+            fullName={profile.full_name}
+            initialFollowing={initialFollowing}
+          />
+        )}
         {isOwner && (
           <Link href="/profile/edit">
             <Button variant="secondary">Edit profile</Button>
