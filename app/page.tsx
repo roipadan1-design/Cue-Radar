@@ -1,6 +1,7 @@
 import Link from 'next/link'
 import Button from '@/components/ui/Button'
 import Mark from '@/components/brand/Mark'
+import IntroSplash from '@/components/brand/IntroSplash'
 import { BRAND } from '@/lib/brand'
 import { createClient } from '@/lib/supabase/server'
 
@@ -20,6 +21,7 @@ export default async function LandingPage() {
 
   return (
     <div className="max-w-[720px] mx-auto px-4 md:px-6 pt-12 md:pt-16 pb-12">
+      <IntroSplash />
       <div className="animate-mark-fade mb-[56px] flex items-center justify-center md:justify-start gap-2 text-fg">
         <span className="text-muted font-normal select-none t-title">[</span>
         <Mark size="sm" />
