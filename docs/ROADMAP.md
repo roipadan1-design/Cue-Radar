@@ -40,14 +40,17 @@ This file is the single index of where the project is going. If a task file and 
 
 The product plan defines seven phases. Tasks are the unit of work; each belongs to a phase.
 
+**Numbering note (2026-09-17):** the task numbers in this section were drafted 2026-09-15 as placeholders for work that was still only outlined, before most of it actually shipped (see `docs/DECISIONS.md`) — largely ad hoc, without ever being committed as the numbered task file this table implies. The task-numbers `06`–`11` below the table are therefore historical placeholders, superseded where noted in §3. **The authoritative numbering is whichever files actually exist in `docs/tasks/`** (currently 01, 03, 06, 07, 08, 09, 10, 11) — see §3 and §6 for what each real number is.
+
 | Phase | Goal | Success metric | Tasks |
 |---|---|---|---|
 | **P1 · Foundation** | Schema, sync, seed, clean repo, design system | Sync runs green; Hub shows ≥60 live rows | 01, 02, 03, 05 |
-| **P2 · Hub v1** | List, filters, detail, save, ICS, auth, Fit, No-fee/Funded toggles, trust stamps | A new artist finds and saves a call within 60 seconds on mobile | 04, 06, 07, 08 |
-| **P3 · Profile v2** | Full profile brief (plan §4) + say-hi via email handoff | 20 real public profiles | 09, 10 |
-| **P4 · Trip Radar pilot** | trips + 6 cities × ~15 manual event sources + Trip screen + trip brief | An artist travelling to Berlin finds ≥10 relevant workshops/shows for their dates | 11, 12 |
+| **P2 · Hub v1** | List, filters, detail, save, ICS, auth, Fit, No-fee/Funded toggles, trust stamps | A new artist finds and saves a call within 60 seconds on mobile | 04, 06, 07 (brand/visual polish) |
+| **P2b · Source recurrence** | `opportunities.recurrence`/`expected_next_open` + `/sources/[id]` | An artist can tell from a source page when a dormant call usually reopens | 08, 09 |
+| **P3 · Profile v2** | Full profile brief (plan §4) + say-hi via email handoff | 20 real public profiles | outlined, not yet numbered (see §3) |
+| **P4 · Trip Radar pilot** | trips + 6 cities × ~15 manual event sources + Trip screen + trip brief | An artist travelling to Berlin finds ≥10 relevant workshops/shows for their dates | city+date screen shipped under Task 06 (reduced scope); remaining scope outlined, not yet numbered |
 | **P5 · Agent** | `scan_events` daily + `scan_opportunities` every 3 days → staging → approval | ≥70% of agent-proposed rows approved without edits | 13, 14 |
-| **P6 · Connect** | In-app intros, peer calls, follows, digest | 30% of active users sent or received an intro in a month | 15–18 |
+| **P6 · Connect** | Discover v1 (unblocked slice) now; in-app intros, peer calls, digest still blocked | 30% of active users sent or received an intro in a month (later, once intros ship) | 10, 11 (Discover v1, unblocked); 15–18 (still blocked) |
 | **P7 · Scale** | 23 cities, Pro tier, institutions, Circles | — | later |
 
 ---
@@ -154,32 +157,49 @@ Draft scope:
 
 ---
 
-### P2 remainder (reconstructed — split as needed)
+### P2 remainder — status (numbers below are historical placeholders only; do not reuse them)
 
-- **Task 06 — Calendar and ICS.** `app/opportunities/[slug]/ics/route.ts` (`text/calendar`, one VEVENT on the deadline, alarm 48h). `Add to calendar` ghost link becomes real. Consider the plan's `/saved/calendar.ics?token=` subscription feed instead of per-opportunity files (plan §2.4) — decide in DECISIONS.
-- **Task 07 — Fit and financial toggles.** `fit_score(profile, opportunity) → eligible | check | ineligible + reasons` (rules only, no ML; SQL function or `lib/fit.ts`). Quiet tag on rows for signed-in users; filter "Show only what I'm eligible for" default on; detail page explains the reasons. Toggles `No fee`, `Funded`, `Covers housing/travel` as URL booleans. Requires profile fields for passport/residency country and career stage (migration adds columns).
-- **Task 08 — Trust stamps and OG images.** Detail page line `Verified {date} · Last checked {date} · Source: {name}`; migration adds `last_checked` to `opportunities`; internal `Re-verify` flag when >30 days. `opengraph-image.tsx` for `/opportunities/[slug]` and `/a/[handle]` using the brand from Task 03.
+All three items originally drafted here as "Task 06/07/08" have already shipped, just not through a dedicated numbered task file for each — ICS shipped as part of the real, differently-scoped Task 06 (`docs/tasks/TASK_06_pilot_readiness.md`), and the rest shipped ad hoc (see `docs/DECISIONS.md`, "Deliverables A–D (Financial Filters, Fit Score, Trust Stamps, OG Images)"). Kept here only as a historical record of the original scope; the numbers `06`/`07`/`08` in this subsection's old drafts must not be cited going forward — `06` now means pilot readiness, `07` now means brand/visual polish (`docs/tasks/TASK_07_brand_and_visual_polish.md`), `08` now means the source recurrence migration (`docs/tasks/TASK_08_source_recurrence_migration.md`).
 
-### P3 — Profile v2 (reconstructed from plan §4)
+- **Calendar and ICS** — shipped. `app/opportunities/[slug]/ics/route.ts` and `app/events/[id]/ics/route.ts` share `lib/ics.ts`.
+- **Fit and financial toggles** — shipped. `lib/fit.ts` (`checkEligibility`), `No fee`/`Funded`/`Covers housing`/`Covers travel` URL-boolean filters.
+- **Trust stamps and OG images** — shipped. Verified/last-checked line on the detail page; `opengraph-image.tsx` for `/opportunities/[slug]` and `/a/[handle]`.
 
-- **Task 09 — Profile fields and gallery.** Migration: `inspired_by text[]`, `mediums text[]`, `pronouns`, `languages text[]`, `based_since date`, `press_url`, `cv_url`; tables `profile_works`, `profile_images`; bucket `gallery`. Public page per plan §4.2 (single column, 720px). Inline edit mode with a quiet completeness meter; `/profile/edit` stays as fallback. Preview of the public view when enabling `is_public`.
-- **Task 10 — Say-hi via email handoff.** `intros` table, weekly quota (open question #4 in the plan: 5/week), mailto/Resend handoff, no in-app messaging yet.
+### Source recurrence (Tasks 08–09, 2026-09-17)
 
-### P4 — Trip Radar pilot (reconstructed from plan §3)
+Pulled forward from what P5/Task 14 originally scoped (recurrence + source pages), since it doesn't require the agent pipeline to exist first:
 
-- **Task 11 — Data model and screen.** Tables `trips`, `trip_items`, `event_sources`; SQL function `trip_feed(market, from, to)`; routes `/trips`, `/trips/[id]`, `/radar/[city]?from=&to=`; trip visibility default `connections` (open question #5).
-- **Task 12 — Manual event sources.** 6 cities × ~15 event sources curated by hand in the sheet; `events` tab synced; trip brief email.
+- **Task 08 — Source recurrence migration.** Additive migration: `opportunities.recurrence` (`annual|biennial|rolling|one_off`, nullable), `opportunities.expected_next_open` (date, nullable). `lib/types.ts` updated. See `docs/tasks/TASK_08_source_recurrence_migration.md`.
+- **Task 09 — Source detail page.** `/sources/[id]`: institution info, past-calls archive, "Usually opens in {month}" computed from `expected_next_open`. Depends on Task 08 landing first. See `docs/tasks/TASK_09_source_detail_page.md`.
+
+### P3 — Profile v2 (reconstructed from plan §4 — outlined, not yet numbered)
+
+Numbers `09`/`10` originally drafted for this phase now belong to different, real tasks (source detail page; Discover/Connect v1 backend, respectively) — this phase's items will get the next free number when actually scheduled.
+
+- **Profile fields and gallery.** Migration: `inspired_by text[]`, `mediums text[]`, `pronouns`, `languages text[]`, `based_since date`, `press_url`, `cv_url`; tables `profile_works`, `profile_images`; bucket `gallery`. Public page per plan §4.2 (single column, 720px). Inline edit mode with a quiet completeness meter; `/profile/edit` stays as fallback. Preview of the public view when enabling `is_public`.
+- **Say-hi via email handoff.** `intros` table, weekly quota (open question #4 in the plan: 5/week), mailto/Resend handoff, no in-app messaging yet. Explicit fast-follow to Task 10/11's `follows` table (see `docs/DECISIONS.md`) — not started.
+
+### P4 — Trip Radar pilot (reconstructed from plan §3 — city+date screen already shipped; rest outlined, not yet numbered)
+
+The city + date-range screen and three-section results view (originally drafted here as "Task 11") already shipped in reduced scope as part of the real Task 06 (`/circuit`, UI-labelled "Currently" as of Task 07) — no `trips` table, no visibility settings, no "artists in town." Number `11` now belongs to the Discover/Connect v1 frontend task instead. What's left of this phase, still outlined and not yet numbered:
+
+- **Trips data model.** Tables `trips`, `trip_items`, `event_sources`; SQL function `trip_feed(market, from, to)`; routes `/trips`, `/trips/[id]`; trip visibility default `connections` (open question #5).
+- **Manual event sources.** 6 cities × ~15 event sources curated by hand in the sheet; `events` tab synced; trip brief email.
 
 ### P5 — Agent (reconstructed from plan §3.4, §6.2)
 
 - **Task 13 — Agent skeleton on one source.** `scripts/agent/{fetch,extract,dedupe,write_staging}.py`; Claude API structured output; writes only to staging; `run_log` table; no `source_url` → no row. Demonstrate one row landing in staging.
-- **Task 14 — Scheduled scans and approval.** `scan_events` daily, `scan_opportunities` every 3 days; owner approval flow in the sheet; `recurrence` + `expected_next_open` on opportunities; source pages `/sources/[id]` with archive and "usually opens in {month}".
+- **Task 14 — Scheduled scans and approval.** `scan_events` daily, `scan_opportunities` every 3 days; owner approval flow in the sheet. (The `recurrence`/`expected_next_open` columns and the `/sources/[id]` page originally scoped here were pulled forward and shipped as Task 08/09 — see P1 below — since they don't require the agent to exist first.)
 
-### P6 — Connect (reconstructed from plan §2.7–2.9, §5)
+### P6 — Connect
 
+**Note (2026-09-17):** a first, deliberately narrow slice of Connect was unblocked ahead of the rest of this phase — see Task 10/11 below and `AGENTS.md` rule 10 (amended by Task 06, Task 10). The remaining reconstructed tasks in this phase (peer calls, in-app intros, digest, a followers/following list) stay blocked exactly as before.
+
+- **Task 10 — Discover/Connect v1 backend.** `follows` table (private, RLS restricted to the two parties, no public-read policy); reuses `profiles.is_public`. See `docs/tasks/TASK_10_discover_connect_backend.md`.
+- **Task 11 — Discover/Connect v1 frontend.** `/discover` directory (search + discipline/city filters over public profiles) and a private Follow/Following button on `/a/[handle]`; no follower counts anywhere. Depends on Task 10 and a ux-ui-designer screen spec. See `docs/tasks/TASK_11_discover_connect_frontend.md`.
 - **Task 15 — Pipeline v2.** Reminders 7d / 48h for `drafting` (Resend); `outcome_note`; materials vault (bucket `materials`, private) with "you have 3 of 4 required materials".
 - **Task 16 — Peer calls.** `type = peer_call` posted by artists, moderation queue, dashed-border treatment in the Hub, `/calls/new`.
-- **Task 17 — Follows and intros in-app.** `follows`, `connections`, `/inbox`.
+- **Task 17 — Intros ("say-hi") in-app.** `intros` table, weekly quota, followers/following list page. Explicit fast-follow to Task 10/11, not started.
 - **Task 18 — Weekly digest.** Sunday email from `radar_preferences.alert_frequency`, text only.
 
 ### P7 — Scale
@@ -217,8 +237,13 @@ Not lost: everything in `docs/`, both task specs (01 in repo, 02 in the owner's 
 |---|---|---|---|
 | 01 Cleanup and foundation | P1 | merged | #3 |
 | 02 Structure and typography | P1 | in review, fixes requested | #6 |
-| 03 Brand identity | P1 | draft scope (§3.3) | — |
-| 04 Supabase wiring and auth | P2 | draft scope (§3.4) | — |
-| 05 Seed and sync alignment | P1 | draft scope (§3.5) | — |
-| 06–08 | P2 | outlined | — |
-| 09–18 | P3–P6 | outlined | — |
+| 03 Brand, profile and depth | P1 | shipped (mark, accent, real profile, sign-in/up screens — see `docs/DECISIONS.md`) | — |
+| 04 Supabase wiring and auth | P2 | shipped (auth, Hub, Saved, profile all live-wired — see `docs/DECISIONS.md`) | — |
+| 05 Seed and sync alignment | P1 | ongoing (sync workflow running; real-content growth tracked in `docs/PILOT_PLAN.md` Phase 2) | — |
+| 06 Pilot readiness | P2 | in progress on `task/pilot-readiness`, not yet merged — see `docs/PILOT_PLAN.md` Phase 1 for remaining items | — |
+| 07 Brand and visual polish | P2 | not started | — |
+| 08 Source recurrence migration | P2b | not started | — |
+| 09 Source detail page | P2b | not started — depends on 08 | — |
+| 10 Discover/Connect v1 backend | P6 | not started | — |
+| 11 Discover/Connect v1 frontend | P6 | not started — depends on 10 and a ux-ui-designer spec | — |
+| 12–18 (Profile v2, Trip Radar remainder, Pipeline v2, Peer calls, Intros, Digest) | P3–P6 | outlined, not yet numbered or started | — |

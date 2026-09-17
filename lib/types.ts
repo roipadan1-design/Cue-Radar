@@ -50,6 +50,8 @@ export interface HubFeedRow {
   days_left?: number | null
   is_rolling: boolean
   is_demo: boolean
+  recurrence?: 'annual' | 'biennial' | 'rolling' | 'one_off' | null
+  expected_next_open?: string | null
 }
 
 export type OpportunityDetail = HubFeedRow
@@ -114,6 +116,12 @@ export interface EventRow {
   lat?: number | null
   lng?: number | null
   is_demo: boolean
+}
+
+export interface Follow {
+  follower_id: string
+  followee_id: string
+  created_at: string
 }
 
 export interface SavedRow {

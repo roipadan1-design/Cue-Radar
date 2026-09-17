@@ -31,7 +31,8 @@ ALLOWED_COLUMNS = {
         "discipline_flags", "city", "deadline", "funding_min", "funding_max",
         "currency", "funding_type", "covers", "application_fee",
         "eligibility_geo", "career_stage", "materials_required",
-        "apply_url", "status", "verified_at", "verified_by"
+        "apply_url", "status", "verified_at", "verified_by",
+        "recurrence", "expected_next_open"
     },
     "events": {
         "event_id", "market", "venue_name", "title", "event_type",

@@ -2,7 +2,7 @@
 
 Written 2026-09-16. This is the single plan for getting from today's state to a closed pilot with real users. It supersedes `docs/ROADMAP.md` for sequencing purposes until the pilot ships; `ROADMAP.md` remains the historical task ledger.
 
-**Explicitly parked, not in this plan:** the artist-to-artist connection/collab layer (matching by location, date, discipline — "Connect", `docs/ROADMAP.md` Phase P6). The owner has set this aside pending dedicated research. No agent should start design or implementation work on it until a research task file exists and is approved.
+**Partially unblocked (2026-09-17):** the artist-to-artist connection/collab layer ("Connect", `docs/ROADMAP.md` Phase P6) was parked pending dedicated research. The owner has now explicitly unblocked one narrow slice of it ahead of that research — opt-in discoverable public profiles, a search/filter directory screen, and a private one-directional follow — via `AGENTS.md` rule 10 (amended by Task 06, Task 10) and `docs/tasks/TASK_10_discover_connect_backend.md` / `TASK_11_discover_connect_frontend.md`. See `docs/DECISIONS.md` for the exact scope and its boundaries. **Everything else in Connect stays parked**: messaging/DM, a public follower count, an activity feed, algorithmic match recommendations, peer calls, intros/say-hi, and digest. No agent should start design or implementation work on any of those until a research task file exists and is approved, or a task explicitly names the addition.
 
 ---
 
@@ -23,6 +23,8 @@ Goal: land the branch that's already in progress. Owner: Frontend Engineer, revi
 - Run the full verification block in Task 06 §10 and the 11-step manual mobile checklist; fix anything that fails.
 - Update `docs/DECISIONS.md` / `docs/OWNER_TASKS.md` with anything discovered.
 - Open the PR against `main`.
+
+**Note (2026-09-17):** per `docs/DECISIONS.md`, most of the items above have since shipped (the three-section `/circuit` city view, `app/events/[id]/ics/route.ts`, and the "Saved calls" title all exist in code). Two Task 06 §8 items did **not** ship and are picked up by the new **Task 07** (`docs/tasks/TASK_07_brand_and_visual_polish.md`) instead of being re-added here: the footer still links to `docs/HANDOFF_V3.md` on GitHub, and the main-nav Profile link still sends signed-out users to the fictional demo profile instead of `/signin?next=/profile/edit`. Task 07 also covers the missing `Demo` tag on Hub rows and the "Circuit" → "Currently" UI rename, and folds in an end-to-end verification of `/signup` → `/profile/edit` → `is_public` → `/a/[handle]` now that the owner is registering as the first real user.
 
 ## Phase 2 — Real content
 
@@ -59,4 +61,8 @@ Goal: a small number of real artists use it and we learn something. Owner: the o
 
 ## After the pilot (not scheduled yet)
 
-Anything from `docs/ROADMAP.md` Phase P3 onward (profile v2, Trip Radar beyond v1, the agent-driven scanner, and — only after dedicated research — Connect) gets scheduled from pilot feedback, not before.
+Anything from `docs/ROADMAP.md` Phase P3 onward (profile v2, Trip Radar beyond v1, the agent-driven scanner, and most of Connect) gets scheduled from pilot feedback, not before.
+
+**Exceptions, already scoped and not blocked on the pilot closing:**
+- **Source recurrence** (`docs/tasks/TASK_08_source_recurrence_migration.md`, `TASK_09_source_detail_page.md`) — not started. Additive schema + a new `/sources/[id]` page; low risk, doesn't touch pilot-critical paths.
+- **Discover/Connect v1** (`docs/tasks/TASK_10_discover_connect_backend.md`, `TASK_11_discover_connect_frontend.md`) — not started, owner-authorized ahead of the broader Connect research (see the note at the top of this file and `docs/DECISIONS.md`). Task 11 additionally depends on a ux-ui-designer screen spec landing first.
