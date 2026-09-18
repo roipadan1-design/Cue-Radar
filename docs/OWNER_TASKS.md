@@ -245,6 +245,54 @@ npx supabase db push --linked
 applies `0007` and harmlessly resyncs the CLI's migration bookkeeping for `0008`/`0009` in one pass.
 Low urgency — it adds two vocabulary labels and blocks nothing.
 
+### Step 4p: artsinisrael.org added — four decisions it surfaces (2026-09-19)
+
+Added at your direct request. **[artsinisrael.org](https://artsinisrael.org/)** — עמותת אמנים יוצרים
+בישראל / אגודת אמני הקרמיקה, Bar Yochai 5 Tel Aviv, which also runs Gallery B.Y5.
+
+**Why it is a good catch:** its *קולות קוראים מתעדכנים* page is a **live, continuously-updated
+aggregator** of open calls, carrying six distinct ones the day it was read. That makes it a *supply
+channel*, not a single-programme institution — which is exactly what Step 4n says the Israeli feed is
+short of. Worth putting on a recurring re-check.
+
+Staged (all `draft`, nothing promoted, nothing written to the database):
+`data/seed/sources_staging_2026-09-19_artsinisrael.csv` (3 sources) and
+`data/seed/opportunities_staging_2026-09-19_artsinisrael.csv` (6 opportunities). All six validate
+clean against the live `vocab` table.
+
+**1. Caesarea is not a market, and that blocks the best opportunity found so far.**
+The **Psychomagic Art Lab at Ralli Museum Caesarea** (verified on the museum's own page, not the
+aggregator) closes **20 Oct 2026**, is **free to participate**, and explicitly names **סאונד and
+מחול** among its disciplines — sound and dance, the product's priority focus, which nothing else
+found in Israel to date does. Three sessions Nov 2026–Jan 2027, led by Uri Sivan, Ari Folman and Mor
+Kadishzon, ending in a group exhibition at the museum in March 2027.
+
+It cannot go live: `opportunities.city` is a foreign key to `markets(slug)` and Caesarea has no
+market row. **Your call** — add Caesarea as a market, or let this one go. It was deliberately *not*
+reassigned to Tel Aviv to force it in; that would misstate where the artist has to physically show up
+three times.
+
+**2. Does Fellow. list foreign-hosted calls that Israeli artists can apply to?**
+Three of the six are hosted abroad (Teapot Biennial China, TerrArt Catalonia, Ceramics Mino Japan).
+The Israel-only narrowing was about *cities we cover*; this is a different question — *where an
+Israeli artist may apply from Israel*. They are staged rather than discarded so the verified detail
+is not lost, and flagged not-to-promote until you answer it. Two of the three still need their real
+application URL found; the aggregator linked them by foreign link text rather than a resolvable URL.
+
+**3. `ceramics` has no discipline vocab value.**
+Available: sound, music, performance, dance, painting, sculpture, choreography, live_electronics,
+installation, interdisciplinary. Ceramics rows are mapped to `sculpture` + `interdisciplinary` as a
+deliberate approximation, not a verified self-description. Since this association is ceramics-centred
+and appears to be a durable supply channel, adding a `ceramics` value may be worth it — that is a
+`vocab` addition, i.e. a small migration, same pattern as `0007`.
+
+**4. Fresh Paint has three more open tracks nobody has captured.**
+`freshpaint.co.il` currently advertises four live 2027 tracks: החממה (staged), plus עיצוב טרי,
+DESIGN ART and פרס צבי ימיני לעיצוב. The latter three are real and open but no deadline, fee or
+eligibility appeared on any page read on 2026-09-19, so they were not staged — those must be read off
+Fresh Paint's own open-call pages, not guessed. Also note the Greenhouse's deadline (14 Oct 2026) and
+fee (₪148) are **aggregator-sourced and not yet confirmed at Fresh Paint's own site**.
+
 ### Step 4: Google Service Account & Sheet Setup
 1. Create a Google Cloud Service Account and download its JSON key.
 2. Store the JSON key contents in GitHub Secret `GOOGLE_SERVICE_ACCOUNT_JSON`.
