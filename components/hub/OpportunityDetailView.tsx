@@ -81,8 +81,16 @@ export default function OpportunityDetailView({
   const isFree = row.application_fee === 0
   const feeText = isFree ? 'Free to apply' : `${getCurrencySymbol(row.currency)}${row.application_fee}`
 
+  // `eligibility_geo` mixes ISO codes with plain words ('IL', 'EU', 'DE', 'NRW',
+  // 'international'). There is no vocab category for it, so this only fixes the
+  // casing of the word-shaped values and leaves the codes alone — a formatting
+  // rule, not an invented code-to-country-name table (rule 1/4).
   const eligibilityText =
-    row.eligibility_geo && row.eligibility_geo.length > 0 ? row.eligibility_geo.join(', ') : '—'
+    row.eligibility_geo && row.eligibility_geo.length > 0
+      ? row.eligibility_geo
+          .map((g) => (g === g.toUpperCase() ? g : g.charAt(0).toUpperCase() + g.slice(1)))
+          .join(', ')
+      : '—'
 
   // Deliverable B: eligibility badge for signed-in users
   const eligibility = profile ? checkEligibility(profile, row) : null
