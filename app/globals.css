@@ -8,10 +8,10 @@
   --line-strong: #2E2E2E;
   --fg: #F2F2F2;
   --muted: #8C8C8C;
-  --accent: #B39DFF;
+  --accent: #AA80FF;
   --urgent: #E5484D;
   --backdrop: rgba(0, 0, 0, 0.6);
-  --radius: 2px;
+  --radius: 0px;
   --space-1: 4px;
   --space-2: 8px;
   --space-3: 12px;
@@ -34,7 +34,6 @@
   --color-backdrop: var(--backdrop);
   --font-display: var(--font-display);
   --font-body: var(--font-body);
-  --font-mark: var(--font-mark);
   --radius-sm: var(--radius);
 }
 
@@ -162,25 +161,24 @@
     text-transform: uppercase;
     letter-spacing: -0.03em;
     line-height: 0.95;
-    font-size: 36px;
+    font-size: 40px;
   }
   @media (min-width: 768px) {
     .t-display {
-      font-size: 64px;
+      font-size: 72px;
     }
   }
 
   .t-title {
     font-family: var(--font-display), sans-serif;
     font-weight: 800;
-    text-transform: uppercase;
     letter-spacing: -0.02em;
     line-height: 1.0;
-    font-size: 22px;
+    font-size: 24px;
   }
   @media (min-width: 768px) {
     .t-title {
-      font-size: 28px;
+      font-size: 32px;
     }
   }
 

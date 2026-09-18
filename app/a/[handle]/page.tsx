@@ -36,5 +36,23 @@ export default async function PublicProfilePage({ params }: PageProps) {
     notFound()
   }
 
-  return <PublicProfileView profile={profile as Profile} isOwner={isOwner} />
+  let initialFollowing = false
+  if (user && !isOwner) {
+    const { data: followRow } = await supabase
+      .from('follows')
+      .select('follower_id')
+      .eq('follower_id', user.id)
+      .eq('followee_id', profile.id)
+      .maybeSingle()
+    initialFollowing = !!followRow
+  }
+
+  return (
+    <PublicProfileView
+      profile={profile as Profile}
+      isOwner={isOwner}
+      viewerId={user?.id ?? null}
+      initialFollowing={initialFollowing}
+    />
+  )
 }

@@ -50,7 +50,7 @@ export default function IntroSplash() {
     >
       <div className="intro-splash__lockup flex items-center gap-2 text-fg">
         <span className="t-title text-muted font-normal select-none">[</span>
-        <Mark size="md" />
+        <Mark size="md" variant="splash" />
         <span className="t-title text-fg tracking-[0.04em] uppercase">
           {BRAND.wordmark}
         </span>

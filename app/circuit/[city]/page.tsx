@@ -132,7 +132,7 @@ export default async function CircuitCityPage(props: PageProps) {
     <div className="max-w-[720px] mx-auto px-4 md:px-6 py-8 pb-24">
       <div className="mb-[32px] flex flex-col">
         <Link href="/circuit" className="t-meta text-muted hover:text-fg transition-colors">
-          ← Circuit
+          ← Currently
         </Link>
         <h1 className="t-title text-fg mt-[8px]">{market.display_name}</h1>
         <div className="t-body text-muted mt-[4px]">

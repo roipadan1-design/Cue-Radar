@@ -1,5 +1,5 @@
 import type { Metadata, Viewport } from 'next'
-import { Archivo, Manrope, Noto_Sans_JP } from 'next/font/google'
+import { Archivo, Manrope } from 'next/font/google'
 import TopBar from '@/components/layout/TopBar'
 import MobileNav from '@/components/layout/MobileNav'
 import Footer from '@/components/layout/Footer'
@@ -17,14 +17,6 @@ const manrope = Manrope({
   subsets: ['latin'],
   weight: ['400', '500', '600'],
   variable: '--font-body',
-})
-
-const notoSansJP = Noto_Sans_JP({
-  weight: '700',
-  // @ts-expect-error Next.js Google font loader supports text parameter for character subsetting at runtime
-  text: '間',
-  preload: false,
-  variable: '--font-mark',
 })
 
 export const metadata: Metadata = {
@@ -52,7 +44,7 @@ export default async function RootLayout({
   return (
     <html
       lang="en"
-      className={`${archivo.variable} ${manrope.variable} ${notoSansJP.variable}`}
+      className={`${archivo.variable} ${manrope.variable}`}
     >
       <body className="min-h-screen flex flex-col bg-bg text-fg font-body antialiased">
         <TopBar isSignedIn={Boolean(user)} />

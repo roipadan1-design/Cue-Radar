@@ -71,17 +71,23 @@ export default async function ProfileOGImage({ params }: PageProps) {
       >
         {/* Top bar: brand mark */}
         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-          <span
-            style={{
-              fontSize: '13px',
-              fontWeight: 500,
-              letterSpacing: '0.12em',
-              textTransform: 'uppercase' as const,
-              color: C.muted,
-            }}
-          >
-            間 FELLOW.
-          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '6px' }}>
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+              <rect x="3.5" y="3" width="7" height="18" fill={C.fg} />
+              <rect x="13.5" y="12" width="7" height="9" fill={C.fg} />
+            </svg>
+            <span
+              style={{
+                fontSize: '13px',
+                fontWeight: 500,
+                letterSpacing: '0.12em',
+                textTransform: 'uppercase' as const,
+                color: C.muted,
+              }}
+            >
+              FELLOW.
+            </span>
+          </div>
         </div>
 
         {/* Centre: name + role */}

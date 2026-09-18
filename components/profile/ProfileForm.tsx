@@ -2,22 +2,32 @@
 
 import { useState, useEffect } from 'react'
 import Link from 'next/link'
+import { X } from 'lucide-react'
 import Field from '@/components/ui/Field'
 import Button from '@/components/ui/Button'
+import Chip from '@/components/ui/Chip'
 import { profileSchema, type ProfileFormData } from '@/lib/schemas/profile'
 import { createClient } from '@/lib/supabase/client'
-import type { Profile } from '@/lib/types'
+import type { Profile, VocabEntry } from '@/lib/types'
+
+// Matches PublicProfileView's gallery grid (grid-cols-2 md:grid-cols-3) — 6 fills two
+// full rows on desktop and three on mobile with no dangling partial row.
+const MAX_GALLERY_IMAGES = 6
 
 interface ProfileFormProps {
   initialProfile?: Profile | null
   userId?: string
+  // Rule 4: dynamic, no hardcoding — discipline options come from the `vocab` table,
+  // fetched server-side by the page and passed down (same pattern as FilterBar).
+  disciplineOptions?: VocabEntry[]
 }
 
-export default function ProfileForm({ initialProfile, userId }: ProfileFormProps) {
+export default function ProfileForm({ initialProfile, userId, disciplineOptions = [] }: ProfileFormProps) {
   const [formData, setFormData] = useState<ProfileFormData>({
     handle: initialProfile?.handle || '',
     full_name: initialProfile?.full_name || '',
     role_label: initialProfile?.role_label || '',
+    disciplines: initialProfile?.disciplines || [],
     bio: initialProfile?.bio || '',
     locations: initialProfile?.locations ? initialProfile.locations.join(', ') : '',
     current_city: initialProfile?.current_city || '',
@@ -28,10 +38,12 @@ export default function ProfileForm({ initialProfile, userId }: ProfileFormProps
     instagram: initialProfile?.social_links?.instagram || '',
     website: initialProfile?.social_links?.website || '',
     is_public: initialProfile?.is_public || false,
+    gallery: initialProfile?.gallery || [],
   })
 
   const [avatarUrl, setAvatarUrl] = useState<string>(initialProfile?.avatar_url || '')
   const [uploading, setUploading] = useState(false)
+  const [uploadingGallery, setUploadingGallery] = useState(false)
   const [saving, setSaving] = useState(false)
   const [saveSuccess, setSaveSuccess] = useState(false)
   const [errors, setErrors] = useState<Record<string, string>>({})
@@ -56,6 +68,7 @@ export default function ProfileForm({ initialProfile, userId }: ProfileFormProps
                   handle: p.handle || '',
                   full_name: p.full_name || '',
                   role_label: p.role_label || '',
+                  disciplines: p.disciplines || [],
                   bio: p.bio || '',
                   locations: p.locations ? p.locations.join(', ') : '',
                   current_city: p.current_city || '',
@@ -66,6 +79,7 @@ export default function ProfileForm({ initialProfile, userId }: ProfileFormProps
                   instagram: p.social_links?.instagram || '',
                   website: p.social_links?.website || '',
                   is_public: p.is_public || false,
+                  gallery: p.gallery || [],
                 })
                 setAvatarUrl(p.avatar_url || '')
               }
@@ -77,6 +91,15 @@ export default function ProfileForm({ initialProfile, userId }: ProfileFormProps
 
   function handleChange<K extends keyof ProfileFormData>(field: K, value: ProfileFormData[K]) {
     setFormData((prev) => ({ ...prev, [field]: value }))
+  }
+
+  function toggleDiscipline(value: string) {
+    setFormData((prev) => ({
+      ...prev,
+      disciplines: prev.disciplines.includes(value)
+        ? prev.disciplines.filter((d) => d !== value)
+        : [...prev.disciplines, value],
+    }))
   }
 
   async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -105,6 +128,59 @@ export default function ProfileForm({ initialProfile, userId }: ProfileFormProps
     } finally {
       setUploading(false)
     }
+  }
+
+  async function handleGalleryUpload(e: React.ChangeEvent<HTMLInputElement>) {
+    const files = Array.from(e.target.files || [])
+    e.target.value = ''
+    if (files.length === 0 || !activeUserId) return
+
+    const remainingSlots = MAX_GALLERY_IMAGES - formData.gallery.length
+    if (remainingSlots <= 0) {
+      setFormError(`Gallery is limited to ${MAX_GALLERY_IMAGES} photos. Remove one to add another.`)
+      return
+    }
+
+    const filesToUpload = files.slice(0, remainingSlots)
+
+    setUploadingGallery(true)
+    setFormError(null)
+
+    try {
+      const supabase = createClient()
+      const uploadedUrls: string[] = []
+
+      for (const file of filesToUpload) {
+        const fileExt = file.name.split('.').pop()
+        const filePath = `${activeUserId}/gallery-${Date.now()}-${Math.random().toString(36).slice(2)}.${fileExt}`
+
+        const { error: uploadError } = await supabase.storage
+          .from('avatars')
+          .upload(filePath, file, { upsert: true })
+
+        if (uploadError) throw uploadError
+
+        const { data } = supabase.storage.from('avatars').getPublicUrl(filePath)
+        uploadedUrls.push(data.publicUrl)
+      }
+
+      setFormData((prev) => ({
+        ...prev,
+        gallery: [...prev.gallery, ...uploadedUrls].slice(0, MAX_GALLERY_IMAGES),
+      }))
+    } catch (err: unknown) {
+      const message = err instanceof Error ? err.message : 'Error uploading gallery photo'
+      setFormError(message)
+    } finally {
+      setUploadingGallery(false)
+    }
+  }
+
+  function removeGalleryImage(url: string) {
+    setFormData((prev) => ({
+      ...prev,
+      gallery: prev.gallery.filter((g) => g !== url),
+    }))
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -149,6 +225,7 @@ export default function ProfileForm({ initialProfile, userId }: ProfileFormProps
         handle: formData.handle,
         full_name: formData.full_name,
         role_label: formData.role_label || '',
+        disciplines: formData.disciplines,
         bio: formData.bio || '',
         avatar_url: avatarUrl,
         locations: locationsArray,
@@ -159,6 +236,7 @@ export default function ProfileForm({ initialProfile, userId }: ProfileFormProps
         showreel_url: formData.showreel_url || '',
         social_links: socialLinks,
         is_public: formData.is_public,
+        gallery: formData.gallery,
       })
       .eq('id', activeUserId)
 
@@ -216,6 +294,47 @@ export default function ProfileForm({ initialProfile, userId }: ProfileFormProps
         </div>
       </div>
 
+      {/* Gallery upload section */}
+      <Field label="Gallery" error={errors.gallery} helpText={`Up to ${MAX_GALLERY_IMAGES} photos.`}>
+        <div className="flex flex-col gap-3">
+          {formData.gallery.length > 0 && (
+            <div className="grid grid-cols-3 gap-2">
+              {formData.gallery.map((src) => (
+                <div key={src} className="relative aspect-square">
+                  {/* eslint-disable-next-line @next/next/no-img-element */}
+                  <img
+                    src={src}
+                    alt="Gallery photo"
+                    className="w-full h-full object-cover rounded-[var(--radius)] bg-surface border border-line"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => removeGalleryImage(src)}
+                    aria-label="Remove gallery photo"
+                    className="absolute top-1 right-1 w-6 h-6 flex items-center justify-center rounded-[var(--radius)] bg-bg border border-line text-fg hover:border-fg"
+                  >
+                    <X size={14} strokeWidth={2} />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          {formData.gallery.length < MAX_GALLERY_IMAGES && (
+            <label className="t-meta text-fg cursor-pointer hover:underline w-fit">
+              {uploadingGallery ? 'Uploading...' : 'Add gallery photos'}
+              <input
+                type="file"
+                accept="image/*"
+                multiple
+                onChange={handleGalleryUpload}
+                disabled={uploadingGallery || !activeUserId}
+                className="hidden"
+              />
+            </label>
+          )}
+        </div>
+      </Field>
+
       <Field label="Handle" error={errors.handle}>
         <input
           type="text"
@@ -241,6 +360,23 @@ export default function ProfileForm({ initialProfile, userId }: ProfileFormProps
           onChange={(e) => handleChange('role_label', e.target.value)}
           className="w-full h-11 px-3 bg-surface border border-line rounded-[var(--radius)] t-body text-fg focus:outline-none focus:border-fg"
         />
+      </Field>
+
+      <Field label="Disciplines" error={errors.disciplines}>
+        <div className="flex flex-wrap gap-2">
+          {disciplineOptions.map((d) => (
+            <Chip
+              key={d.value}
+              active={formData.disciplines.includes(d.value)}
+              onClick={() => toggleDiscipline(d.value)}
+            >
+              {d.label}
+            </Chip>
+          ))}
+          {disciplineOptions.length === 0 && (
+            <span className="t-meta text-muted normal-case">No disciplines available.</span>
+          )}
+        </div>
       </Field>
 
       <Field label="Bio" error={errors.bio}>

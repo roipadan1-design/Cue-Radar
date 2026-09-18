@@ -59,14 +59,29 @@ export default function SaveOpportunityButton({
     router.refresh()
   }
 
+  // Saved state uses an accent outline (never a fill) so it never collides
+  // with a primary `bg-accent` action rendered alongside it (e.g. "Apply" on
+  // the mobile sticky bar) — see docs/DECISIONS.md "Task 07 — accent rule,
+  // final," fix 2. Built directly (not via <Button variant="secondary">
+  // plus an override className) because two same-specificity utility
+  // classes (`border-line-strong` vs `border-accent`) would otherwise race
+  // on Tailwind's own generated stylesheet order rather than className order.
+  if (isSaved) {
+    return (
+      <button
+        type="button"
+        onClick={handleToggleSave}
+        disabled={loading}
+        className={`inline-flex items-center justify-center font-semibold rounded-[var(--radius)] transition-colors focus-visible:outline-2 focus-visible:outline-fg focus-visible:outline-offset-2 disabled:opacity-50 disabled:cursor-not-allowed border border-accent text-accent bg-transparent h-10 px-4 t-body ${className}`}
+      >
+        Saved
+      </button>
+    )
+  }
+
   return (
-    <Button
-      variant={isSaved ? 'primary' : 'secondary'}
-      onClick={handleToggleSave}
-      disabled={loading}
-      className={className}
-    >
-      {isSaved ? 'Saved' : 'Save'}
+    <Button variant="secondary" onClick={handleToggleSave} disabled={loading} className={className}>
+      Save
     </Button>
   )
 }

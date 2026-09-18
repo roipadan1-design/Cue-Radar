@@ -16,7 +16,7 @@ import urllib.error
 from typing import List, Dict, Any, Tuple
 from datetime import datetime
 
-VALID_VOCAB_CATEGORIES = {"type", "discipline", "funding_type", "covers", "career_stage", "region"}
+VALID_VOCAB_CATEGORIES = {"type", "discipline", "funding_type", "covers", "career_stage", "region", "event_type"}
 
 ALLOWED_COLUMNS = {
     "markets": {"slug", "display_name", "country", "region", "timezone", "currency", "lat", "lng"},
@@ -31,7 +31,8 @@ ALLOWED_COLUMNS = {
         "discipline_flags", "city", "deadline", "funding_min", "funding_max",
         "currency", "funding_type", "covers", "application_fee",
         "eligibility_geo", "career_stage", "materials_required",
-        "apply_url", "status", "verified_at", "verified_by"
+        "apply_url", "status", "verified_at", "verified_by",
+        "recurrence", "expected_next_open"
     },
     "events": {
         "event_id", "market", "venue_name", "title", "event_type",
@@ -235,7 +236,21 @@ def main():
         print("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required for live sync.")
         sys.exit(1)
 
-    tabs = ["markets", "sources", "opportunities"]
+    # "vocab" is intentionally, permanently NOT in this list: the live
+    # Sheet's "vocab" worksheet (see TAB_GIDS) is a different artifact
+    # entirely -- a wide, one-column-per-category dropdown-reference sheet,
+    # not a category/value/label/sort_order mirror of this table (adding it
+    # as-is would fail validation on every row and, since a validation error
+    # calls sys.exit(1), abort this entire script run on every scheduled
+    # sync). Rather than reshape that tab (risking whatever else in the
+    # spreadsheet may depend on its current shape) or write a lossy transform
+    # for it, the vocab table is deliberately treated as engineer-owned and
+    # migration-seeded, not Sheet-synced -- see docs/DECISIONS.md, "Task 13
+    # follow-up #2 -- vocab-tab architecture decision" for the full options
+    # considered and the reasoning. New vocab values ship as a small additive
+    # migration (see supabase/migrations/0007_vocab_event_type_theatre_dance.sql
+    # for the pattern), not a Sheet edit.
+    tabs = ["markets", "sources", "opportunities", "events"]
     for tab_name in tabs:
         try:
             records = fetch_tab_records(sheet_id, tab_name, service_acc_json)

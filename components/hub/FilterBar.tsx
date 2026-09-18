@@ -156,7 +156,7 @@ export default function FilterBar({ markets, vocab }: FilterBarProps) {
         <button
           type="button"
           onClick={() => setIsSheetOpen(true)}
-          className="h-9 px-3 border border-line-strong rounded-[var(--radius)] t-meta text-fg hover:border-fg transition-colors"
+          className="min-h-[44px] px-3 border border-line-strong rounded-[var(--radius)] t-meta text-fg hover:border-fg transition-colors"
         >
           Filters{panelActiveCount > 0 ? ` · ${panelActiveCount}` : ''}
         </button>

@@ -41,6 +41,19 @@ class TestSyncValidation(unittest.TestCase):
         self.assertEqual(len(errors), 0, f"Opportunities validation errors: {errors}")
         self.assertEqual(len(valid_rows), 16)
 
+    def test_vocab_event_type_category_accepted(self):
+        """event_type is a live vocab category (added directly to the DB by
+        0003_demo_seed.sql) but was missing from VALID_VOCAB_CATEGORIES, which
+        would make validate_rows reject any event_type row pasted into the
+        Sheet's vocab tab as an 'invalid category' error. Regression test for
+        Task 13's fix."""
+        rows = [
+            {"category": "event_type", "value": "theatre", "label": "Theatre", "sort_order": "12"},
+        ]
+        valid_rows, errors = validate_rows('vocab', rows)
+        self.assertEqual(errors, [])
+        self.assertEqual(len(valid_rows), 1)
+
     def test_filter_demo_rows(self):
         test_rows = [
             {"title": "Real Opp", "is_demo": False},

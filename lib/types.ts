@@ -50,6 +50,8 @@ export interface HubFeedRow {
   days_left?: number | null
   is_rolling: boolean
   is_demo: boolean
+  recurrence?: 'annual' | 'biennial' | 'rolling' | 'one_off' | null
+  expected_next_open?: string | null
 }
 
 export type OpportunityDetail = HubFeedRow
@@ -80,6 +82,13 @@ export interface Profile {
   is_public: boolean
   created_at?: string
   updated_at?: string
+  // NOTE: no `gallery` column exists on the real `profiles` table yet (checked
+  // supabase/migrations/0001-0007 directly — it was never added). This field is wired
+  // through ProfileForm/PublicProfileView so the UI is ready, but saving a profile that
+  // includes gallery data will fail against the live database until a Backend/Data
+  // Engineer migration adds `profiles.gallery TEXT[]`. See docs/DECISIONS.md and
+  // docs/OWNER_TASKS.md for the flagged follow-up.
+  gallery?: string[]
 }
 
 export interface ProfileWork {
@@ -93,11 +102,6 @@ export type ProfileView = Profile & {
   active_since: number | null
   languages: string[]
   works: ProfileWork[]
-  // Preview-only for now: no `gallery` column exists on the real `profiles` table yet
-  // (see docs/ROADMAP.md Task 09). Populated by the dev-only demo fixture
-  // (data/seed/profile_demo.json) so PublicProfileView can render a real gallery grid
-  // in /dev/preview/profile. Safe to leave undefined for real profiles.
-  gallery?: string[]
 }
 
 export interface EventRow {
@@ -114,6 +118,29 @@ export interface EventRow {
   lat?: number | null
   lng?: number | null
   is_demo: boolean
+}
+
+export interface Source {
+  source_id: string
+  name: string
+  source_type: string
+  market?: string | null
+  discipline_focus: string[]
+  tier: number
+  website_url?: string | null
+  opencalls_url?: string | null
+  instagram_url?: string | null
+  scrape_method?: string | null
+  status: 'active' | 'dormant' | 'closed'
+  needs_verification: boolean
+  notes?: string | null
+  is_demo: boolean
+}
+
+export interface Follow {
+  follower_id: string
+  followee_id: string
+  created_at: string
 }
 
 export interface SavedRow {

@@ -14,7 +14,7 @@ Then read the task you were assigned in `docs/tasks/`. Do only what the task say
 7. **All colors and fonts come from CSS variables in `app/globals.css`.** No hex values, no `rgb()`, no font names in `.tsx` files.
 8. **No new dependencies without the task saying so.** No component libraries (shadcn, base-ui, MUI, etc.). No state libraries. No second `package.json` anywhere in the repo.
 9. **No secrets.** `.env.local` is gitignored and stays that way.
-10. **Do not start deferred features (amended by Task 06).** Trip Radar v1 (`/radar`) and a minimal events UI are unblocked by Task 06 in the reduced scope defined in Task 06. Connect, Peer Calls, Digest, analytics — all of these remain blocked until a task explicitly names them.
+10. **Do not start deferred features (amended by Task 06, Task 10).** Trip Radar v1 (`/circuit`, née `/radar`) and a minimal events UI are unblocked by Task 06 in the reduced scope defined in Task 06. A first slice of Connect is unblocked by Task 10 (`docs/tasks/TASK_10_discover_connect_backend.md`), in this exact scope only: opt-in discoverable public profiles (reusing the existing `profiles.is_public` column — no second opt-in column), a search/filter directory screen (discipline + city filters), and a one-directional follow that is private between the two parties (no public follower count anywhere). Everything else stays blocked: open messaging/DM, a public follower count, an activity feed, algorithmic match recommendations, peer calls, digest, analytics. No task may widen the Connect scope beyond what Task 10 and its companion Task 11 define without a new task explicitly naming the addition.
 
 ## When the task and your judgment disagree
 
