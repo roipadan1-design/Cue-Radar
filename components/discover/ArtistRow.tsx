@@ -21,9 +21,10 @@ export default function ArtistRow({ profile, markets, vocab }: ArtistRowProps) {
   const cityEntry = profile.current_city
     ? markets.find((m) => m.slug === profile.current_city)
     : undefined
-  const cityLabel = cityEntry
-    ? [cityEntry.display_name, cityEntry.country].filter(Boolean).join(', ')
-    : null
+  // City name only. Joining in `markets.country` printed the raw two-letter code
+  // ("Tel Aviv, IL"), and with the pilot scoped to one country the country half
+  // is redundant anyway. There is no full-country-name column to use instead.
+  const cityLabel = cityEntry?.display_name ?? null
 
   const disciplineLabel = (profile.disciplines || [])
     .map((code) => vocab.find((v) => v.category === 'discipline' && v.value === code)?.label || code)

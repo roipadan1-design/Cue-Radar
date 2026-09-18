@@ -7,7 +7,7 @@ export const metadata = {
 export default function DemoPage() {
   return (
     <div className="max-w-[560px] mx-auto min-h-[calc(100vh-160px)] px-4 md:px-6 flex flex-col items-center justify-center text-center gap-4">
-      <span className="t-meta text-muted">[Demo]</span>
+      <span className="t-label">Demo</span>
       <h1 className="t-title text-fg">This is sample content</h1>
       <p className="t-body text-muted max-w-md">
         Rows marked <span className="text-fg">Demo</span> are fictional — invented institutions and

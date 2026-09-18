@@ -841,6 +841,29 @@ repo's standing rule, and Step 4k in `docs/OWNER_TASKS.md` already carries this 
 `0007`. A one-line addendum was added there for the `0008`/`0009` bookkeeping-only gap so the same
 push resolves all three in one pass. No SQL was executed against the live project in this session.
 
+## ux-ui-designer — `docs/design/ARTCONNECT_GAP_ANALYSIS.md`, contrast log (2026-09-18)
+
+The spec moves every card (`OpportunityRow`, `ProfileCard`, the new Discover/Organizations rows)
+from a hand-rolled `bg-bg` background onto the shared `.card` class, whose background is
+`var(--surface)` (`#131315`), not `var(--bg)` (`#0A0A0A`). That changes the background all
+existing muted/urgent/accent text sits on top of inside a card, so per this role's own standing
+rule ("when you introduce a new muted-on-surface combination, compute and log the contrast
+ratio"), computed WCAG contrast ratios (relative-luminance method) for every text color the spec
+places on `--surface` for the first time inside a card context:
+
+| Foreground | Background | Ratio | Passes 4.5:1? |
+|---|---|---|---|
+| `--muted` `#8B8B94` | `--surface` `#131315` | 5.49:1 | Yes |
+| `--urgent` `#E5484D` | `--surface` `#131315` | 4.74:1 | Yes, narrow margin — do not lighten `--surface` or dim `--urgent` in any future pass without re-checking this |
+| `--accent` `#AA80FF` | `--surface` `#131315` | 6.40:1 | Yes |
+| `--positive` `#3DD68C` | `--surface` `#131315` | 9.77:1 | Yes (computed for completeness; §0 of the spec deliberately does not use `--positive` anywhere in this pass — logged in case a future task does) |
+
+`--fg` `#FAFAFA` on `--surface` is unchanged from its existing use elsewhere (titles/body text
+already render on `--surface` in other parts of the product, e.g. form fields) and was not
+re-checked. No new color pairing was introduced — every foreground above was already an approved
+token (`app/globals.css`); this log exists because the *background* they sit on inside a card is
+new, not because any hex value is new.
+
 ### Reversing two earlier ArtConnect decisions the owner has now overruled with screenshots
 
 This is the **second** round rejected for the same reason. The 2026-09-18 entry above already records
@@ -868,3 +891,184 @@ screenshots show the exact patterns that were declined:
 Recording this so the reversal reads as a decision with a reason rather than as drift. Where our
 own design reasoning and the owner's explicit reference collide from here, the reference wins, and
 the objection goes in this file (AGENTS.md, "When the task and your judgment disagree").
+
+### frontend-engineer C — hub feed, opportunity card, detail page (Task 21)
+
+**`hub_feed` is a view; `markets!inner(...)` embedding doesn't work on it.** `app/sources/page.tsx`
+and `app/circuit/**` scope to the pilot with a PostgREST embed (`.select('*, markets!inner(...)')
+.eq('markets.is_active', true)`) because they query base tables with a real FK to `markets`.
+`hub_feed` already flattens `markets` into `city`/`city_name`/`region` columns in the view
+definition, so PostgREST has no FK metadata left to embed through. Per the task's own fallback
+instruction, `app/hub/page.tsx` instead fetches `markets` with `.eq('is_active', true)` first (this
+also supplies the city filter's own option list, so it's not an extra round trip), then scopes
+`hub_feed` with `.or('city.in.(<active slugs>),city.is.null')`. No hard-coded city/country list —
+the slugs come from the live query.
+
+**Judgment call: rows with `city IS NULL` are kept, not excluded.** The pilot instruction is "remove
+every city outside Israel." A `hub_feed` row can have a null `city` (rolling/remote-eligible calls
+with no market tied to them at all — the schema allows `opportunities.city` to be null). Such a row
+isn't "outside Israel," it isn't tied to any market, so excluding it would be scope creep beyond what
+was asked. Kept them in the `.or()` filter above rather than silently dropping them.
+
+**Sort control is real, not decorative.** ArtConnect's list header has a "Sort:" control. We don't
+have the data to back most of ArtConnect's own sort options (e.g. "Most relevant"), so
+`components/hub/SortControl.tsx` ships exactly two, both backed by a real `order()` clause in
+`app/hub/page.tsx`: "Deadline: soonest" (existing default) and "Newest listed" (`created_at desc`).
+"Newest listed" renders as a flat list rather than through the existing
+closing-this-week/this-month/later/rolling grouping, because grouping by deadline urgency would
+fight a sort whose entire point is recency — showing both at once would look broken, not deliberate.
+
+**`components/hub/GroupHeader.tsx`'s sticky offset was stale and is fixed.** It was pinned to
+`top-[52px]`, the old TopBar height. `components/layout/TopBar.tsx` is now `h-16` (64px) per its own
+Task 21 comment ("was 52px"). Left at 52px, a sticky group header would sit *under* the nav by 12px
+on scroll. This is a one-line consequence of the redesign already landing elsewhere, not a
+drive-by — fixed to `top-16`.
+
+**Opportunity card owner avatar uses initials, never a fabricated logo.** ArtConnect's card shows an
+org logo. We have no logo asset for any source, so `components/hub/OpportunityRow.tsx` and
+`components/hub/OpportunityDetailView.tsx` both use `Avatar` with `name={row.source_name}` and no
+`src`, which renders the initials fallback already built into `Avatar` — real data (the source's own
+name), never an invented or stock image (rule 1).
+
+**Detail-page rail has no "Contact" or "Selection Date" section.** The task's reference anatomy lists
+these (from ArtConnect's own detail page), but our schema has no contact field and no
+selection/notification-date field anywhere in `opportunities` — inventing either would violate rule
+1. Omitted both. "Selection Date" is not the same fact as `verified_at` (when Cue Radar last checked
+the listing, not when the institution notifies applicants), so `verified_at` is shown as "Verified"
+in a "Listed by" block instead of being relabeled into a section it doesn't actually answer.
+"Required Documents" reuses the existing `materials_required` field, which is a genuine match for
+what that section is for.
+
+**`app/saved/page.tsx` — minor width-only touch-up.** Not named in the task's three jobs, but it's
+inside my owned scope and was still on `max-w-[960px] mx-auto` with hand-rolled padding, which would
+have looked visibly out of step against the same-session `.container-page` rollout on `/hub` and
+`/opportunities/[slug]`. Changed only the outer container class and the `h1`'s bottom margin;
+`components/saved/SavedPipelineView.tsx` (tabs, rows, the existing "Nothing here yet." empty state)
+was not touched — out of scope for this task.
+
+**Near-empty Hub feed (Israel-only pilot).** With the pilot scope live, most of the feed is currently
+demo rows. This is a content/data state, not a layout bug: every demo row still carries a visible
+`Badge tone="outline"` "Demo" tag (already required by rule 1), the results row shows the real,
+un-padded count ("N opportunities"), and the existing two-variant `EmptyState` (curation-pending vs.
+no-filter-match) covers the true-zero case. No change was made to compensate for the low row count —
+padding it with anything not `is_demo` would violate rule 1, and the task was explicit that Israel-only
+stays in effect regardless of how thin that makes the feed today.
+
+## Task 21 (frontend-engineer B) — profile Save UX repair + Discover rebuild (2026-09-18)
+
+- **City picker fetched client-side inside `ProfileForm.tsx`, not passed as a server prop.**
+  `app/profile/edit/page.tsx` is outside this role's owned file list (`app/discover/**`,
+  `components/discover/**`, `components/profile/**`, `app/a/[handle]/page.tsx`,
+  `lib/schemas/profile.ts`), and three other agents were working in parallel. Rather than
+  edit a file another role owns to thread a `cityOptions` prop through, `ProfileForm`
+  fetches `markets` (`is_active = true`) itself in a `useEffect` via the existing browser
+  Supabase client — `markets` is public-read per RLS, so this needs no new permission. Net
+  effect is identical to the prop-based version; if a later pass wants it server-rendered
+  instead, that's a one-line change in `app/profile/edit/page.tsx`, not mine to make here.
+- **Scroll-to-first-invalid-field uses one ref per schema key**, keyed by the exact string
+  zod reports in `issue.path[0]`, via a `fieldRefs` map and a `registerField(key)` callback
+  wrapping every `<Field>`. Chosen over per-field custom logic because it's mechanical and
+  covers all 15 schema fields uniformly, including the two (`open_for_collab`, `is_public`)
+  that aren't wrapped in `Field` at all.
+- **Save/validation feedback moved into the sticky bottom bar itself** (a message row above
+  the Save/View-profile row, `role="alert"`/`role="status"` + `aria-live="assertive"`),
+  replacing the old top-of-form banner. This directly targets the owner's literal complaint
+  — he was looking at the sticky bar when Save silently failed 2000px below the error.
+- **"View" vs "View Profile →" label**: `ArtistRow` uses "View Profile →" (matches the
+  owner's ArtConnect reference exactly). `OrganizationRow` uses "View →" — a `sources` row
+  is an institution, not a profile, and the rest of the app (`/sources`, `SourceCard`)
+  already calls the same action "View." Kept that existing terminology rather than
+  overriding it with profile language that doesn't fit the entity.
+- **Tab switch drops `q`, keeps `city`/`discipline`**: "search by name" is scoped to the
+  entity type of the tab you're leaving (an artist's name vs. an org's name), so it doesn't
+  carry over. City and discipline are properties either entity type can be filtered by, so
+  they're kept — e.g. "organisations in Tel Aviv" survives switching from the artists tab
+  filtered the same way.
+- **Curators tab kept (not omitted)**, rendering an honest `EmptyState` ("Curators aren't in
+  the directory yet... this section stays empty rather than showing placeholder people")
+  instead of a query. The task offered either option; keeping the tab visible matches the
+  owner's screenshot more closely and he explicitly said empty sections don't bother him,
+  fake ones do.
+- **City search ("search by city or country") resolves only against the `markets` rows the
+  page already scoped to `is_active = true`** (exact match on `display_name`, then a
+  contains-match fallback, then a match against `country`). No hard-coded city/country list
+  anywhere in `components/discover/DiscoverFilterBar.tsx` (rule 4). Because the pilot is
+  Israel-only, every active market currently shares one `country` code, so the "or country"
+  half of the input is a no-op in practice today — flagged, not worked around, since it's a
+  direct consequence of the pilot scope, not a bug in the search logic.
+- **Build not verified by this role.** Three agents were running `npm run build` concurrently
+  against the same shared `.next` directory in the same working copy, which produces
+  spurious prerender/page-collection errors unrelated to any one agent's code (confirmed:
+  `next lint` was clean throughout, a standalone `npx tsc --noEmit` was clean, and the
+  webpack compile step itself succeeded on every attempt — only the later
+  manifest/page-collection phase raced). Stopped re-running `npm run build` on the
+  orchestrator's direct instruction, which is running the authoritative single build and
+  owns integration/QA for this task. A `distDir` override was tried briefly to get an
+  isolated verification build and then fully reverted (`next.config.mjs` confirmed back to
+  its original committed state, no `.next-task21-verify` directory left behind) once the
+  same instruction arrived.
+
+### frontend-engineer A — application shell (Task 21)
+
+**Shared nav array.** `components/layout/nav-items.ts` is a new file exporting
+`getNavItems(isSignedIn)`, the single source of truth for Hub/Currently/Discover/Saved/Profile —
+label, href, icon, active-matcher. `TopBarNav` and `MobileNav` both read from it so they cannot
+diverge again, which is exactly how Discover ended up linked from nowhere before this task.
+
+**Discover is a text nav item on desktop, not the account control.** `TopBarNav` renders every
+item from the shared array except `profile` — that one becomes the account control on the far
+right (avatar + Sign out when signed in, "Sign in" link when signed out), next to a primary CTA
+button, matching the ArtConnect shell shape (nav row, then CTA + avatar) rather than adding a
+sixth text link. `MobileNav` still renders all five including Profile as a bottom tab, since a
+profile tab is the normal mobile pattern and the shared array already carries the right
+signed-in/signed-out href for it — no duplicated logic, just a different subset per surface.
+
+**Judgment call: what the primary CTA + account control resolve to, since we have no
+ArtConnect-equivalent "post an opportunity" action.** Signed out: CTA = "Sign up" (`/signup`,
+primary button), account control = "Sign in" link. Signed in: CTA = "Browse open calls" (`/hub`,
+primary button — the closest we have to a core action to promote), account control = avatar
+(links to `/profile/edit`, initials fallback via the new `Avatar` component) plus the existing
+`SignOutButton`, now restyled through `Button` (`variant="ghost" size="sm"`) instead of its own
+hand-rolled classes. `SignOutButton` stays visible at all breakpoints — it was tempting to hide
+it on mobile next to the CTA for a cleaner header, but that would remove the only sign-out
+affordance outside the account page for mobile users, which is a functional regression, not a
+visual one, so it stayed.
+
+**`app/layout.tsx` now fetches the signed-in user's `avatar_url`/`full_name`** (one extra
+`profiles` select, only when `user` exists) purely to feed the new `Avatar` in `TopBar`. Not
+persisted client-side (rule 3) — read fresh on every request like the rest of the shell.
+
+**IntroSplash: kept the component, stopped mounting it on every landing visit.** The brief asked
+for this explicitly and to record the reasoning. The component's own replay guard is a
+module-scope variable, not storage (rule 3 compliant), which means it already only blocks a
+same-session client-side re-navigation to `/` — but every fresh document load (a refresh, a
+bookmark, a shared link) replays the full ~2.8s opaque curtain before any content is visible,
+which is the opposite of the "calm, professional first screen" the owner asked for. Rule 3 rules
+out the obvious fix (remember "already seen" in storage/a cookie), so there is no compliant way
+to show it once-per-visitor. Removed the `<IntroSplash />` mount from `app/page.tsx`; left
+`components/brand/IntroSplash.tsx` and its keyframes in `app/globals.css` in place and unused, so
+a future entry point (e.g. a dedicated `/welcome` or first-run route with real persistence
+behind auth) can reuse it without rebuilding it.
+
+**Container width: `.container-page` moved off `<main>` in `app/layout.tsx` after integration
+flagged the nesting.** First pass put `.container-page` on `<main>` itself, reasoning it as a
+defense-in-depth default for any route that forgot its own container. That was wrong: several
+routes (`app/sources`, `app/hub`, `app/discover`, `components/sources/SourceDetailView.tsx`)
+already apply `.container-page`/`.container-reading` to their own root element, so nesting two
+centered containers doubled the horizontal padding (32px/side on mobile, 64px on desktop). Fixed
+per the orchestrator's direct instruction: `<main>` now only carries `flex-1 w-full pb-[72px]
+md:pb-0` (unchanged mobile-tab-bar clearance), and `app/page.tsx` (the only page this role owns)
+applies `.container-page` itself, matching the convention the rest of the codebase already used
+of each page owning its own width.
+
+**Landing page headline/subhead copy is the Creative Director's, not this role's** — the "between
+cities" premise was retired at integration per `docs/creative/TASK_21_COPY.md` once the pilot
+scope went Israel-only; this role only wired the city strip to `markets.is_active` and left the
+copy slot for that replacement.
+
+**Build not independently verified by this role either**, for the same shared-`.next` reason
+logged above by frontend-engineer B — `next build` was run once early (before three agents were
+concurrently hitting the same directory) and compiled clean for every file this role touched; a
+second `next build` mid-task hit the same cross-agent `.next` corruption everyone else did. `npm
+run lint` is clean (see report). Stopped on the orchestrator's instruction and deferred to their
+single authoritative build.

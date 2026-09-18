@@ -65,7 +65,7 @@ export default async function RootLayout({
     >
       <body className="min-h-screen flex flex-col bg-bg text-fg font-body antialiased">
         <TopBar isSignedIn={Boolean(user)} avatarUrl={avatarUrl} fullName={fullName} />
-        <main className="flex-1 w-full container-page pb-[72px] md:pb-0">
+        <main className="flex-1 w-full pb-[72px] md:pb-0">
           {children}
         </main>
         <Footer />

@@ -46,7 +46,7 @@ export default async function DiscoverPage(props: DiscoverPageProps) {
   const vocab = (vocabData || []) as VocabEntry[]
 
   let profileRows: Profile[] = []
-  let sourceRows: (Source & { markets: { display_name: string } | null })[] = []
+  let sourceRows: (Source & { markets: { display_name: string; is_active: boolean } | null })[] = []
 
   if (tab === 'artists') {
     let profilesQuery = supabase
@@ -66,10 +66,16 @@ export default async function DiscoverPage(props: DiscoverPageProps) {
     if (error) console.error('Error querying profiles for Discover:', error.message)
     profileRows = (data || []) as Profile[]
   } else if (tab === 'organizations') {
+    // `markets!inner(...)` + `markets.is_active` scopes the directory to the pilot.
+    // Without the inner join this tab listed every organisation in the database —
+    // Tbilisi, Berlin, Tokyo, Kraków — while the city filter above it offered only
+    // Israeli cities, which is the exact "cities outside Israel" the pilot drops.
+    // Matches how app/sources/page.tsx scopes the same table.
     let sourcesQuery = supabase
       .from('sources')
-      .select('*, markets(display_name)')
+      .select('*, markets!inner(display_name, is_active)')
       .eq('status', 'active')
+      .eq('markets.is_active', true)
       .order('name', { ascending: true })
 
     if (q) {
@@ -81,7 +87,9 @@ export default async function DiscoverPage(props: DiscoverPageProps) {
 
     const { data, error } = await sourcesQuery
     if (error) console.error('Error querying sources for Discover:', error.message)
-    sourceRows = (data || []) as (Source & { markets: { display_name: string } | null })[]
+    sourceRows = (data || []) as (Source & {
+      markets: { display_name: string; is_active: boolean } | null
+    })[]
   }
   // tab === 'curators': no query — we hold no curator data (rule 1). See EmptyState below.
 

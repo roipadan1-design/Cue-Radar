@@ -21,7 +21,7 @@ export default async function LandingPage() {
   const markets = marketsData || []
 
   return (
-    <div className="py-10 md:py-16">
+    <div className="container-page py-10 md:py-16">
       <div className="animate-mark-fade mb-10 flex items-center gap-2 text-fg">
         <span className="text-muted font-normal select-none t-title">[</span>
         <Mark size="sm" />
@@ -29,12 +29,18 @@ export default async function LandingPage() {
         <span className="text-muted font-normal select-none t-title">]</span>
       </div>
 
-      <h1 className="t-display text-fg max-w-[18ch]">
-        Open calls and connections that follow you between cities.
+      {/* "Between cities" was the brand's opening premise and it is retired here.
+          It described an artist crossing borders and scenes; with the pilot scoped
+          to eleven cities inside one country it overstated breadth we no longer
+          have. Replacement copy and the full reasoning are in
+          docs/creative/TASK_21_COPY.md. Both lines carry no geography, so neither
+          needs rewriting again if the pilot's scope changes. */}
+      <h1 className="t-display text-fg max-w-[20ch]">
+        Open calls, residencies and grants, checked before they&apos;re worth your time.
       </h1>
 
       <p id="about" className="t-body text-muted max-w-[60ch] mt-5 scroll-mt-16">
-        Verified open calls, residencies and grants — for artists who work between places.
+        A checked feed of what&apos;s open, and one page that shows who you are.
       </p>
 
       <div className="mt-8 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6">

@@ -10,7 +10,7 @@ export default function PrivacyPage() {
 
   return (
     <div className="max-w-[560px] mx-auto px-4 md:px-6 py-16 flex flex-col gap-4">
-      <span className="t-meta text-muted">[Privacy]</span>
+      <span className="t-label">Privacy</span>
       <h1 className="t-title text-fg">Privacy</h1>
       <p className="t-body text-muted">
         Fellow. stores your email address, the profile fields you choose to fill in (name, role,
