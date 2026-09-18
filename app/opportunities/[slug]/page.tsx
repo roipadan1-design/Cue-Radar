@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { getActiveMarketSlugs, isInPilotScope } from '@/lib/markets'
 import OpportunityDetailView from '@/components/hub/OpportunityDetailView'
 import type { HubFeedRow, Profile, VocabEntry } from '@/lib/types'
 
@@ -14,6 +15,11 @@ export default async function OpportunityDetailPage({ params }: PageProps) {
   const supabase = await createClient()
 
   // Fetch opportunity from hub_feed view
+  // Pilot scope is enforced here too, not only on the feed. Scoping the Hub alone
+  // still left every out-of-scope opportunity reachable by direct URL, which is the
+  // "no European city anywhere on the site" the owner asked for. See lib/markets.ts.
+  const activeSlugs = await getActiveMarketSlugs(supabase)
+
   const { data: opp } = await supabase
     .from('hub_feed')
     .select('*')
@@ -44,6 +50,13 @@ export default async function OpportunityDetailPage({ params }: PageProps) {
       region: marketObj?.region || null,
       is_rolling: !rawOpp.deadline,
     } as HubFeedRow
+  }
+
+  // Out-of-scope city -> 404, same as a slug that does not exist. The row is not
+  // deleted and comes straight back when the pilot widens; it is simply not part of
+  // this site right now.
+  if (!isInPilotScope(finalOpp?.city, activeSlugs)) {
+    notFound()
   }
 
   // Fetch vocab
