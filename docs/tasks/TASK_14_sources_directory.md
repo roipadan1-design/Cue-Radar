@@ -59,7 +59,7 @@ grep -n "status" app/sources/page.tsx
 grep -rn "localStorage\|FALLBACK_\|: any" app/sources || echo OK_no_client_persistence
 grep -rnE "#[0-9A-Fa-f]{6}" app/sources --include=*.tsx || echo OK_no_hex
 grep -rn "artconnect\|ArtConnect" app/sources components || echo OK_no_competitor_string_in_code
-grep -n "/sources" app/opportunities/\[slug\]/page.tsx app/hub/page.tsx components/layout/*.tsx 2>/dev/null || true
+grep -n "/sources" components/hub/OpportunityDetailView.tsx app/hub/page.tsx components/layout/*.tsx
 ```
 
 Manual checklist at 390px (attach screenshots): `/sources` with no filters (result list/grid, no fabricated `source_type` labels), `/sources?city=tel_aviv&discipline=dance` filtered correctly, search for a known institution name, no-match empty state with reset, a result linking correctly into `/sources/{id}`, signed-out browsing works identically to signed-in.

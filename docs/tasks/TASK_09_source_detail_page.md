@@ -62,7 +62,7 @@ npm ci && npm run lint && npm run build
 python -m unittest discover -s scripts
 ls "app/sources/[id]/page.tsx"
 grep -n "expected_next_open\|recurrence" "app/sources/[id]/page.tsx"
-grep -n "/sources/" components/hub/OpportunityRow.tsx "app/opportunities/[slug]/page.tsx"
+grep -n "/sources/" components/hub/OpportunityRow.tsx components/hub/OpportunityDetailView.tsx
 grep -rn "localStorage\|FALLBACK_\|: any" "app/sources/[id]/page.tsx" || echo OK_no_client_persistence
 grep -rnE "#[0-9A-Fa-f]{6}" "app/sources/[id]/page.tsx" || echo OK_no_hex
 ```

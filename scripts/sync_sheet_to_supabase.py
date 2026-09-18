@@ -236,15 +236,20 @@ def main():
         print("SUPABASE_URL and SUPABASE_SERVICE_ROLE_KEY are required for live sync.")
         sys.exit(1)
 
-    # "vocab" is intentionally NOT in this list yet: the live Sheet's "vocab"
-    # worksheet (see TAB_GIDS) is not in the category/value/label/sort_order
-    # format validate_rows()/ALLOWED_COLUMNS expect for this tab -- it is a
-    # wide, one-column-per-category dropdown-reference sheet instead. Adding
-    # "vocab" here as-is would fail validation on every row and, since a
-    # validation error calls sys.exit(1), would abort this entire script run
-    # (not just skip that one tab) on every scheduled sync. See
-    # docs/DECISIONS.md, "Task 13 follow-up" for the read-only check that
-    # found this and what needs to happen before vocab can be added safely.
+    # "vocab" is intentionally, permanently NOT in this list: the live
+    # Sheet's "vocab" worksheet (see TAB_GIDS) is a different artifact
+    # entirely -- a wide, one-column-per-category dropdown-reference sheet,
+    # not a category/value/label/sort_order mirror of this table (adding it
+    # as-is would fail validation on every row and, since a validation error
+    # calls sys.exit(1), abort this entire script run on every scheduled
+    # sync). Rather than reshape that tab (risking whatever else in the
+    # spreadsheet may depend on its current shape) or write a lossy transform
+    # for it, the vocab table is deliberately treated as engineer-owned and
+    # migration-seeded, not Sheet-synced -- see docs/DECISIONS.md, "Task 13
+    # follow-up #2 -- vocab-tab architecture decision" for the full options
+    # considered and the reasoning. New vocab values ship as a small additive
+    # migration (see supabase/migrations/0007_vocab_event_type_theatre_dance.sql
+    # for the pattern), not a Sheet edit.
     tabs = ["markets", "sources", "opportunities", "events"]
     for tab_name in tabs:
         try:

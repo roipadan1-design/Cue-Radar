@@ -40,7 +40,7 @@ This file is the single index of where the project is going. If a task file and 
 
 The product plan defines seven phases. Tasks are the unit of work; each belongs to a phase.
 
-**Numbering note (2026-09-17):** the task numbers in this section were drafted 2026-09-15 as placeholders for work that was still only outlined, before most of it actually shipped (see `docs/DECISIONS.md`) — largely ad hoc, without ever being committed as the numbered task file this table implies. The task-numbers `06`–`11` below the table are therefore historical placeholders, superseded where noted in §3. **The authoritative numbering is whichever files actually exist in `docs/tasks/`** (currently 01, 03, 06, 07, 08, 09, 10, 11, 13, 14) — see §3 and §6 for what each real number is.
+**Numbering note (2026-09-17):** the task numbers in this section were drafted 2026-09-15 as placeholders for work that was still only outlined, before most of it actually shipped (see `docs/DECISIONS.md`) — largely ad hoc, without ever being committed as the numbered task file this table implies. The task-numbers `06`–`11` below the table are therefore historical placeholders, superseded where noted in §3. **The authoritative numbering is whichever files actually exist in `docs/tasks/`** (currently 01, 03, 06, 07, 08, 09, 10, 11, 13, 14, 19, 20) — see §3 and §6 for what each real number is. **Numbers 15–18 stay reserved** for the P6 items already named for them below (Pipeline v2, Peer calls, Intros, Weekly digest) — Tasks 19/20 (added 2026-09-18, owner feedback on visual sameness + a market-data bug) deliberately used the next genuinely free numbers rather than 15–18, to avoid colliding with that existing reservation.
 
 **Pilot scope note (2026-09-18):** the pilot's geography narrowed to **Israel only** (Tel Aviv, Haifa, Jerusalem, plus any additional cities the Researcher confirms) and its content broadened beyond opportunities into "what's happening in the city" (workshops, lectures, masterclasses, courses, performances, theatre, dance, layered onto the events UI Task 06 already unblocked). English-only UI is now a decided, permanent choice, not a v1-only recommendation. Design direction now explicitly permits studying ArtConnect's UI/interaction structure (tabs, filters, search-then-detail flow) as a pattern reference — never its copy, brand mark, or colors. Mobile-first (~375–390px) is the primary target for every new screen, not a secondary check. Full detail, and exactly what does/doesn't change per task, is in `docs/DECISIONS.md`, "Task 12 — Israel-only pilot pivot and content-scope broadening." Two new tasks came out of this pivot: **Task 13** (event-type vocab gap check) and **Task 14** (sources directory screen).
 
@@ -48,7 +48,9 @@ The product plan defines seven phases. Tasks are the unit of work; each belongs 
 |---|---|---|---|
 | **P1 · Foundation** | Schema, sync, seed, clean repo, design system | Sync runs green; Hub shows ≥60 live rows | 01, 02, 03, 05 |
 | **P2 · Hub v1** | List, filters, detail, save, ICS, auth, Fit, No-fee/Funded toggles, trust stamps | A new artist finds and saves a call within 60 seconds on mobile | 04, 06, 07 (brand/visual polish) |
+| **P2a · Visual identity refresh** | Genuine color/typography/spacing refresh inspired by ArtConnect's actual look (not just structure), through the existing token system | The product looks visibly different, not just structurally reorganized, per direct owner feedback 2026-09-18 | 19 |
 | **P2b · Source recurrence + directory** | `opportunities.recurrence`/`expected_next_open` + `/sources/[id]` + `/sources` search directory | An artist can tell from a source page when a dormant call usually reopens, and can find an institution by browsing/searching | 08, 09, 14 |
+| **P2c · Data-quality cleanup** | Correct pre-existing `sources` rows mis-tagged `tel_aviv` that actually belong to `jerusalem`/`haifa` | Every source with a confidently-determinable real city in `notes` carries the correct `market` | 20 |
 | **P3 · Profile v2** | Full profile brief (plan §4) + say-hi via email handoff | 20 real public profiles | outlined, not yet numbered (see §3) |
 | **P4 · Trip Radar pilot / city content** | trips + manual event sources + Trip screen + trip brief; event-type vocab breadth for the Israel-only content pivot | An artist finds ≥10 relevant workshops/shows for their dates and city | city+date screen shipped under Task 06 (reduced scope); event-type vocab gap check is Task 13; remaining trip-data-model scope outlined, not yet numbered |
 | **P5 · Agent** | `scan_events` daily + `scan_opportunities` every 3 days → staging → approval | ≥70% of agent-proposed rows approved without edits | outlined, not yet numbered (13/14 now belong to the event-type vocab check and sources directory — see §3) |
@@ -167,6 +169,16 @@ All three items originally drafted here as "Task 06/07/08" have already shipped,
 - **Fit and financial toggles** — shipped. `lib/fit.ts` (`checkEligibility`), `No fee`/`Funded`/`Covers housing`/`Covers travel` URL-boolean filters.
 - **Trust stamps and OG images** — shipped. Verified/last-checked line on the detail page; `opengraph-image.tsx` for `/opportunities/[slug]` and `/a/[handle]`.
 
+### Visual identity refresh (Task 19, added 2026-09-18)
+
+**Task 19 — Visual identity refresh.** Direct owner feedback after reviewing Tasks 07/09/11/14: "everything looks the same," because those tasks correctly implemented Task 12 §4's *structure-only* ArtConnect reference and left colors/typography/spacing untouched, per the plan's own then-current "locked accent, typography, and copy voice" language (`docs/PILOT_PLAN.md`). Task 19 reopens that lock explicitly, gated on a ux-ui-designer research/spec deliverable (`docs/design/VISUAL_IDENTITY_REFRESH_SPEC.md`) that must land before any Frontend Engineer implementation — new token **values** only, through the existing `app/globals.css` system (`AGENTS.md` rule 7 unchanged). See `docs/tasks/TASK_19_visual_identity_refresh.md` and `docs/DECISIONS.md`, "Task planning pass — Tasks 19–20 created."
+
+**Status: shipped (2026-09-18).** `--accent` updated `#B39DFF` → `#AA80FF`; `.t-title` no longer forces uppercase (`.t-display` unchanged, still uppercase, landing hero + Circuit header only). No other token or component changed, per the spec's own ruling. See `docs/DECISIONS.md`, "Task 19 — visual identity refresh, implemented."
+
+### Market data-quality cleanup (Task 20, added 2026-09-18)
+
+**Task 20 — Market reassignment cleanup.** A live-data bug discovered during today's Israel-pilot direct-insert work: `jerusalem` and `haifa` never existed as their own `markets` rows until today, so every pre-existing `sources` row actually located in Jerusalem or Haifa had been mis-tagged `market='tel_aviv'`, with the real city recorded only in free-text `notes`. Task 20 (Backend/Data Engineer) finds and corrects the confidently-determinable cases via a direct, audited `UPDATE` (not a migration, not a Sheet edit), leaving ambiguous rows untouched and logging the full before/after list in `docs/DECISIONS.md`. See `docs/tasks/TASK_20_market_reassignment_cleanup.md`.
+
 ### Source recurrence (Tasks 08–09, 2026-09-17)
 
 Pulled forward from what P5/Task 14 originally scoped (recurrence + source pages), since it doesn't require the agent pipeline to exist first:
@@ -252,6 +264,8 @@ Not lost: everything in `docs/`, both task specs (01 in repo, 02 in the owner's 
 | 10 Discover/Connect v1 backend | P6 | not started | — |
 | 11 Discover/Connect v1 frontend | P6 | not started — depends on 10 and a ux-ui-designer spec | — |
 | 12 Israel-only pilot pivot and content-scope broadening | planning/decision (no code) | logged in `docs/DECISIONS.md`, 2026-09-18 — not a code task file | — |
-| 13 Event-type vocab gap check | P4/P5 | not started | — |
-| 14 Sources directory | P2b | not started — depends on 09 and a ux-ui-designer spec | — |
-| 15–18 (Profile v2, Trip Radar remainder, Pipeline v2, Peer calls, Intros, Digest) | P3–P6 | outlined, not yet numbered or started | — |
+| 13 Event-type vocab gap check | P4/P5 | completed 2026-09-18 — see `docs/DECISIONS.md`; `vocab` Sheet-tab format blocker documented in `docs/OWNER_TASKS.md` Step 4f | — |
+| 14 Sources directory | P2b | shipped 2026-09-18 — see `docs/DECISIONS.md` | — |
+| 15–18 (Profile v2, Trip Radar remainder, Pipeline v2, Peer calls, Intros, Digest) | P3–P6 | outlined, not yet numbered or started — numbers reserved, do not reuse | — |
+| 19 Visual identity refresh | P2a | not started — gated on a ux-ui-designer research/spec deliverable, see `docs/tasks/TASK_19_visual_identity_refresh.md` | — |
+| 20 Market reassignment cleanup | P2c | not started — see `docs/tasks/TASK_20_market_reassignment_cleanup.md` | — |
