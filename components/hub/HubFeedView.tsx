@@ -66,9 +66,9 @@ export default function HubFeedView({
       </div>
 
       {groups.map((group, groupIdx) => (
-        <div key={group.label} className="mb-6">
+        <div key={group.label} className="mb-4">
           <GroupHeader label={group.label} count={group.rows.length} />
-          <div className="flex flex-col gap-4">
+          <div className="flex flex-col gap-2">
             {group.rows.map((row) => (
               <OpportunityRow key={row.opp_id} row={row} locked={locked} profile={profile} vocab={vocab} />
             ))}

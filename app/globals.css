@@ -162,11 +162,11 @@
     text-transform: uppercase;
     letter-spacing: -0.03em;
     line-height: 0.95;
-    font-size: 36px;
+    font-size: 40px;
   }
   @media (min-width: 768px) {
     .t-display {
-      font-size: 64px;
+      font-size: 72px;
     }
   }
 
@@ -175,11 +175,11 @@
     font-weight: 800;
     letter-spacing: -0.02em;
     line-height: 1.0;
-    font-size: 22px;
+    font-size: 24px;
   }
   @media (min-width: 768px) {
     .t-title {
-      font-size: 28px;
+      font-size: 32px;
     }
   }
 
