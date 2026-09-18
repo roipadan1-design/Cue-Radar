@@ -1,210 +1,170 @@
 'use client'
 
-import { useMemo, useState } from 'react'
-import Link from 'next/link'
+import { useState } from 'react'
 import { useRouter, useSearchParams } from 'next/navigation'
-import Sheet from '@/components/ui/Sheet'
 import Chip from '@/components/ui/Chip'
 import type { Market, VocabEntry } from '@/lib/types'
 
 interface DiscoverFilterBarProps {
   markets: Market[]
   vocab: VocabEntry[]
+  namePlaceholder: string
 }
 
-export default function DiscoverFilterBar({ markets, vocab }: DiscoverFilterBarProps) {
+/**
+ * ArtConnect's Discover pattern: two search inputs side by side — by name, and
+ * by city or country — plus a discipline filter row. Replaces the old single
+ * combined search + a Sheet-based city/discipline modal; the owner asked for
+ * "search rows for people, organisations etc." explicitly.
+ *
+ * City search resolves only against `markets` rows the page already scoped to
+ * `is_active = true` (Israel-only pilot) — never a hard-coded city/country list
+ * (rule 4). Typing something that doesn't match an active market's name shows an
+ * inline message instead of silently filtering to nothing.
+ */
+export default function DiscoverFilterBar({ markets, vocab, namePlaceholder }: DiscoverFilterBarProps) {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const [isSheetOpen, setIsSheetOpen] = useState(false)
-  const [citySearch, setCitySearch] = useState('')
 
+  const currentQ = searchParams.get('q') || ''
   const currentCity = searchParams.get('city') || ''
   const currentDiscipline = searchParams.get('discipline') || ''
-  const currentQ = searchParams.get('q') || ''
 
-  const activeCount = [currentCity, currentDiscipline, currentQ].filter(Boolean).length
-  const panelActiveCount = [currentCity, currentDiscipline].filter(Boolean).length
+  const currentCityLabel = markets.find((m) => m.slug === currentCity)?.display_name || ''
+  const [cityInput, setCityInput] = useState(currentCityLabel)
+  const [cityNotFound, setCityNotFound] = useState(false)
 
   const disciplineOptions = vocab.filter((v) => v.category === 'discipline' && !v.deprecated)
+  const activeCount = [currentQ, currentCity, currentDiscipline].filter(Boolean).length
 
-  const groupedMarkets = useMemo(() => {
-    const groups: Record<string, Market[]> = {}
-    markets
-      .filter((m) => m.display_name.toLowerCase().includes(citySearch.trim().toLowerCase()))
-      .forEach((m) => {
-        const r = m.region || 'Other'
-        if (!groups[r]) groups[r] = []
-        groups[r].push(m)
-      })
-    return groups
-  }, [markets, citySearch])
-
-  function getToggleUrl(key: string, value: string) {
+  function pushParams(next: Record<string, string | null>) {
     const params = new URLSearchParams(searchParams.toString())
-    if (params.get(key) === value) {
-      params.delete(key)
-    } else {
-      params.set(key, value)
+    Object.entries(next).forEach(([key, value]) => {
+      if (value) params.set(key, value)
+      else params.delete(key)
+    })
+    const str = params.toString()
+    router.push(str ? `/discover?${str}` : '/discover')
+  }
+
+  function handleNameSubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    const form = e.currentTarget
+    const input = form.elements.namedItem('q') as HTMLInputElement
+    pushParams({ q: input.value.trim() || null })
+  }
+
+  function handleCitySubmit(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault()
+    const typed = cityInput.trim()
+    if (!typed) {
+      setCityNotFound(false)
+      pushParams({ city: null })
+      return
     }
+    const lower = typed.toLowerCase()
+    const match =
+      markets.find((m) => m.display_name.toLowerCase() === lower) ||
+      markets.find((m) => m.display_name.toLowerCase().includes(lower)) ||
+      markets.find((m) => m.country.toLowerCase() === lower)
+    if (match) {
+      setCityInput(match.display_name)
+      setCityNotFound(false)
+      pushParams({ city: match.slug })
+    } else {
+      setCityNotFound(true)
+    }
+  }
+
+  function getDisciplineToggleUrl(value: string) {
+    const params = new URLSearchParams(searchParams.toString())
+    if (params.get('discipline') === value) params.delete('discipline')
+    else params.set('discipline', value)
     const str = params.toString()
     return str ? `/discover?${str}` : '/discover'
   }
 
-  function handleSearchSubmit(e: React.FormEvent<HTMLFormElement>) {
-    e.preventDefault()
-    const form = e.currentTarget
-    const input = form.elements.namedItem('q') as HTMLInputElement
-    const params = new URLSearchParams(searchParams.toString())
-    if (input.value.trim()) {
-      params.set('q', input.value.trim())
-    } else {
-      params.delete('q')
-    }
-    router.push(`/discover?${params.toString()}`)
-  }
-
   function handleReset() {
+    setCityInput('')
+    setCityNotFound(false)
     router.push('/discover')
-    setCitySearch('')
-    setIsSheetOpen(false)
   }
 
   return (
-    <div className="py-4 border-b border-line flex flex-col gap-3">
-      <form onSubmit={handleSearchSubmit} className="relative flex items-center w-full">
-        <input
-          type="text"
-          name="q"
-          defaultValue={currentQ}
-          key={currentQ}
-          placeholder="Search name or role"
-          className="w-full h-10 px-3 pr-16 bg-surface border border-line rounded-[var(--radius)] t-body text-sm text-fg focus:outline-none focus:border-fg"
-        />
-        {currentQ ? (
-          <button
-            type="button"
-            onClick={() => {
-              const params = new URLSearchParams(searchParams.toString())
-              params.delete('q')
-              router.push(`/discover?${params.toString()}`)
-            }}
-            className="absolute right-3 t-meta text-muted hover:text-fg text-xs"
-          >
-            Clear
-          </button>
-        ) : (
+    <div className="py-4 border-b border-line flex flex-col gap-4">
+      <div className="flex flex-col sm:flex-row gap-3">
+        <form onSubmit={handleNameSubmit} className="relative flex items-center flex-1">
+          <input
+            type="text"
+            name="q"
+            defaultValue={currentQ}
+            key={currentQ}
+            placeholder={namePlaceholder}
+            className="w-full h-11 px-3 pr-16 bg-surface border border-line rounded-[var(--radius)] t-body text-sm text-fg focus:outline-none focus:border-fg"
+          />
           <button
             type="submit"
             className="absolute right-3 t-meta text-muted hover:text-fg text-xs font-medium"
           >
             Search
           </button>
-        )}
-      </form>
+        </form>
 
-      <div className="flex items-center justify-between gap-2">
-        <button
-          type="button"
-          onClick={() => setIsSheetOpen(true)}
-          className="min-h-[44px] px-3 border border-line-strong rounded-[var(--radius)] t-meta text-fg hover:border-fg transition-colors"
-        >
-          Filters{panelActiveCount > 0 ? ` · ${panelActiveCount}` : ''}
-        </button>
-        {activeCount > 0 && (
+        <form onSubmit={handleCitySubmit} className="relative flex items-center flex-1">
+          <input
+            type="text"
+            list="discover-cities"
+            value={cityInput}
+            onChange={(e) => {
+              setCityInput(e.target.value)
+              setCityNotFound(false)
+            }}
+            placeholder="Search by city or country"
+            className="w-full h-11 px-3 pr-16 bg-surface border border-line rounded-[var(--radius)] t-body text-sm text-fg focus:outline-none focus:border-fg"
+          />
+          <datalist id="discover-cities">
+            {markets.map((m) => (
+              <option key={m.slug} value={m.display_name} />
+            ))}
+          </datalist>
           <button
-            type="button"
-            onClick={handleReset}
-            className="t-meta text-muted hover:text-fg underline underline-offset-4"
+            type="submit"
+            className="absolute right-3 t-meta text-muted hover:text-fg text-xs font-medium"
           >
-            Reset all
+            Search
           </button>
-        )}
+        </form>
       </div>
 
-      <Sheet isOpen={isSheetOpen} onClose={() => setIsSheetOpen(false)} title="Filters">
-        <div className="flex flex-col gap-6 py-2">
-          {/* City */}
-          <div className="flex flex-col gap-2">
-            <div className="flex items-center justify-between">
-              <span className="t-meta text-muted">City</span>
-              {currentCity && (
-                <button
-                  type="button"
-                  onClick={() => router.push(getToggleUrl('city', currentCity))}
-                  className="t-meta text-muted hover:text-fg underline underline-offset-4"
-                >
-                  Clear
-                </button>
-              )}
-            </div>
-            <input
-              type="text"
-              value={citySearch}
-              onChange={(e) => setCitySearch(e.target.value)}
-              placeholder="Search cities"
-              className="h-10 px-3 bg-surface border border-line rounded-[var(--radius)] t-body text-sm text-fg focus:outline-none focus:border-fg"
-            />
-            <div className="flex flex-col max-h-[260px] overflow-y-auto border border-line rounded-[var(--radius)] p-1">
-              {Object.entries(groupedMarkets).map(([region, regionMarkets]) => (
-                <div key={region} className="mt-3 first:mt-1">
-                  <div className="t-meta text-muted px-2 mb-1">{region}</div>
-                  <div className="flex flex-col">
-                    {regionMarkets.map((m) => (
-                      <Link
-                        key={m.slug}
-                        href={getToggleUrl('city', m.slug)}
-                        className={`min-h-[44px] px-2 flex items-center t-body text-sm rounded-[var(--radius)] transition-colors ${
-                          m.slug === currentCity ? 'bg-fg text-bg' : 'text-fg hover:bg-surface'
-                        }`}
-                      >
-                        {m.display_name}
-                      </Link>
-                    ))}
-                  </div>
-                </div>
-              ))}
-              {Object.keys(groupedMarkets).length === 0 && (
-                <div className="t-body text-muted text-sm py-4 px-2">
-                  No cities match &quot;{citySearch}&quot;.
-                </div>
-              )}
-            </div>
-          </div>
+      {cityNotFound && (
+        <p className="t-meta text-urgent">
+          No pilot-market city or country matches &quot;{cityInput}&quot;.
+        </p>
+      )}
 
-          {/* Discipline */}
-          <div className="flex flex-col gap-2">
-            <span className="t-meta text-muted">Discipline</span>
-            <div className="flex flex-wrap gap-2">
-              {disciplineOptions.map((d) => (
-                <Chip
-                  key={d.value}
-                  active={currentDiscipline === d.value}
-                  href={getToggleUrl('discipline', d.value)}
-                >
-                  {d.label}
-                </Chip>
-              ))}
-            </div>
-          </div>
-
-          <div className="flex items-center justify-between pt-4 border-t border-line">
-            <button
-              type="button"
-              onClick={handleReset}
-              className="t-meta text-muted hover:text-fg underline underline-offset-4"
+      {disciplineOptions.length > 0 && (
+        <div className="flex flex-wrap gap-2">
+          {disciplineOptions.map((d) => (
+            <Chip
+              key={d.value}
+              active={currentDiscipline === d.value}
+              href={getDisciplineToggleUrl(d.value)}
             >
-              Reset filters
-            </button>
-            <button
-              type="button"
-              onClick={() => setIsSheetOpen(false)}
-              className="h-10 px-4 bg-fg text-bg rounded-[var(--radius)] t-body font-semibold text-sm"
-            >
-              Done
-            </button>
-          </div>
+              {d.label}
+            </Chip>
+          ))}
         </div>
-      </Sheet>
+      )}
+
+      {activeCount > 0 && (
+        <button
+          type="button"
+          onClick={handleReset}
+          className="t-meta text-muted hover:text-fg underline underline-offset-4 w-fit"
+        >
+          Reset all
+        </button>
+      )}
     </div>
   )
 }

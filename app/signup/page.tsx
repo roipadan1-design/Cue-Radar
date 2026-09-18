@@ -167,7 +167,7 @@ function SignUpContent() {
             value={formData.full_name}
             onChange={(e) => handleChange('full_name', e.target.value)}
             onBlur={() => handleBlur('full_name')}
-            className="w-full h-11 px-3 bg-surface border border-line rounded-[var(--radius)] t-body text-fg focus:outline-none focus:border-fg"
+            className="input-shell"
           />
         </Field>
 
@@ -177,7 +177,7 @@ function SignUpContent() {
             value={formData.email}
             onChange={(e) => handleChange('email', e.target.value)}
             onBlur={() => handleBlur('email')}
-            className="w-full h-11 px-3 bg-surface border border-line rounded-[var(--radius)] t-body text-fg focus:outline-none focus:border-fg"
+            className="input-shell"
           />
         </Field>
 
@@ -187,7 +187,7 @@ function SignUpContent() {
             value={formData.password}
             onChange={(e) => handleChange('password', e.target.value)}
             onBlur={() => handleBlur('password')}
-            className="w-full h-11 px-3 bg-surface border border-line rounded-[var(--radius)] t-body text-fg focus:outline-none focus:border-fg"
+            className="input-shell"
           />
         </Field>
 
@@ -209,7 +209,7 @@ function SignUpContent() {
 
 export default function SignUpPage() {
   return (
-    <div className="max-w-[720px] mx-auto px-4 md:px-6 py-12 flex flex-col items-center justify-center min-h-[calc(100vh-120px)]">
+    <div className="w-full max-w-[420px] mx-auto px-4 py-12 md:py-16 flex flex-col items-center justify-center min-h-[calc(100vh-160px)]">
       <Suspense fallback={<div className="t-body text-muted">Loading...</div>}>
         <SignUpContent />
       </Suspense>

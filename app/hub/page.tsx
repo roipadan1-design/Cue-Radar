@@ -16,6 +16,7 @@ interface HubPageProps {
     covers_travel?: string
     q?: string
     effort?: string
+    sort?: string
   }>
 }
 
@@ -30,6 +31,7 @@ export default async function HubPage(props: HubPageProps) {
   const coversTravel = searchParams.covers_travel === 'true'
   const q = searchParams.q?.trim()
   const effort = searchParams.effort
+  const sort = searchParams.sort === 'newest' ? 'newest' : 'deadline'
 
   const hasActiveFilters = Boolean(
     city ||
@@ -45,17 +47,45 @@ export default async function HubPage(props: HubPageProps) {
 
   const supabase = await createClient()
 
-  // Build the hub_feed query (depends only on searchParams, not on auth) so it
-  // can run concurrently with the auth/markets/vocab calls below instead of
-  // waiting on them one by one — this was the main source of the multi-second
-  // delay on every filter click (four sequential Supabase round-trips).
-  let feedQuery = supabase
-    .from('hub_feed')
+  // Israel-only pilot (migration 0009_market_scope.sql): markets carries an
+  // additive `is_active` flag instead of deleting non-Israel rows (rule 6).
+  // `hub_feed` is a view, and views don't retain the FK metadata PostgREST
+  // needs for a `markets!inner(...)` embed, so the feed is scoped here by
+  // fetching the active market slugs first and filtering hub_feed.city
+  // against them — see docs/DECISIONS.md Task 21 for why. This also fetches
+  // markets before the feed query, which is why it isn't in the Promise.all
+  // batch below.
+  const { data: marketsData } = await supabase
+    .from('markets')
     .select('*')
-    .order('deadline', { ascending: true, nullsFirst: false })
+    .eq('is_active', true)
+    .order('display_name', { ascending: true })
+  const markets = (marketsData || []) as Market[]
+  const activeSlugs = markets.map((m) => m.slug)
+
+  // Build the hub_feed query so it can run concurrently with the auth/vocab
+  // calls below instead of waiting on them one by one — this was the main
+  // source of the multi-second delay on every filter click (four sequential
+  // Supabase round-trips).
+  let feedQuery = supabase.from('hub_feed').select('*')
+
+  feedQuery =
+    sort === 'newest'
+      ? feedQuery.order('created_at', { ascending: false, nullsFirst: false })
+      : feedQuery.order('deadline', { ascending: true, nullsFirst: false })
 
   if (process.env.NEXT_PUBLIC_SHOW_DEMO === 'false') {
     feedQuery = feedQuery.or('is_demo.eq.false,is_demo.is.null')
+  }
+
+  // Scope to the pilot: rows tied to an active (Israeli) market, plus rows
+  // with no market at all (rolling/remote calls aren't tied to a city we're
+  // hiding). Never a hard-coded city or country list (rule 4) — the slugs
+  // come straight out of the markets query above.
+  if (activeSlugs.length > 0) {
+    feedQuery = feedQuery.or(`city.in.(${activeSlugs.join(',')}),city.is.null`)
+  } else {
+    feedQuery = feedQuery.is('city', null)
   }
 
   if (city) {
@@ -92,19 +122,16 @@ export default async function HubPage(props: HubPageProps) {
     {
       data: { user },
     },
-    { data: marketsData },
     { data: vocabData },
     { data: rowsData, error },
   ] = await Promise.all([
     supabase.auth.getUser(),
-    // Rule 4: dynamic, no hardcoding — markets/vocab come from the database
-    supabase.from('markets').select('*').order('display_name', { ascending: true }),
+    // Rule 4: dynamic, no hardcoding — vocab comes from the database
     supabase.from('vocab').select('*').order('sort_order', { ascending: true }),
     feedQuery,
   ])
 
   const isGuest = !user
-  const markets = (marketsData || []) as Market[]
   const vocab = (vocabData || []) as VocabEntry[]
 
   if (error) {
@@ -120,21 +147,30 @@ export default async function HubPage(props: HubPageProps) {
     rows = rows.filter((r) => effortLevel(r.materials_required) === 'light')
   }
 
-  // Profile fetch depends on the user id above, so it can't join the batch
-  // above — only signed-in users pay this extra round-trip.
+  // Profile + saved-state fetch depend on the user id above, so they can't
+  // join the batch above — only signed-in users pay this extra round-trip.
   let profile: Profile | null = null
+  let savedOppIds: Set<string> | undefined
   if (user) {
-    const { data: profileData } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', user.id)
-      .maybeSingle()
+    const [{ data: profileData }, { data: savedData }] = await Promise.all([
+      supabase.from('profiles').select('*').eq('id', user.id).maybeSingle(),
+      supabase.from('user_saved_opportunities').select('opp_id').eq('user_id', user.id),
+    ])
     profile = profileData as Profile | null
+    savedOppIds = new Set((savedData || []).map((r) => r.opp_id as string))
   }
 
   return (
-    <div className="max-w-[960px] mx-auto px-4 md:px-6 py-6">
-      <Suspense fallback={<div className="h-[100px] py-4 border-b border-line" />}>
+    <div className="container-page py-8 md:py-10">
+      <div className="mb-6 md:mb-8 flex flex-col gap-2 max-w-[720px]">
+        <h1 className="t-display text-fg">Opportunities</h1>
+        <p className="t-body text-muted">
+          Verified open calls, residencies and grants for independent artists — updated as sources
+          are checked.
+        </p>
+      </div>
+
+      <Suspense fallback={<div className="h-[140px] py-5 border-b border-line" />}>
         <FilterBar markets={markets} vocab={vocab} />
       </Suspense>
 
@@ -144,6 +180,9 @@ export default async function HubPage(props: HubPageProps) {
         hasActiveFilters={hasActiveFilters}
         profile={profile}
         vocab={vocab}
+        userId={user?.id}
+        savedOppIds={savedOppIds}
+        sort={sort}
       />
     </div>
   )

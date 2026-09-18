@@ -28,7 +28,7 @@ export default async function ProfileEditPage({ searchParams }: PageProps) {
   const disciplineOptions = vocab.filter((v) => v.category === 'discipline' && !v.deprecated)
 
   return (
-    <div className="max-w-[720px] mx-auto px-4 md:px-6 py-6 pb-[120px] md:pb-[80px]">
+    <div className="container-reading py-8 pb-[120px] md:pb-[80px]">
       {welcome === '1' && (
         <div className="mb-6 p-3 bg-surface border border-line rounded-[var(--radius)] t-body text-fg text-sm">
           Add your disciplines so we can show what you&apos;re eligible for.

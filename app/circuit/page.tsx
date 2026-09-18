@@ -10,7 +10,13 @@ export default async function CircuitPage() {
   } = await supabase.auth.getUser()
 
   const [{ data: marketsData }, profileRes] = await Promise.all([
-    supabase.from('markets').select('*').order('display_name', { ascending: true }),
+    // `is_active` scopes the pilot (Israel-only right now, migration 0009). The
+    // flag lives in the database so no city list is ever written into a .tsx.
+    supabase
+      .from('markets')
+      .select('*')
+      .eq('is_active', true)
+      .order('display_name', { ascending: true }),
     user
       ? supabase
           .from('profiles')
@@ -23,7 +29,12 @@ export default async function CircuitPage() {
   const markets = (marketsData || []) as Market[]
   const profile = profileRes.data
 
-  const defaultCity = profile?.current_city || 'berlin'
+  // Was hard-coded to 'berlin' — both a rule-4 violation and, since the pilot
+  // went Israel-only, a default pointing at a city we no longer cover. Falls
+  // back to the first active market instead, whatever the database says that is.
+  const activeDefaultCity = markets[0]?.slug ?? ''
+  const profileCityIsActive = markets.some((m) => m.slug === profile?.current_city)
+  const defaultCity = profileCityIsActive ? (profile?.current_city as string) : activeDefaultCity
   const todayStr = new Date().toISOString().split('T')[0]
 
   const defaultFrom = profile?.current_city_from || todayStr
@@ -36,10 +47,10 @@ export default async function CircuitPage() {
   }
 
   return (
-    <div className="max-w-[720px] mx-auto px-4 md:px-6 py-8">
-      <div className="mb-[32px] flex flex-col gap-2">
-        <h1 className="t-display text-fg">Currently</h1>
-        <div className="t-body text-muted">What&apos;s on where you&apos;ll be.</div>
+    <div className="container-reading py-8">
+      <div className="mb-8 flex flex-col gap-2">
+        <h1 className="t-title text-fg">Currently</h1>
+        <p className="t-body text-muted">What&apos;s on where you&apos;ll be.</p>
       </div>
 
       <CircuitForm

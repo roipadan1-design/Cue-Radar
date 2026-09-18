@@ -76,8 +76,8 @@ export default async function SavedPage(props: SavedPageProps) {
   })
 
   return (
-    <div className="max-w-[960px] mx-auto px-4 md:px-6 py-6">
-      <h1 className="t-title text-fg mb-4">Saved calls</h1>
+    <div className="container-page py-8 md:py-10">
+      <h1 className="t-title text-fg mb-6">Saved calls</h1>
       <SavedPipelineView
         initialRows={savedRows}
         activeStatus={activeStatus}

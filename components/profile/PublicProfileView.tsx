@@ -88,7 +88,7 @@ export default function PublicProfileView({
   }
 
   return (
-    <div className="max-w-[720px] mx-auto px-4 md:px-6 py-8 flex flex-col gap-[48px]">
+    <div className="container-reading py-8 md:py-10 flex flex-col gap-10">
       {/* 1. Header */}
       <div className="flex flex-col md:flex-row md:items-center gap-6">
         {profile.avatar_url ? (

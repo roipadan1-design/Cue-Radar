@@ -6,14 +6,17 @@ export const size = { width: 1200, height: 630 }
 export const contentType = 'image/png'
 
 // Design tokens — DECISIONS.md §OG-Image-Hex-Exception
-// CSS variables are not available in ImageResponse canvas context.
-// Values are exact matches of app/globals.css tokens.
+// Satori's ImageResponse canvas cannot read CSS variables, so these are the one
+// place in the codebase where literal hex is allowed (rule 7's stated exception).
+// That also means they do not update themselves: these drifted from
+// app/globals.css and were re-synced by hand in Task 21. Mirror of the :root
+// tokens as of that pass — re-check these whenever the palette moves.
 const C = {
   bg: '#0A0A0A',
-  fg: '#F2F2F2',
-  muted: '#8C8C8C',
-  accent: '#B39DFF',
-  line: '#1F1F1F',
+  fg: '#FAFAFA',
+  muted: '#8B8B94',
+  accent: '#AA80FF',
+  line: '#242428',
 } as const
 
 async function loadFont(): Promise<ArrayBuffer> {

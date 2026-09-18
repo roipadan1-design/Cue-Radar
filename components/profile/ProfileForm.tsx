@@ -1,6 +1,6 @@
 'use client'
 
-import { useState, useEffect } from 'react'
+import { useState, useEffect, useRef, useCallback } from 'react'
 import Link from 'next/link'
 import { X } from 'lucide-react'
 import Field from '@/components/ui/Field'
@@ -8,7 +8,7 @@ import Button from '@/components/ui/Button'
 import Chip from '@/components/ui/Chip'
 import { profileSchema, type ProfileFormData } from '@/lib/schemas/profile'
 import { createClient } from '@/lib/supabase/client'
-import type { Profile, VocabEntry } from '@/lib/types'
+import type { Profile, VocabEntry, Market } from '@/lib/types'
 
 // Matches PublicProfileView's gallery grid (grid-cols-2 md:grid-cols-3) — 6 fills two
 // full rows on desktop and three on mobile with no dangling partial row.
@@ -49,6 +49,33 @@ export default function ProfileForm({ initialProfile, userId, disciplineOptions 
   const [errors, setErrors] = useState<Record<string, string>>({})
   const [formError, setFormError] = useState<string | null>(null)
   const [activeUserId, setActiveUserId] = useState<string | undefined>(userId)
+
+  // Rule 4: current_city is a foreign key to markets(slug) — options come from the
+  // `markets` table (is_active = true, pilot is Israel-only), never a hard-coded list.
+  const [cities, setCities] = useState<Market[]>([])
+
+  // One ref per schema field, keyed by the same string zod reports in `issue.path[0]`.
+  // Lets a failed save (or a failed validation) scroll/focus the first offending field
+  // instead of leaving the owner staring at a Save button that "did nothing."
+  const fieldRefs = useRef<Record<string, HTMLDivElement | null>>({})
+  const registerField = useCallback(
+    (key: string) => (el: HTMLDivElement | null) => {
+      fieldRefs.current[key] = el
+    },
+    [],
+  )
+
+  useEffect(() => {
+    const supabase = createClient()
+    supabase
+      .from('markets')
+      .select('*')
+      .eq('is_active', true)
+      .order('display_name', { ascending: true })
+      .then(({ data }) => {
+        if (data) setCities(data as Market[])
+      })
+  }, [])
 
   useEffect(() => {
     if (!activeUserId) {
@@ -183,6 +210,18 @@ export default function ProfileForm({ initialProfile, userId, disciplineOptions 
     }))
   }
 
+  // Scrolls to + focuses the first field a zod issue (or, on a server error whose
+  // message we can match to a field, that error) points at, instead of leaving the
+  // failure silently reported only in a banner the owner may not be looking at.
+  function focusField(key?: string) {
+    if (!key) return
+    const el = fieldRefs.current[key]
+    if (!el) return
+    el.scrollIntoView({ behavior: 'smooth', block: 'center' })
+    const focusable = el.querySelector<HTMLElement>('input, textarea, select')
+    focusable?.focus()
+  }
+
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setFormError(null)
@@ -197,6 +236,9 @@ export default function ProfileForm({ initialProfile, userId, disciplineOptions 
         }
       })
       setErrors(formattedErrors)
+      const count = Object.keys(formattedErrors).length
+      setFormError(`Fix ${count} field${count === 1 ? '' : 's'} below before saving — see the highlighted field${count === 1 ? '' : 's'}.`)
+      focusField(result.error.issues[0]?.path[0]?.toString())
       return
     }
 
@@ -247,24 +289,12 @@ export default function ProfileForm({ initialProfile, userId, disciplineOptions 
     } else {
       setErrors({})
       setSaveSuccess(true)
-      setTimeout(() => setSaveSuccess(false), 3000)
+      setTimeout(() => setSaveSuccess(false), 4000)
     }
   }
 
   return (
     <form onSubmit={handleSubmit} className="flex flex-col gap-5">
-      {formError && (
-        <div className="p-3 bg-surface border border-urgent rounded-[var(--radius)] t-body text-urgent text-sm">
-          {formError}
-        </div>
-      )}
-
-      {saveSuccess && (
-        <div className="p-3 bg-surface border border-line rounded-[var(--radius)] t-body text-fg text-sm">
-          Profile saved successfully!
-        </div>
-      )}
-
       {/* Avatar upload section */}
       <div className="flex items-center gap-4 py-2 border-b border-line">
         {avatarUrl ? (
@@ -295,127 +325,155 @@ export default function ProfileForm({ initialProfile, userId, disciplineOptions 
       </div>
 
       {/* Gallery upload section */}
-      <Field label="Gallery" error={errors.gallery} helpText={`Up to ${MAX_GALLERY_IMAGES} photos.`}>
-        <div className="flex flex-col gap-3">
-          {formData.gallery.length > 0 && (
-            <div className="grid grid-cols-3 gap-2">
-              {formData.gallery.map((src) => (
-                <div key={src} className="relative aspect-square">
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img
-                    src={src}
-                    alt="Gallery photo"
-                    className="w-full h-full object-cover rounded-[var(--radius)] bg-surface border border-line"
-                  />
-                  <button
-                    type="button"
-                    onClick={() => removeGalleryImage(src)}
-                    aria-label="Remove gallery photo"
-                    className="absolute top-1 right-1 w-6 h-6 flex items-center justify-center rounded-[var(--radius)] bg-bg border border-line text-fg hover:border-fg"
-                  >
-                    <X size={14} strokeWidth={2} />
-                  </button>
-                </div>
-              ))}
-            </div>
-          )}
-          {formData.gallery.length < MAX_GALLERY_IMAGES && (
-            <label className="t-meta text-fg cursor-pointer hover:underline w-fit">
-              {uploadingGallery ? 'Uploading...' : 'Add gallery photos'}
-              <input
-                type="file"
-                accept="image/*"
-                multiple
-                onChange={handleGalleryUpload}
-                disabled={uploadingGallery || !activeUserId}
-                className="hidden"
-              />
-            </label>
-          )}
-        </div>
-      </Field>
+      <div ref={registerField('gallery')}>
+        <Field label="Gallery" error={errors.gallery} helpText={`Up to ${MAX_GALLERY_IMAGES} photos.`}>
+          <div className="flex flex-col gap-3">
+            {formData.gallery.length > 0 && (
+              <div className="grid grid-cols-3 gap-2">
+                {formData.gallery.map((src) => (
+                  <div key={src} className="relative aspect-square">
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={src}
+                      alt="Gallery photo"
+                      className="w-full h-full object-cover rounded-[var(--radius)] bg-surface border border-line"
+                    />
+                    <button
+                      type="button"
+                      onClick={() => removeGalleryImage(src)}
+                      aria-label="Remove gallery photo"
+                      className="absolute top-1 right-1 w-6 h-6 flex items-center justify-center rounded-[var(--radius)] bg-bg border border-line text-fg hover:border-fg"
+                    >
+                      <X size={14} strokeWidth={2} />
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+            {formData.gallery.length < MAX_GALLERY_IMAGES && (
+              <label className="t-meta text-fg cursor-pointer hover:underline w-fit">
+                {uploadingGallery ? 'Uploading...' : 'Add gallery photos'}
+                <input
+                  type="file"
+                  accept="image/*"
+                  multiple
+                  onChange={handleGalleryUpload}
+                  disabled={uploadingGallery || !activeUserId}
+                  className="hidden"
+                />
+              </label>
+            )}
+          </div>
+        </Field>
+      </div>
 
-      <Field label="Handle" error={errors.handle}>
-        <input
-          type="text"
-          value={formData.handle}
-          onChange={(e) => handleChange('handle', e.target.value)}
-          className="w-full h-11 px-3 bg-surface border border-line rounded-[var(--radius)] t-body text-fg focus:outline-none focus:border-fg"
-        />
-      </Field>
+      <div ref={registerField('handle')}>
+        <Field label="Handle" error={errors.handle}>
+          <input
+            type="text"
+            value={formData.handle}
+            onChange={(e) => handleChange('handle', e.target.value)}
+            className="w-full h-11 px-3 bg-surface border border-line rounded-[var(--radius)] t-body text-fg focus:outline-none focus:border-fg"
+          />
+        </Field>
+      </div>
 
-      <Field label="Full name" error={errors.full_name}>
-        <input
-          type="text"
-          value={formData.full_name}
-          onChange={(e) => handleChange('full_name', e.target.value)}
-          className="w-full h-11 px-3 bg-surface border border-line rounded-[var(--radius)] t-body text-fg focus:outline-none focus:border-fg"
-        />
-      </Field>
+      <div ref={registerField('full_name')}>
+        <Field label="Full name" error={errors.full_name}>
+          <input
+            type="text"
+            value={formData.full_name}
+            onChange={(e) => handleChange('full_name', e.target.value)}
+            className="w-full h-11 px-3 bg-surface border border-line rounded-[var(--radius)] t-body text-fg focus:outline-none focus:border-fg"
+          />
+        </Field>
+      </div>
 
-      <Field label="Role label" error={errors.role_label}>
-        <input
-          type="text"
-          value={formData.role_label}
-          onChange={(e) => handleChange('role_label', e.target.value)}
-          className="w-full h-11 px-3 bg-surface border border-line rounded-[var(--radius)] t-body text-fg focus:outline-none focus:border-fg"
-        />
-      </Field>
+      <div ref={registerField('role_label')}>
+        <Field label="Role label" error={errors.role_label}>
+          <input
+            type="text"
+            value={formData.role_label}
+            onChange={(e) => handleChange('role_label', e.target.value)}
+            className="w-full h-11 px-3 bg-surface border border-line rounded-[var(--radius)] t-body text-fg focus:outline-none focus:border-fg"
+          />
+        </Field>
+      </div>
 
-      <Field label="Disciplines" error={errors.disciplines}>
-        <div className="flex flex-wrap gap-2">
-          {disciplineOptions.map((d) => (
-            <Chip
-              key={d.value}
-              active={formData.disciplines.includes(d.value)}
-              onClick={() => toggleDiscipline(d.value)}
-            >
-              {d.label}
-            </Chip>
-          ))}
-          {disciplineOptions.length === 0 && (
-            <span className="t-meta text-muted normal-case">No disciplines available.</span>
-          )}
-        </div>
-      </Field>
+      <div ref={registerField('disciplines')}>
+        <Field label="Disciplines" error={errors.disciplines}>
+          <div className="flex flex-wrap gap-2">
+            {disciplineOptions.map((d) => (
+              <Chip
+                key={d.value}
+                active={formData.disciplines.includes(d.value)}
+                onClick={() => toggleDiscipline(d.value)}
+              >
+                {d.label}
+              </Chip>
+            ))}
+            {disciplineOptions.length === 0 && (
+              <span className="t-meta text-muted normal-case">No disciplines available.</span>
+            )}
+          </div>
+        </Field>
+      </div>
 
-      <Field label="Bio" error={errors.bio}>
-        <textarea
-          rows={4}
-          value={formData.bio}
-          onChange={(e) => handleChange('bio', e.target.value)}
-          className="w-full p-3 bg-surface border border-line rounded-[var(--radius)] t-body text-fg focus:outline-none focus:border-fg resize-none"
-        />
-      </Field>
+      <div ref={registerField('bio')}>
+        <Field label="Bio" error={errors.bio}>
+          <textarea
+            rows={4}
+            value={formData.bio}
+            onChange={(e) => handleChange('bio', e.target.value)}
+            className="w-full p-3 bg-surface border border-line rounded-[var(--radius)] t-body text-fg focus:outline-none focus:border-fg resize-none"
+          />
+        </Field>
+      </div>
 
-      <Field label="Locations (comma-separated)" error={errors.locations}>
-        <input
-          type="text"
-          value={formData.locations}
-          onChange={(e) => handleChange('locations', e.target.value)}
-          className="w-full h-11 px-3 bg-surface border border-line rounded-[var(--radius)] t-body text-fg focus:outline-none focus:border-fg"
-        />
-      </Field>
+      <div ref={registerField('locations')}>
+        <Field label="Locations (comma-separated)" error={errors.locations}>
+          <input
+            type="text"
+            value={formData.locations}
+            onChange={(e) => handleChange('locations', e.target.value)}
+            className="w-full h-11 px-3 bg-surface border border-line rounded-[var(--radius)] t-body text-fg focus:outline-none focus:border-fg"
+          />
+        </Field>
+      </div>
 
-      <Field label="Current city" error={errors.current_city}>
-        <input
-          type="text"
-          value={formData.current_city}
-          onChange={(e) => handleChange('current_city', e.target.value)}
-          className="w-full h-11 px-3 bg-surface border border-line rounded-[var(--radius)] t-body text-fg focus:outline-none focus:border-fg"
-        />
-      </Field>
+      <div ref={registerField('current_city')}>
+        <Field
+          label="Current city"
+          error={errors.current_city}
+          helpText="Pilot markets only — where you're based right now."
+        >
+          <select
+            value={formData.current_city}
+            onChange={(e) => handleChange('current_city', e.target.value)}
+            className="w-full h-11 px-3 bg-surface border border-line rounded-[var(--radius)] t-body text-fg focus:outline-none focus:border-fg"
+          >
+            <option value="">Not set</option>
+            {cities.map((m) => (
+              <option key={m.slug} value={m.slug}>
+                {m.display_name}
+              </option>
+            ))}
+          </select>
+        </Field>
+      </div>
 
-      <Field label="Current city until" error={errors.current_city_until}>
-        <input
-          type="date"
-          value={formData.current_city_until}
-          onChange={(e) => handleChange('current_city_until', e.target.value)}
-          className="w-full h-11 px-3 bg-surface border border-line rounded-[var(--radius)] t-body text-fg focus:outline-none focus:border-fg"
-        />
-      </Field>
+      <div ref={registerField('current_city_until')}>
+        <Field label="Current city until" error={errors.current_city_until}>
+          <input
+            type="date"
+            value={formData.current_city_until}
+            onChange={(e) => handleChange('current_city_until', e.target.value)}
+            className="w-full h-11 px-3 bg-surface border border-line rounded-[var(--radius)] t-body text-fg focus:outline-none focus:border-fg"
+          />
+        </Field>
+      </div>
 
-      <div className="flex items-center gap-3 py-1">
+      <div ref={registerField('open_for_collab')} className="flex items-center gap-3 py-1">
         <input
           type="checkbox"
           id="open_for_collab"
@@ -428,43 +486,51 @@ export default function ProfileForm({ initialProfile, userId, disciplineOptions 
         </label>
       </div>
 
-      <Field label="Available from" error={errors.available_from}>
-        <input
-          type="date"
-          value={formData.available_from}
-          onChange={(e) => handleChange('available_from', e.target.value)}
-          className="w-full h-11 px-3 bg-surface border border-line rounded-[var(--radius)] t-body text-fg focus:outline-none focus:border-fg"
-        />
-      </Field>
+      <div ref={registerField('available_from')}>
+        <Field label="Available from" error={errors.available_from}>
+          <input
+            type="date"
+            value={formData.available_from}
+            onChange={(e) => handleChange('available_from', e.target.value)}
+            className="w-full h-11 px-3 bg-surface border border-line rounded-[var(--radius)] t-body text-fg focus:outline-none focus:border-fg"
+          />
+        </Field>
+      </div>
 
-      <Field label="Showreel URL" error={errors.showreel_url}>
-        <input
-          type="url"
-          value={formData.showreel_url}
-          onChange={(e) => handleChange('showreel_url', e.target.value)}
-          className="w-full h-11 px-3 bg-surface border border-line rounded-[var(--radius)] t-body text-fg focus:outline-none focus:border-fg"
-        />
-      </Field>
+      <div ref={registerField('showreel_url')}>
+        <Field label="Showreel URL" error={errors.showreel_url}>
+          <input
+            type="url"
+            value={formData.showreel_url}
+            onChange={(e) => handleChange('showreel_url', e.target.value)}
+            className="w-full h-11 px-3 bg-surface border border-line rounded-[var(--radius)] t-body text-fg focus:outline-none focus:border-fg"
+          />
+        </Field>
+      </div>
 
-      <Field label="Instagram" error={errors.instagram}>
-        <input
-          type="text"
-          value={formData.instagram}
-          onChange={(e) => handleChange('instagram', e.target.value)}
-          className="w-full h-11 px-3 bg-surface border border-line rounded-[var(--radius)] t-body text-fg focus:outline-none focus:border-fg"
-        />
-      </Field>
+      <div ref={registerField('instagram')}>
+        <Field label="Instagram" error={errors.instagram}>
+          <input
+            type="text"
+            value={formData.instagram}
+            onChange={(e) => handleChange('instagram', e.target.value)}
+            className="w-full h-11 px-3 bg-surface border border-line rounded-[var(--radius)] t-body text-fg focus:outline-none focus:border-fg"
+          />
+        </Field>
+      </div>
 
-      <Field label="Website" error={errors.website}>
-        <input
-          type="url"
-          value={formData.website}
-          onChange={(e) => handleChange('website', e.target.value)}
-          className="w-full h-11 px-3 bg-surface border border-line rounded-[var(--radius)] t-body text-fg focus:outline-none focus:border-fg"
-        />
-      </Field>
+      <div ref={registerField('website')}>
+        <Field label="Website" error={errors.website}>
+          <input
+            type="url"
+            value={formData.website}
+            onChange={(e) => handleChange('website', e.target.value)}
+            className="w-full h-11 px-3 bg-surface border border-line rounded-[var(--radius)] t-body text-fg focus:outline-none focus:border-fg"
+          />
+        </Field>
+      </div>
 
-      <div className="flex flex-col gap-1 py-1">
+      <div ref={registerField('is_public')} className="flex flex-col gap-1 py-1">
         <div className="flex items-center gap-3">
           <input
             type="checkbox"
@@ -482,22 +548,34 @@ export default function ProfileForm({ initialProfile, userId, disciplineOptions 
         </p>
       </div>
 
-      {/* Sticky bottom bar */}
-      <div className="fixed bottom-[56px] md:bottom-0 left-0 right-0 z-30 bg-surface border-t border-line p-4 flex items-center justify-between max-w-[720px] mx-auto">
-        <div className="flex flex-col gap-1">
-          <Button type="submit" variant="primary" disabled={saving || !activeUserId}>
-            {saving ? 'Saving...' : 'Save'}
-          </Button>
-          {!activeUserId && (
-            <span className="t-meta text-muted">Saving is enabled once you sign in.</span>
-          )}
-        </div>
+      {/* Sticky bottom bar — save/validation feedback renders here, directly above the
+          Save button, not in a banner 2000px away at the top of the form. */}
+      <div className="fixed bottom-[56px] md:bottom-0 left-0 right-0 z-30 bg-surface border-t border-line max-w-[720px] mx-auto flex flex-col">
+        {(formError || saveSuccess) && (
+          <div
+            role={formError ? 'alert' : 'status'}
+            aria-live="assertive"
+            className={`px-4 pt-3 t-body text-sm font-semibold ${formError ? 'text-urgent' : 'text-positive'}`}
+          >
+            {formError || 'Profile saved.'}
+          </div>
+        )}
+        <div className="p-4 flex items-center justify-between gap-3">
+          <div className="flex flex-col gap-1">
+            <Button type="submit" variant="primary" disabled={saving || !activeUserId}>
+              {saving ? 'Saving...' : 'Save'}
+            </Button>
+            {!activeUserId && (
+              <span className="t-meta text-muted">Saving is enabled once you sign in.</span>
+            )}
+          </div>
 
-        <Link href={formData.handle ? `/a/${formData.handle}` : '/profile/edit'}>
-          <Button type="button" variant="ghost">
-            View profile
-          </Button>
-        </Link>
+          <Link href={formData.handle ? `/a/${formData.handle}` : '/profile/edit'}>
+            <Button type="button" variant="ghost">
+              View profile
+            </Button>
+          </Link>
+        </div>
       </div>
     </form>
   )

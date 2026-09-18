@@ -669,3 +669,406 @@ QA-reported regression, both introduced in commit `5d01c91` (2026-09-17): `compo
 **Verified with a real running preview, not just code review**: at `/hub` with `NEXT_PUBLIC_SHOW_DEMO=true` (the current `.env.local` value), searching "Tokyo" narrowed the feed from 45 to 3 opportunities, all Tokyo-titled. `/hub?effort=light` narrowed 45 → 20. Then temporarily flipped `.env.local`'s `NEXT_PUBLIC_SHOW_DEMO` to `false`, restarted the dev server's env pickup by reloading (Next.js dev picks up `.env.local` edits without a full process restart), and confirmed `/hub` dropped from 45 to 4 opportunities with zero "Demo"-tagged rows visible — then reverted `.env.local` back to `true` and diffed it byte-for-byte against a pre-edit backup to confirm exact restoration before finishing.
 
 **Verification**: `npm run lint` (no warnings/errors), `npm run build` (all 20 routes compile, `/hub` included), `python -m unittest discover -s scripts` (6/6 pass) — raw output in the PR description.
+
+## Task 21 — ArtConnect standard (2026-09-18)
+
+Opened because the owner reviewed the deployed app and was not satisfied: "We agreed we'd take
+design inspiration from ARTCONNECT and in practice I see none of it." Plus three concrete demands:
+profile Save is broken, drop every city outside Israel, add search rows for people/organisations.
+
+### The Save bug was a migration that was never applied, not a frontend bug
+
+`supabase/migrations/0008_profiles_gallery.sql` was written on 2026-09-18 and committed (`263ebe2`)
+but never run against the linked project. Confirmed live before touching anything: a REST read of
+`profiles?select=gallery` returned `{"code":"42703","message":"column profiles.gallery does not
+exist"}`. Since `ProfileForm.handleSubmit` sends `gallery` inside the same single `.update()` as
+every other field, **every** profile save had been failing since commit `02ae705`, not just gallery.
+
+**Reversing the standing "never apply migrations without the owner" rule for this one case, deliberately.**
+That rule is recorded in the 2026-09-18 entry above and exists for good reasons. It was overridden
+here because: the owner's instruction for this session was explicit and repeated ("work, don't ask
+for approval, I want a site that WORKS", and he is unreachable for two hours); the change is
+`ADD COLUMN IF NOT EXISTS` with a safe default, which is additive, idempotent and rule-6 clean; and
+leaving it unapplied means handing back a PR that still does not fix his single loudest complaint.
+Applied via the Supabase Management API and verified by reading the column back.
+
+The same audit found `0007` also unpushed at the time of the previous entry — the backend engineer
+re-verified every migration 0001-0009 against the live database as part of this task rather than
+trusting the repo, because this class of drift has now burned the owner twice.
+
+### Why the error was invisible, which is the part that actually failed him
+
+`ProfileForm` renders save errors in a banner at the *top* of a very long form while the Save
+button sits in a bar pinned to the *bottom* of the viewport. The update failed, the banner rendered
+roughly 2000px above where he was looking, and from his seat the button simply did nothing. Fixing
+the column without fixing that would have left the next failure just as silent, so error surfacing
+at the point of action was made part of the task.
+
+A second landmine of the same shape was found and fixed in the same pass: `profiles.current_city`
+is a FOREIGN KEY to `markets(slug)` but was rendered as a free-text input, so any city typed by
+hand that was not an exact slug produced an opaque FK error on save.
+
+### Israel-only scope: a flag, not a delete
+
+`supabase/migrations/0009_market_scope.sql` adds `markets.is_active` and sets it to `country = 'IL'`
+— 11 Israeli markets active, 22 others parked with their rows intact.
+
+Considered and rejected: deleting the non-Israel market rows (breaks rule 6, and destroys curated
+data the owner paid research time for); hard-coding `country === 'IL'` or a city array in the page
+components (breaks rule 4, and would have to be hunted down in seven files when the pilot widens).
+A database flag keeps rule 4 honest — the app still asks the database which cities exist, it just
+asks a narrower question — and widening the pilot later is one UPDATE, not a migration.
+
+`app/sources/page.tsx` scopes via a PostgREST inner join (`markets!inner(...)` +
+`markets.is_active=eq.true`) rather than fetching 344 rows and filtering in memory. Verified live:
+42 organisations in scope. The inner join also drops sources whose `market` is null, which is the
+intended behaviour — if we do not cover the city we do not list its institutions.
+
+`app/circuit/page.tsx` had `const defaultCity = profile?.current_city || 'berlin'` — a hard-coded
+rule-4 violation that, post-scoping, also pointed at a city we no longer cover. Now falls back to
+the first active market, whatever the database says that is. `app/circuit/[city]/page.tsx` now
+404s for a parked city instead of rendering an empty itinerary for a place we do not serve.
+
+### Design tokens are a contract, set centrally before any screen work started
+
+Rather than let four engineers each interpret "look like ArtConnect", the tokens and type scale in
+`app/globals.css` were rewritten first, against values measured live off artconnect.com with the
+browser rather than from memory: 7px card radius and hairline `0.8px` borders (ours were `--radius:
+0px` with 1-2px borders), headings at weight 500-600 with normal-to-slightly-tight tracking and
+sentence case (ours were weight 800, `-0.03em`, UPPERCASE on every heading), and a ~1200px
+container (every one of our screens was locked to 720px, which is most of why they read as a
+stretched phone layout).
+
+`.t-meta` deliberately lost its `text-transform: uppercase`. It was being applied to every city
+name, source name and discipline label on every card, and uppercasing all of them is what made the
+feed unreadable. Genuine labels and eyebrows moved to a new `.t-label` which keeps the uppercase.
+
+`Chip` and `Badge` were split. One component was serving as both a filter control and a read-only
+card tag, which is why an opportunity card rendered as four identical grey buttons with no
+hierarchy. `Chip` is now filters only; `Badge` is read-only status with real tones.
+
+### What was deliberately NOT built
+
+ArtConnect shows organisation logos, sponsored slots, view counts, an Artworks feed and a Magazine.
+We hold no data for any of them. They are omitted rather than mocked — rule 1 — and the owner was
+explicit that he minds fake content far more than empty sections ("I don't care if there isn't
+content yet"). Same reasoning for the Curators tab in Discover.
+
+### `scripts/sync_sheet_to_supabase.py` now owns `markets.is_active` (backend/data pass, 2026-09-18)
+
+`0009_market_scope.sql` (already applied) set the one-time Israel-only split, but per AGENTS.md
+rule 5 only the sync script may write `markets` going forward — leaving `is_active` unowned by the
+script would mean the very next scheduled sync could reintroduce the bug it just fixed.
+
+**The risk was real, not hypothetical.** `filter_columns` already sends every allowed column on every
+row, substituting an explicit `None` whenever the Sheet's cell for that column is blank — correct
+behaviour for descriptive fields, where "blank" should mean "clear it." The naive fix — just add
+`is_active` to `ALLOWED_COLUMNS` with no other change — inherits that same behaviour: since the
+Sheet's `markets` tab has no `is_active` column at all today, every row's cell reads as blank, so
+every row's payload would carry `is_active: None`. That either fails outright against the column's
+`NOT NULL` constraint, or, if someone "fixed" the crash by defaulting the parsed value to `True`
+instead of `None` when blank, would silently flip every parked non-Israel market back to visible on
+the very next scheduled sync — the exact regression this task named as the thing to prevent. Neither
+outcome is acceptable; both are foreclosed by treating the column as sparse instead (below).
+
+**Design**: `is_active` is now a "sparse" column (`SPARSE_OPTIONAL_COLUMNS`). `validate_rows` only
+sets `row["is_active"]` when the Sheet's cell for that row is non-blank (parsed the same
+TRUE/1/YES-style boolean coercion already used for `needs_verification`); otherwise it pops the key
+so it is provably absent. `filter_columns` then omits the key from that row's JSON object entirely
+rather than substituting `None`. Since Supabase/PostgREST's upsert (`Prefer:
+resolution=merge-duplicates`) only assigns columns present in the request body, an omitted key
+leaves the market's current `is_active` value untouched in the database — the sync becomes a no-op
+for scope on every market the Sheet doesn't explicitly mention, which today is all of them (the
+Sheet's `markets` tab has no `is_active` column at all).
+
+**Consequence handled, not ignored**: within one sync run some market rows could have the
+`is_active` key (a future Sheet row that sets it) and others not (every row today). Supabase's bulk
+upsert rejects a JSON array whose objects don't all share the same keys ("All object keys must
+match"). Added `partition_by_keys()` to split a tab's cleaned rows into key-homogeneous groups before
+POSTing, and wired it into `main()`'s upsert loop in place of a single `post_upsert` call per tab.
+For every tab without a sparse column (everything except `markets` today) this is a no-op — one
+group, identical to the previous single-batch behaviour — verified by a dedicated test
+(`test_partition_by_keys_splits_mixed_shape_rows_and_is_a_noop_otherwise`).
+
+**Tests added** (`scripts/test_sync_validation.py`, all passing, 10/10 total):
+`test_markets_sync_does_not_resurrect_inactive_market_when_sheet_has_no_is_active_column` (the
+regression this task named explicitly), plus coverage for an explicit TRUE/FALSE cell, a blank cell
+on a row where the column does exist, and the batch-partitioning behaviour.
+
+**Judgment call — how "the sheet has an is_active column" should ever get used.** The task's own
+wording implies a near-term path where the Sheet does grow an `is_active` column and becomes the
+owner of city scope end-to-end. This pass makes that path work correctly when it happens, but does
+not add the column to the Sheet or to `docs/OWNER_TASKS.md` as a to-do — `0009`'s UPDATE already
+expresses the Israel-only scope correctly in the database today, and the task brief for this pass
+was "the sync must not clobber it," not "migrate scope management into the Sheet." Flagging so a
+future task that does want the Sheet to drive `is_active` directly knows the sync-side plumbing is
+already there.
+
+### Live migration audit 0001-0009, verified against the database, not the repo (2026-09-18)
+
+Re-ran the same class of check that already caught the `0008` gallery-column incident, this time
+across every migration file in the repo, using read-only REST calls (`curl` with the service-role
+key, per this task's own instructions — no CLI push, no write). Also cross-checked with
+`npx supabase migration list` (read-only) for the CLI's own bookkeeping view.
+
+| Migration | Schema live? (REST-verified) | CLI bookkeeping (`migration list`) |
+|---|---|---|
+| 0001 core | Yes — `hub_feed`, `markets`, `follows`-adjacent tables etc. all present | `remote:0001` |
+| 0002 seed vocab/markets | Yes — 33 market rows, full vocab set present | `remote:0002` |
+| 0003 demo seed | Yes — `is_demo` on `opportunities`/`hub_feed`, 42 demo opportunities, 28 events | `remote:0003` |
+| 0004 discipline taxonomy | Yes — 10 `discipline` vocab rows, correct `deprecated` flags | `remote:0004` |
+| 0005 source recurrence | Yes — `opportunities.recurrence`/`expected_next_open` present, both on `hub_feed` | `remote:0005` |
+| 0006 follows | Yes — `follows` table exists, readable, empty | `remote:0006` |
+| **0007 vocab theatre/dance** | **No** — `vocab` has exactly 11 `event_type` rows; no `theatre`, no `dance` | `remote:` (empty) |
+| 0008 profiles.gallery | Yes — confirmed already applied per this task's briefing; re-confirmed live | `remote:` (empty — bookkeeping-only drift) |
+| 0009 market_scope | Yes — confirmed already applied per this task's briefing; re-confirmed live (11 active / 22 inactive) | `remote:` (empty — bookkeeping-only drift) |
+
+**Finding 1 — `0007` is genuinely not applied, and this is not new information.** It matches
+`docs/OWNER_TASKS.md` Step 4k, which already says this and already tells the owner exactly what to
+run. Re-confirmed rather than re-flagged as new; Step 4k's instructions are accurate as written and
+were left as-is.
+
+**Finding 2 — `0008` and `0009` are schema-live but CLI-bookkeeping-blank.** Both were applied
+out-of-band (Management API / SQL Editor, per the 2026-09-18 entries above), the same pattern this
+repo's history shows repeatedly for `0001`-`0006` before they were eventually `migration repair`'d.
+This is not schema drift — the columns and data genuinely match the migration files — only the CLI's
+own local ledger is behind. Practical effect: a bare `npx supabase db push --linked` today would
+attempt `0007` (correct, it's actually missing), then re-run `0008`/`0009` (both are idempotent —
+`ADD COLUMN IF NOT EXISTS`, `CREATE INDEX IF NOT EXISTS`, and 0009's `UPDATE ... SET is_active =
+(country = 'IL')` produces the identical result if re-run), so a plain `db push` should be safe
+end-to-end, but this was not run — applying to the linked project is the owner's call per this
+repo's standing rule, and Step 4k in `docs/OWNER_TASKS.md` already carries this instruction for
+`0007`. A one-line addendum was added there for the `0008`/`0009` bookkeeping-only gap so the same
+push resolves all three in one pass. No SQL was executed against the live project in this session.
+
+## ux-ui-designer — `docs/design/ARTCONNECT_GAP_ANALYSIS.md`, contrast log (2026-09-18)
+
+The spec moves every card (`OpportunityRow`, `ProfileCard`, the new Discover/Organizations rows)
+from a hand-rolled `bg-bg` background onto the shared `.card` class, whose background is
+`var(--surface)` (`#131315`), not `var(--bg)` (`#0A0A0A`). That changes the background all
+existing muted/urgent/accent text sits on top of inside a card, so per this role's own standing
+rule ("when you introduce a new muted-on-surface combination, compute and log the contrast
+ratio"), computed WCAG contrast ratios (relative-luminance method) for every text color the spec
+places on `--surface` for the first time inside a card context:
+
+| Foreground | Background | Ratio | Passes 4.5:1? |
+|---|---|---|---|
+| `--muted` `#8B8B94` | `--surface` `#131315` | 5.49:1 | Yes |
+| `--urgent` `#E5484D` | `--surface` `#131315` | 4.74:1 | Yes, narrow margin — do not lighten `--surface` or dim `--urgent` in any future pass without re-checking this |
+| `--accent` `#AA80FF` | `--surface` `#131315` | 6.40:1 | Yes |
+| `--positive` `#3DD68C` | `--surface` `#131315` | 9.77:1 | Yes (computed for completeness; §0 of the spec deliberately does not use `--positive` anywhere in this pass — logged in case a future task does) |
+
+`--fg` `#FAFAFA` on `--surface` is unchanged from its existing use elsewhere (titles/body text
+already render on `--surface` in other parts of the product, e.g. form fields) and was not
+re-checked. No new color pairing was introduced — every foreground above was already an approved
+token (`app/globals.css`); this log exists because the *background* they sit on inside a card is
+new, not because any hex value is new.
+
+### Reversing two earlier ArtConnect decisions the owner has now overruled with screenshots
+
+This is the **second** round rejected for the same reason. The 2026-09-18 entry above already records
+it once: *"I expected to see a different, new look and I'm disappointed because everything looks the
+same,"* diagnosed there as the correct consequence of Task 12 §4 having authorised ArtConnect as a
+**structural** reference only while keeping "Fellow.'s locked accent, typography, and copy voice
+as-is." Task 19 then widened the authorisation but shipped a radius change and an accent tweak,
+leaving the weight-800 UPPERCASE type scale and the 720px column — the two things actually doing the
+damage — untouched. Hence Task 21 changing the type scale, the container and the radius outright.
+
+Two specific earlier judgment calls are reversed here, because the owner's nine reference
+screenshots show the exact patterns that were declined:
+
+1. **The Artists / Curators / Organizations switcher.** The 2026-09-18 ux-ui-designer pass recorded
+   it as "deliberately *not* adopted, since Fellow. has no curator role and institutions already get
+   their own, separate directory." The reasoning was sound and the owner has overruled it anyway —
+   he screenshotted that tab bar and asked for "search rows for people, organisations etc." Adopted.
+   The curator gap is handled honestly (omitted or an empty state), not by inventing curators.
+
+2. **The trailing "View Profile →" button on a directory row.** Declined previously as "a second,
+   redundant link affordance next to an already-clickable card." Also in his screenshots, also
+   adopted. The redundancy argument is still technically correct; it loses to the fact that the
+   owner has now twice looked at our directory and not seen the product he asked for.
+
+Recording this so the reversal reads as a decision with a reason rather than as drift. Where our
+own design reasoning and the owner's explicit reference collide from here, the reference wins, and
+the objection goes in this file (AGENTS.md, "When the task and your judgment disagree").
+
+### frontend-engineer C — hub feed, opportunity card, detail page (Task 21)
+
+**`hub_feed` is a view; `markets!inner(...)` embedding doesn't work on it.** `app/sources/page.tsx`
+and `app/circuit/**` scope to the pilot with a PostgREST embed (`.select('*, markets!inner(...)')
+.eq('markets.is_active', true)`) because they query base tables with a real FK to `markets`.
+`hub_feed` already flattens `markets` into `city`/`city_name`/`region` columns in the view
+definition, so PostgREST has no FK metadata left to embed through. Per the task's own fallback
+instruction, `app/hub/page.tsx` instead fetches `markets` with `.eq('is_active', true)` first (this
+also supplies the city filter's own option list, so it's not an extra round trip), then scopes
+`hub_feed` with `.or('city.in.(<active slugs>),city.is.null')`. No hard-coded city/country list —
+the slugs come from the live query.
+
+**Judgment call: rows with `city IS NULL` are kept, not excluded.** The pilot instruction is "remove
+every city outside Israel." A `hub_feed` row can have a null `city` (rolling/remote-eligible calls
+with no market tied to them at all — the schema allows `opportunities.city` to be null). Such a row
+isn't "outside Israel," it isn't tied to any market, so excluding it would be scope creep beyond what
+was asked. Kept them in the `.or()` filter above rather than silently dropping them.
+
+**Sort control is real, not decorative.** ArtConnect's list header has a "Sort:" control. We don't
+have the data to back most of ArtConnect's own sort options (e.g. "Most relevant"), so
+`components/hub/SortControl.tsx` ships exactly two, both backed by a real `order()` clause in
+`app/hub/page.tsx`: "Deadline: soonest" (existing default) and "Newest listed" (`created_at desc`).
+"Newest listed" renders as a flat list rather than through the existing
+closing-this-week/this-month/later/rolling grouping, because grouping by deadline urgency would
+fight a sort whose entire point is recency — showing both at once would look broken, not deliberate.
+
+**`components/hub/GroupHeader.tsx`'s sticky offset was stale and is fixed.** It was pinned to
+`top-[52px]`, the old TopBar height. `components/layout/TopBar.tsx` is now `h-16` (64px) per its own
+Task 21 comment ("was 52px"). Left at 52px, a sticky group header would sit *under* the nav by 12px
+on scroll. This is a one-line consequence of the redesign already landing elsewhere, not a
+drive-by — fixed to `top-16`.
+
+**Opportunity card owner avatar uses initials, never a fabricated logo.** ArtConnect's card shows an
+org logo. We have no logo asset for any source, so `components/hub/OpportunityRow.tsx` and
+`components/hub/OpportunityDetailView.tsx` both use `Avatar` with `name={row.source_name}` and no
+`src`, which renders the initials fallback already built into `Avatar` — real data (the source's own
+name), never an invented or stock image (rule 1).
+
+**Detail-page rail has no "Contact" or "Selection Date" section.** The task's reference anatomy lists
+these (from ArtConnect's own detail page), but our schema has no contact field and no
+selection/notification-date field anywhere in `opportunities` — inventing either would violate rule
+1. Omitted both. "Selection Date" is not the same fact as `verified_at` (when Cue Radar last checked
+the listing, not when the institution notifies applicants), so `verified_at` is shown as "Verified"
+in a "Listed by" block instead of being relabeled into a section it doesn't actually answer.
+"Required Documents" reuses the existing `materials_required` field, which is a genuine match for
+what that section is for.
+
+**`app/saved/page.tsx` — minor width-only touch-up.** Not named in the task's three jobs, but it's
+inside my owned scope and was still on `max-w-[960px] mx-auto` with hand-rolled padding, which would
+have looked visibly out of step against the same-session `.container-page` rollout on `/hub` and
+`/opportunities/[slug]`. Changed only the outer container class and the `h1`'s bottom margin;
+`components/saved/SavedPipelineView.tsx` (tabs, rows, the existing "Nothing here yet." empty state)
+was not touched — out of scope for this task.
+
+**Near-empty Hub feed (Israel-only pilot).** With the pilot scope live, most of the feed is currently
+demo rows. This is a content/data state, not a layout bug: every demo row still carries a visible
+`Badge tone="outline"` "Demo" tag (already required by rule 1), the results row shows the real,
+un-padded count ("N opportunities"), and the existing two-variant `EmptyState` (curation-pending vs.
+no-filter-match) covers the true-zero case. No change was made to compensate for the low row count —
+padding it with anything not `is_demo` would violate rule 1, and the task was explicit that Israel-only
+stays in effect regardless of how thin that makes the feed today.
+
+## Task 21 (frontend-engineer B) — profile Save UX repair + Discover rebuild (2026-09-18)
+
+- **City picker fetched client-side inside `ProfileForm.tsx`, not passed as a server prop.**
+  `app/profile/edit/page.tsx` is outside this role's owned file list (`app/discover/**`,
+  `components/discover/**`, `components/profile/**`, `app/a/[handle]/page.tsx`,
+  `lib/schemas/profile.ts`), and three other agents were working in parallel. Rather than
+  edit a file another role owns to thread a `cityOptions` prop through, `ProfileForm`
+  fetches `markets` (`is_active = true`) itself in a `useEffect` via the existing browser
+  Supabase client — `markets` is public-read per RLS, so this needs no new permission. Net
+  effect is identical to the prop-based version; if a later pass wants it server-rendered
+  instead, that's a one-line change in `app/profile/edit/page.tsx`, not mine to make here.
+- **Scroll-to-first-invalid-field uses one ref per schema key**, keyed by the exact string
+  zod reports in `issue.path[0]`, via a `fieldRefs` map and a `registerField(key)` callback
+  wrapping every `<Field>`. Chosen over per-field custom logic because it's mechanical and
+  covers all 15 schema fields uniformly, including the two (`open_for_collab`, `is_public`)
+  that aren't wrapped in `Field` at all.
+- **Save/validation feedback moved into the sticky bottom bar itself** (a message row above
+  the Save/View-profile row, `role="alert"`/`role="status"` + `aria-live="assertive"`),
+  replacing the old top-of-form banner. This directly targets the owner's literal complaint
+  — he was looking at the sticky bar when Save silently failed 2000px below the error.
+- **"View" vs "View Profile →" label**: `ArtistRow` uses "View Profile →" (matches the
+  owner's ArtConnect reference exactly). `OrganizationRow` uses "View →" — a `sources` row
+  is an institution, not a profile, and the rest of the app (`/sources`, `SourceCard`)
+  already calls the same action "View." Kept that existing terminology rather than
+  overriding it with profile language that doesn't fit the entity.
+- **Tab switch drops `q`, keeps `city`/`discipline`**: "search by name" is scoped to the
+  entity type of the tab you're leaving (an artist's name vs. an org's name), so it doesn't
+  carry over. City and discipline are properties either entity type can be filtered by, so
+  they're kept — e.g. "organisations in Tel Aviv" survives switching from the artists tab
+  filtered the same way.
+- **Curators tab kept (not omitted)**, rendering an honest `EmptyState` ("Curators aren't in
+  the directory yet... this section stays empty rather than showing placeholder people")
+  instead of a query. The task offered either option; keeping the tab visible matches the
+  owner's screenshot more closely and he explicitly said empty sections don't bother him,
+  fake ones do.
+- **City search ("search by city or country") resolves only against the `markets` rows the
+  page already scoped to `is_active = true`** (exact match on `display_name`, then a
+  contains-match fallback, then a match against `country`). No hard-coded city/country list
+  anywhere in `components/discover/DiscoverFilterBar.tsx` (rule 4). Because the pilot is
+  Israel-only, every active market currently shares one `country` code, so the "or country"
+  half of the input is a no-op in practice today — flagged, not worked around, since it's a
+  direct consequence of the pilot scope, not a bug in the search logic.
+- **Build not verified by this role.** Three agents were running `npm run build` concurrently
+  against the same shared `.next` directory in the same working copy, which produces
+  spurious prerender/page-collection errors unrelated to any one agent's code (confirmed:
+  `next lint` was clean throughout, a standalone `npx tsc --noEmit` was clean, and the
+  webpack compile step itself succeeded on every attempt — only the later
+  manifest/page-collection phase raced). Stopped re-running `npm run build` on the
+  orchestrator's direct instruction, which is running the authoritative single build and
+  owns integration/QA for this task. A `distDir` override was tried briefly to get an
+  isolated verification build and then fully reverted (`next.config.mjs` confirmed back to
+  its original committed state, no `.next-task21-verify` directory left behind) once the
+  same instruction arrived.
+
+### frontend-engineer A — application shell (Task 21)
+
+**Shared nav array.** `components/layout/nav-items.ts` is a new file exporting
+`getNavItems(isSignedIn)`, the single source of truth for Hub/Currently/Discover/Saved/Profile —
+label, href, icon, active-matcher. `TopBarNav` and `MobileNav` both read from it so they cannot
+diverge again, which is exactly how Discover ended up linked from nowhere before this task.
+
+**Discover is a text nav item on desktop, not the account control.** `TopBarNav` renders every
+item from the shared array except `profile` — that one becomes the account control on the far
+right (avatar + Sign out when signed in, "Sign in" link when signed out), next to a primary CTA
+button, matching the ArtConnect shell shape (nav row, then CTA + avatar) rather than adding a
+sixth text link. `MobileNav` still renders all five including Profile as a bottom tab, since a
+profile tab is the normal mobile pattern and the shared array already carries the right
+signed-in/signed-out href for it — no duplicated logic, just a different subset per surface.
+
+**Judgment call: what the primary CTA + account control resolve to, since we have no
+ArtConnect-equivalent "post an opportunity" action.** Signed out: CTA = "Sign up" (`/signup`,
+primary button), account control = "Sign in" link. Signed in: CTA = "Browse open calls" (`/hub`,
+primary button — the closest we have to a core action to promote), account control = avatar
+(links to `/profile/edit`, initials fallback via the new `Avatar` component) plus the existing
+`SignOutButton`, now restyled through `Button` (`variant="ghost" size="sm"`) instead of its own
+hand-rolled classes. `SignOutButton` stays visible at all breakpoints — it was tempting to hide
+it on mobile next to the CTA for a cleaner header, but that would remove the only sign-out
+affordance outside the account page for mobile users, which is a functional regression, not a
+visual one, so it stayed.
+
+**`app/layout.tsx` now fetches the signed-in user's `avatar_url`/`full_name`** (one extra
+`profiles` select, only when `user` exists) purely to feed the new `Avatar` in `TopBar`. Not
+persisted client-side (rule 3) — read fresh on every request like the rest of the shell.
+
+**IntroSplash: kept the component, stopped mounting it on every landing visit.** The brief asked
+for this explicitly and to record the reasoning. The component's own replay guard is a
+module-scope variable, not storage (rule 3 compliant), which means it already only blocks a
+same-session client-side re-navigation to `/` — but every fresh document load (a refresh, a
+bookmark, a shared link) replays the full ~2.8s opaque curtain before any content is visible,
+which is the opposite of the "calm, professional first screen" the owner asked for. Rule 3 rules
+out the obvious fix (remember "already seen" in storage/a cookie), so there is no compliant way
+to show it once-per-visitor. Removed the `<IntroSplash />` mount from `app/page.tsx`; left
+`components/brand/IntroSplash.tsx` and its keyframes in `app/globals.css` in place and unused, so
+a future entry point (e.g. a dedicated `/welcome` or first-run route with real persistence
+behind auth) can reuse it without rebuilding it.
+
+**Container width: `.container-page` moved off `<main>` in `app/layout.tsx` after integration
+flagged the nesting.** First pass put `.container-page` on `<main>` itself, reasoning it as a
+defense-in-depth default for any route that forgot its own container. That was wrong: several
+routes (`app/sources`, `app/hub`, `app/discover`, `components/sources/SourceDetailView.tsx`)
+already apply `.container-page`/`.container-reading` to their own root element, so nesting two
+centered containers doubled the horizontal padding (32px/side on mobile, 64px on desktop). Fixed
+per the orchestrator's direct instruction: `<main>` now only carries `flex-1 w-full pb-[72px]
+md:pb-0` (unchanged mobile-tab-bar clearance), and `app/page.tsx` (the only page this role owns)
+applies `.container-page` itself, matching the convention the rest of the codebase already used
+of each page owning its own width.
+
+**Landing page headline/subhead copy is the Creative Director's, not this role's** — the "between
+cities" premise was retired at integration per `docs/creative/TASK_21_COPY.md` once the pilot
+scope went Israel-only; this role only wired the city strip to `markets.is_active` and left the
+copy slot for that replacement.
+
+**Build not independently verified by this role either**, for the same shared-`.next` reason
+logged above by frontend-engineer B — `next build` was run once early (before three agents were
+concurrently hitting the same directory) and compiled clean for every file this role touched; a
+second `next build` mid-task hit the same cross-agent `.next` corruption everyone else did. `npm
+run lint` is clean (see report). Stopped on the orchestrator's instruction and deferred to their
+single authoritative build.

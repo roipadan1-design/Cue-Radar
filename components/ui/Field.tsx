@@ -14,14 +14,18 @@ export default function Field({ label, id, error, helpText, children }: FieldPro
 
   return (
     <div className="flex flex-col gap-1.5 w-full">
-      <label htmlFor={fieldId} className="t-meta text-muted">
+      <label htmlFor={fieldId} className="t-label">
         {label}
       </label>
       {React.isValidElement(children)
         ? React.cloneElement(children as React.ReactElement<{ id?: string }>, { id: fieldId })
         : children}
-      {helpText && !error && <p className="t-meta text-muted normal-case">{helpText}</p>}
-      {error && <p className="t-meta text-urgent normal-case">{error}</p>}
+      {helpText && !error && <p className="t-meta">{helpText}</p>}
+      {error && (
+        <p className="t-meta text-urgent" role="alert">
+          {error}
+        </p>
+      )}
     </div>
   )
 }

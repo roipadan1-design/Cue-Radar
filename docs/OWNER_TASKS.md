@@ -111,6 +111,10 @@ select category, value, label, sort_order from vocab where category = 'event_typ
 ```
 which should now return 13 rows (the existing 11 plus `theatre` at sort_order 12 and `dance` at sort_order 13).
 
+**Re-verified 2026-09-18 (Task 21 backend pass), still not applied.** Direct REST read of `vocab?category=eq.event_type` returns exactly the same 11 rows as before — no `theatre`, no `dance`. `npx supabase migration list` confirms: `0007` remote is empty. Nothing new to do beyond what's already written above — this is a re-confirmation, not new drift.
+
+**One addition worth knowing before you run the push**: `0008_profiles_gallery.sql` and `0009_market_scope.sql` are both already live (their columns/data are confirmed present via direct REST reads — `profiles.gallery`, `markets.is_active` with the correct 11-active/22-inactive split), but `npx supabase migration list` shows their `remote` bookkeeping column as empty too, the same "applied out-of-band, CLI ledger not updated" pattern `0001`-`0004` had earlier in this project. This is bookkeeping-only, not a real gap — no schema or data is missing. Both files are idempotent (`ADD COLUMN IF NOT EXISTS`, `CREATE INDEX IF NOT EXISTS`, and `0009`'s `UPDATE` produces the same result if re-run), so running `npx supabase db push --linked` to apply the real gap (`0007`) will also harmlessly re-run `0008`/`0009` and, as a side effect, bring the CLI's bookkeeping for all three back in sync with reality. No separate `migration repair` step is needed first.
+
 ### Step 4g: Confirm the real signup → profile → public-profile flow (Task 07 §10)
 
 The Task 07 pass could not exercise the full `/signup` → email confirmation → `/profile/edit?welcome=1` → `is_public` toggle → `/a/{handle}` round trip end to end (no real inbox / live Supabase session available in that session). The code paths were read and the individual screens verified in isolation (`/signin?next=/profile/edit` routes correctly now that the nav bug is fixed; `/profile/edit`, `/a/[handle]` render as expected against seed/demo data). Since Roi is registering as the first real user per the task brief, please run this exact sequence yourself on the deployed site and note here (or in a new `docs/DECISIONS.md` entry) if any step fails: `/signup` with email+password → confirm email if required → lands on `/profile/edit?welcome=1` → fill handle/full_name/discipline, toggle `is_public` on, save → open `/a/{handle}` signed out → confirm it renders.
@@ -164,6 +168,130 @@ That applies both pending migrations (`0007` and the new `0008`) in order. After
 select column_name, data_type from information_schema.columns where table_name = 'profiles' and column_name = 'gallery';
 ```
 which should return one row (`gallery`, `ARRAY`). Do not test profile save (or deploy this branch to production) before running that push, or the save will fail with a "column profiles.gallery does not exist" Postgres error.
+
+### Step 4n: THE BIG ONE — the Israeli feed has no real live content (Task 21, 2026-09-18)
+
+This is the most important item on this page. It is a content problem, not a code problem, and only
+you can clear it.
+
+With the Israel-only scope applied, I queried the live database directly:
+
+- `hub_feed` (the view behind the Hub: `status = 'live'` AND deadline not past) holds 45 rows.
+  **Only 4 of them are in Israeli cities.**
+- **All 4 of those Israeli rows are `is_demo = true`** — the fictional ones: Independent Choreography
+  Grant, Somatosensory Listening Lab, Levant Sound Performance Lab, Tel Aviv Sound Art Biennale.
+- Every **real** Israeli opportunity is sitting at `status = 'draft'` with `deadline = NULL`:
+  - Suzanne Dellal Centre Residency 2026/27
+  - Artis — International Residency Grant
+  - Artis — Studio Partnership Program
+  - Pitching Program 2026
+  - (plus two rows correctly marked "off-cycle (no live call)" — those are good data, not gaps)
+  - Jerusalem International Choreography Competition — draft, and its deadline 2026-06-15 has passed.
+
+**What this means in practice:** with `NEXT_PUBLIC_SHOW_DEMO=true` the Israeli Hub shows four
+invented rows and nothing real. With it set to `false`, the Hub is empty.
+
+**What is needed from you:** the four real programmes above need a verified deadline and a promotion
+from `draft` to `live`. Neither can be done from the app — `opportunities` is a curated table the app
+never writes (rule 5) — and neither can be done by an agent inventing a plausible date (rule 1). A
+researcher pass has been commissioned to verify whether those four currently have open calls and what
+their real deadlines are; check `docs/research/` for its findings before deciding.
+
+**Researcher follow-up, same day — this is seasonality, not a curation failure.**
+
+Every relevant institution was checked directly against its own site on 2026-09-18: Suzanne Dellal,
+Artis (both programmes), Kelim, Hazira, Tmuna, Mamuta, Vertigo Eco Art Village, Batsheva, Kamea, the
+Israeli Center for Digital Art, AICF, the Rabinovich Foundation, Tel Aviv Municipality.
+
+- **Exactly one genuinely open opportunity exists in Israel right now** in dance/sound/performance:
+  the Artis International Residency Grant. It is rolling with quarterly review (Feb/May/Aug/Nov), up
+  to USD 5,000. Its own eligibility text limits it to *visual artists and curators*, so it is
+  off-brief for the disciplines this product prioritises. Real and live, but not our audience.
+- The Artis row in the database is **not stalled** — it simply had its deadline modelled wrong as a
+  single date. It is a rolling programme. Corrected in the staged CSV.
+- **Suzanne Dellal's whole portfolio is genuinely off-cycle** (1|2|3, Residency, Pitching). The
+  "off-cycle" rows are correct data. The Pitching Program is real but its public page is stale at
+  "Pitching 2023" with no 2026 cycle announced anywhere.
+- Artis Studio Partnership is confirmed closed — their site says the next call is spring 2027.
+
+**The practical conclusion:** Israel's dance and performance field runs on a handful of institutions
+that cycle roughly once a year, and September sits between cycles for nearly all of them.
+**October–November is when this list should genuinely grow** — Suzanne Dellal's International
+Exposure, and Batsheva's next audition, which their site puts at "around October 2026". Thin content
+right now is the true state of the field, not a gap in our research.
+
+Seven verified rows and three new institutions (Batsheva, Kamea, Tel Aviv Municipality/Rabinovich)
+are staged as `draft` in `data/seed/opportunities_staging_2026-09-18_israel_pilot.csv` and
+`data/seed/sources_staging_2026-09-18_israel_pilot.csv`. Full findings, with source URLs and check
+dates: `docs/research/ISRAEL_PILOT_CONTENT_AUDIT_2026-09-18.md`.
+
+**Top unresolved lead:** `aicf.org` (America-Israel Cultural Foundation) returned 403 on direct
+fetch and needs a real browser visit. Plausibly the best-fit funder for Israeli dance and music.
+
+### Step 4o: Action needed — apply migration 0007 (2026-09-18)
+
+`supabase/migrations/0007_vocab_event_type_theatre_dance.sql` (the `theatre`/`dance` event_type rows,
+see Step 4k) is still **not applied** to the live database — re-verified this session by reading the
+`vocab` table, which still has exactly 11 `event_type` rows.
+
+Migrations `0008` (profiles.gallery) and `0009` (market_scope) **were** applied this session and are
+verified live. `0007` could not be: the sandbox blocked further database writes partway through the
+session. It is additive and idempotent (`ON CONFLICT DO UPDATE`), so:
+
+```
+npx supabase db push --linked
+```
+
+applies `0007` and harmlessly resyncs the CLI's migration bookkeeping for `0008`/`0009` in one pass.
+Low urgency — it adds two vocabulary labels and blocks nothing.
+
+### Step 4p: artsinisrael.org added — four decisions it surfaces (2026-09-19)
+
+Added at your direct request. **[artsinisrael.org](https://artsinisrael.org/)** — עמותת אמנים יוצרים
+בישראל / אגודת אמני הקרמיקה, Bar Yochai 5 Tel Aviv, which also runs Gallery B.Y5.
+
+**Why it is a good catch:** its *קולות קוראים מתעדכנים* page is a **live, continuously-updated
+aggregator** of open calls, carrying six distinct ones the day it was read. That makes it a *supply
+channel*, not a single-programme institution — which is exactly what Step 4n says the Israeli feed is
+short of. Worth putting on a recurring re-check.
+
+Staged (all `draft`, nothing promoted, nothing written to the database):
+`data/seed/sources_staging_2026-09-19_artsinisrael.csv` (3 sources) and
+`data/seed/opportunities_staging_2026-09-19_artsinisrael.csv` (6 opportunities). All six validate
+clean against the live `vocab` table.
+
+**1. Caesarea is not a market, and that blocks the best opportunity found so far.**
+The **Psychomagic Art Lab at Ralli Museum Caesarea** (verified on the museum's own page, not the
+aggregator) closes **20 Oct 2026**, is **free to participate**, and explicitly names **סאונד and
+מחול** among its disciplines — sound and dance, the product's priority focus, which nothing else
+found in Israel to date does. Three sessions Nov 2026–Jan 2027, led by Uri Sivan, Ari Folman and Mor
+Kadishzon, ending in a group exhibition at the museum in March 2027.
+
+It cannot go live: `opportunities.city` is a foreign key to `markets(slug)` and Caesarea has no
+market row. **Your call** — add Caesarea as a market, or let this one go. It was deliberately *not*
+reassigned to Tel Aviv to force it in; that would misstate where the artist has to physically show up
+three times.
+
+**2. Does Fellow. list foreign-hosted calls that Israeli artists can apply to?**
+Three of the six are hosted abroad (Teapot Biennial China, TerrArt Catalonia, Ceramics Mino Japan).
+The Israel-only narrowing was about *cities we cover*; this is a different question — *where an
+Israeli artist may apply from Israel*. They are staged rather than discarded so the verified detail
+is not lost, and flagged not-to-promote until you answer it. Two of the three still need their real
+application URL found; the aggregator linked them by foreign link text rather than a resolvable URL.
+
+**3. `ceramics` has no discipline vocab value.**
+Available: sound, music, performance, dance, painting, sculpture, choreography, live_electronics,
+installation, interdisciplinary. Ceramics rows are mapped to `sculpture` + `interdisciplinary` as a
+deliberate approximation, not a verified self-description. Since this association is ceramics-centred
+and appears to be a durable supply channel, adding a `ceramics` value may be worth it — that is a
+`vocab` addition, i.e. a small migration, same pattern as `0007`.
+
+**4. Fresh Paint has three more open tracks nobody has captured.**
+`freshpaint.co.il` currently advertises four live 2027 tracks: החממה (staged), plus עיצוב טרי,
+DESIGN ART and פרס צבי ימיני לעיצוב. The latter three are real and open but no deadline, fee or
+eligibility appeared on any page read on 2026-09-19, so they were not staged — those must be read off
+Fresh Paint's own open-call pages, not guessed. Also note the Greenhouse's deadline (14 Oct 2026) and
+fee (₪148) are **aggregator-sourced and not yet confirmed at Fresh Paint's own site**.
 
 ### Step 4: Google Service Account & Sheet Setup
 1. Create a Google Cloud Service Account and download its JSON key.

@@ -99,18 +99,19 @@ export default function FilterBar({ markets, vocab }: FilterBarProps) {
   }
 
   return (
-    <div className="py-4 border-b border-line flex flex-col gap-3">
-      {/* 1. Search text input */}
-      <form onSubmit={handleSearchSubmit} className="relative flex items-center w-full">
+    <div className="py-5 border-b border-line flex flex-col gap-4">
+      {/* 1. Search text input — one wide field + a real "Search →" button, the
+          ArtConnect anatomy, instead of a button hidden inside the field. */}
+      <form onSubmit={handleSearchSubmit} className="flex items-stretch gap-2 w-full">
         <input
           type="text"
           name="q"
           defaultValue={currentQ}
           key={currentQ}
           placeholder="Search title, institution, city"
-          className="w-full h-10 px-3 pr-16 bg-surface border border-line rounded-[var(--radius)] t-body text-sm text-fg focus:outline-none focus:border-fg"
+          className="input-shell flex-1 h-12 text-[15px]"
         />
-        {currentQ ? (
+        {currentQ && (
           <button
             type="button"
             onClick={() => {
@@ -118,18 +119,17 @@ export default function FilterBar({ markets, vocab }: FilterBarProps) {
               params.delete('q')
               router.push(`/hub?${params.toString()}`)
             }}
-            className="absolute right-3 t-meta text-muted hover:text-fg text-xs"
+            className="t-meta text-muted hover:text-fg px-2"
           >
             Clear
           </button>
-        ) : (
-          <button
-            type="submit"
-            className="absolute right-3 t-meta text-muted hover:text-fg text-xs font-medium"
-          >
-            Search
-          </button>
         )}
+        <button
+          type="submit"
+          className="shrink-0 inline-flex h-12 items-center justify-center gap-1.5 rounded-[var(--radius-sm)] bg-accent px-5 text-[15px] font-semibold text-accent-ink transition-opacity hover:opacity-90"
+        >
+          Search →
+        </button>
       </form>
 
       {/* 2. The 5 true quick-toggle chips — few enough to stay inline, no scrolling */}

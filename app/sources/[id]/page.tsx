@@ -1,5 +1,6 @@
 import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
+import { getActiveMarketSlugs, isInPilotScope } from '@/lib/markets'
 import SourceDetailView, { type ClosedOpportunity } from '@/components/sources/SourceDetailView'
 import type { HubFeedRow, Profile, Source, VocabEntry } from '@/lib/types'
 
@@ -19,6 +20,13 @@ export default async function SourceDetailPage({ params }: PageProps) {
     .maybeSingle()
 
   if (!sourceData) {
+    notFound()
+  }
+
+  // Same pilot-scope guard as the opportunity detail page: scoping the directory
+  // listing alone still left every European institution reachable by direct URL.
+  const activeSlugs = await getActiveMarketSlugs(supabase)
+  if (!isInPilotScope((sourceData as { market?: string | null }).market, activeSlugs)) {
     notFound()
   }
 

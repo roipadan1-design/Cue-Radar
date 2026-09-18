@@ -2,41 +2,44 @@
 
 import Link from 'next/link'
 import { usePathname } from 'next/navigation'
-import { LayoutList, Route, Bookmark, User } from 'lucide-react'
+import { getNavItems } from '@/components/layout/nav-items'
 
 interface TopBarNavProps {
   isSignedIn: boolean
 }
 
+/**
+ * Desktop shell nav, ArtConnect-shaped: a horizontal row of sentence-case text
+ * links (Dashboard/Opportunities/Discover/... over there is Hub/Currently/
+ * Discover/Saved here), active item marked with an underline rather than the
+ * old hard inverted block. Profile is deliberately excluded — it becomes the
+ * account control TopBar renders on the far right, next to the primary CTA.
+ */
 export default function TopBarNav({ isSignedIn }: TopBarNavProps) {
   const pathname = usePathname()
-
-  const items = [
-    { label: 'Hub', href: '/hub', icon: LayoutList },
-    { label: 'Currently', href: '/circuit', icon: Route },
-    { label: 'Saved', href: '/saved', icon: Bookmark },
-    { label: 'Profile', href: isSignedIn ? '/profile/edit' : '/signin?next=/profile/edit', icon: User },
-  ]
+  const items = getNavItems(isSignedIn).filter((item) => item.key !== 'profile')
 
   return (
-    <nav className="hidden md:flex items-center gap-1 t-meta">
+    <nav className="hidden md:flex items-center gap-7 t-body">
       {items.map((item) => {
-        const Icon = item.icon
-        const isActive =
-          pathname === item.href ||
-          (item.href === '/hub' && pathname === '/') ||
-          (item.href === '/circuit' && pathname.startsWith('/circuit'))
+        const isActive = item.isActive(pathname)
 
         return (
           <Link
-            key={item.href}
+            key={item.key}
             href={item.href}
-            className={`flex items-center gap-1.5 px-2.5 py-1.5 rounded-[var(--radius)] transition-colors ${
-              isActive ? 'bg-fg text-bg' : 'text-muted hover:text-fg'
+            aria-current={isActive ? 'page' : undefined}
+            className={`relative py-2 transition-colors ${
+              isActive ? 'text-fg' : 'text-fg-soft hover:text-fg'
             }`}
           >
-            <Icon size={16} />
-            <span>{item.label}</span>
+            {item.label}
+            <span
+              className={`absolute inset-x-0 -bottom-[1px] h-[2px] rounded-full transition-colors ${
+                isActive ? 'bg-accent' : 'bg-transparent'
+              }`}
+              aria-hidden="true"
+            />
           </Link>
         )
       })}
