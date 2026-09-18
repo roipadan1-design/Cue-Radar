@@ -44,11 +44,18 @@ export default function OpportunityDetailView({
   userId,
   profile = null,
 }: OpportunityDetailViewProps) {
-  let hostname = ''
-  try {
-    hostname = new URL(row.apply_url).hostname.replace(/^www\./, '')
-  } catch {
-    hostname = row.apply_url
+  // Demo rows (AGENTS.md rule 1) all share one placeholder apply_url on the
+  // pre-rebrand domain (cue-radar.vercel.app/demo) — deriving the button
+  // label from that hostname would leak the stale domain into a
+  // customer-facing button, so demo rows get a neutral label instead of the
+  // real host.
+  let hostname = 'the demo page'
+  if (!row.is_demo) {
+    try {
+      hostname = new URL(row.apply_url).hostname.replace(/^www\./, '')
+    } catch {
+      hostname = row.apply_url
+    }
   }
 
   // Resolve vocab label for type
