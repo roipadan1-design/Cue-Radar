@@ -91,7 +91,10 @@ VALUES
   ('opp-il-2026-006', 'SRC333',
    'The Psychomagic Art Lab - Ralli Museum Caesarea',
    'psychomagic-art-lab-ralli-museum-caesarea-2026',
-   'Three monthly sessions at Ralli Museum Caesarea exploring the link between making, imagination and healing, inspired by Alejandro Jodorowsky''s psychomagic. Led by Uri Sivan, Ari Folman and Mor Kadishzon with senior artists. Each participant develops a new "psychomagic act", culminating in a group exhibition at the museum in March 2027. Free to participate; places are limited and entry is by selection.',
+   -- opportunities.summary is CHECK (char_length <= 200); all three summaries below
+   -- are written to fit that. Full descriptions live in the staged CSVs under
+   -- data/seed/ and on each institution page.
+   'Three monthly sessions at Ralli Museum Caesarea on making, imagination and healing, after Jodorowsky''s psychomagic. Led by Uri Sivan, Ari Folman and Mor Kadishzon. Group exhibition March 2027.',
    'lab_workshop',
    ARRAY['sound','dance','painting','sculpture','interdisciplinary']::TEXT[],
    'caesarea',
@@ -108,7 +111,7 @@ VALUES
   ('opp-il-2026-007', 'SRC334',
    'Otzrot Tarbut - call for artists, producers and cultural institutions',
    'otzrot-tarbut-ministry-of-culture-database',
-   'The Ministry of Culture and Sport is building a national digital database of cultural events that local authorities book from, across six fields: music, theatre and fringe, dance, cinema, literature, and visual art and museums. The call seeks professional performances meeting the threshold conditions, assessed by professional quality committees in each field.',
+   'The Ministry of Culture and Sport is building a national database of cultural events that local authorities book from: music, theatre and fringe, dance, cinema, literature, visual art.',
    'open_call',
    ARRAY['music','performance','dance','interdisciplinary']::TEXT[],
    'jerusalem',
@@ -125,7 +128,7 @@ VALUES
   ('opp-il-2026-008', 'SRC335',
    'Soliko BiShnayim 2027 - call for new work',
    'soliko-bishnayim-2027',
-   'Open call from the Israeli Hashaa Theatre for new ideas to be brought to the stage. Proposals are sent by email to sharon@hashaa.com.',
+   'Open call from the Israeli Hashaa Theatre for new ideas to bring to the stage. Proposals go by email to sharon@hashaa.com.',
    'open_call',
    ARRAY['performance','interdisciplinary']::TEXT[],
    NULL,
