@@ -86,7 +86,11 @@ export default function OpportunityRow({
   const eligibility = !locked && profile ? checkEligibility(profile, row) : null
 
   return (
-    <div className="relative p-4 border border-line rounded-[var(--radius)] bg-bg hover:border-line-strong transition-colors">
+    <div
+      className={`relative p-4 rounded-[var(--radius)] bg-bg hover:border-line-strong transition-colors ${
+        deadlineInfo.isUrgent ? 'border-2 border-urgent' : 'border border-line'
+      }`}
+    >
       {/* Stretched link: makes the whole card clickable while still letting the
           source_name link below sit above it (z-10) as its own tap target —
           avoids nesting an <a> inside an <a>. */}
