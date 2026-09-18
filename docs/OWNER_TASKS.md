@@ -197,6 +197,37 @@ never writes (rule 5) — and neither can be done by an agent inventing a plausi
 researcher pass has been commissioned to verify whether those four currently have open calls and what
 their real deadlines are; check `docs/research/` for its findings before deciding.
 
+**Researcher follow-up, same day — this is seasonality, not a curation failure.**
+
+Every relevant institution was checked directly against its own site on 2026-09-18: Suzanne Dellal,
+Artis (both programmes), Kelim, Hazira, Tmuna, Mamuta, Vertigo Eco Art Village, Batsheva, Kamea, the
+Israeli Center for Digital Art, AICF, the Rabinovich Foundation, Tel Aviv Municipality.
+
+- **Exactly one genuinely open opportunity exists in Israel right now** in dance/sound/performance:
+  the Artis International Residency Grant. It is rolling with quarterly review (Feb/May/Aug/Nov), up
+  to USD 5,000. Its own eligibility text limits it to *visual artists and curators*, so it is
+  off-brief for the disciplines this product prioritises. Real and live, but not our audience.
+- The Artis row in the database is **not stalled** — it simply had its deadline modelled wrong as a
+  single date. It is a rolling programme. Corrected in the staged CSV.
+- **Suzanne Dellal's whole portfolio is genuinely off-cycle** (1|2|3, Residency, Pitching). The
+  "off-cycle" rows are correct data. The Pitching Program is real but its public page is stale at
+  "Pitching 2023" with no 2026 cycle announced anywhere.
+- Artis Studio Partnership is confirmed closed — their site says the next call is spring 2027.
+
+**The practical conclusion:** Israel's dance and performance field runs on a handful of institutions
+that cycle roughly once a year, and September sits between cycles for nearly all of them.
+**October–November is when this list should genuinely grow** — Suzanne Dellal's International
+Exposure, and Batsheva's next audition, which their site puts at "around October 2026". Thin content
+right now is the true state of the field, not a gap in our research.
+
+Seven verified rows and three new institutions (Batsheva, Kamea, Tel Aviv Municipality/Rabinovich)
+are staged as `draft` in `data/seed/opportunities_staging_2026-09-18_israel_pilot.csv` and
+`data/seed/sources_staging_2026-09-18_israel_pilot.csv`. Full findings, with source URLs and check
+dates: `docs/research/ISRAEL_PILOT_CONTENT_AUDIT_2026-09-18.md`.
+
+**Top unresolved lead:** `aicf.org` (America-Israel Cultural Foundation) returned 403 on direct
+fetch and needs a real browser visit. Plausibly the best-fit funder for Israeli dance and music.
+
 ### Step 4o: Action needed — apply migration 0007 (2026-09-18)
 
 `supabase/migrations/0007_vocab_event_type_theatre_dance.sql` (the `theatre`/`dance` event_type rows,
