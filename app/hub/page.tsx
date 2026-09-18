@@ -2,6 +2,7 @@ import { Suspense } from 'react'
 import { createClient } from '@/lib/supabase/server'
 import FilterBar from '@/components/hub/FilterBar'
 import HubFeedView from '@/components/hub/HubFeedView'
+import { effortLevel } from '@/lib/effort'
 import type { HubFeedRow, Market, Profile, VocabEntry } from '@/lib/types'
 
 interface HubPageProps {
@@ -13,6 +14,8 @@ interface HubPageProps {
     funded?: string
     covers_housing?: string
     covers_travel?: string
+    q?: string
+    effort?: string
   }>
 }
 
@@ -25,9 +28,19 @@ export default async function HubPage(props: HubPageProps) {
   const funded = searchParams.funded === 'true'
   const coversHousing = searchParams.covers_housing === 'true'
   const coversTravel = searchParams.covers_travel === 'true'
+  const q = searchParams.q?.trim()
+  const effort = searchParams.effort
 
   const hasActiveFilters = Boolean(
-    city || type || discipline || noFee || funded || coversHousing || coversTravel,
+    city ||
+      type ||
+      discipline ||
+      noFee ||
+      funded ||
+      coversHousing ||
+      coversTravel ||
+      q ||
+      effort,
   )
 
   const supabase = await createClient()
@@ -40,6 +53,10 @@ export default async function HubPage(props: HubPageProps) {
     .from('hub_feed')
     .select('*')
     .order('deadline', { ascending: true, nullsFirst: false })
+
+  if (process.env.NEXT_PUBLIC_SHOW_DEMO === 'false') {
+    feedQuery = feedQuery.or('is_demo.eq.false,is_demo.is.null')
+  }
 
   if (city) {
     feedQuery = feedQuery.eq('city', city)
@@ -67,6 +84,10 @@ export default async function HubPage(props: HubPageProps) {
     feedQuery = feedQuery.contains('covers', ['travel'])
   }
 
+  if (q) {
+    feedQuery = feedQuery.or(`title.ilike.%${q}%,source_name.ilike.%${q}%,city_name.ilike.%${q}%`)
+  }
+
   const [
     {
       data: { user },
@@ -90,7 +111,14 @@ export default async function HubPage(props: HubPageProps) {
     console.error('Error querying hub_feed:', error.message)
   }
 
-  const rows = (rowsData || []) as HubFeedRow[]
+  let rows = (rowsData || []) as HubFeedRow[]
+
+  // effort has no column of its own — it's derived from materials_required —
+  // so it's filtered client-side (server-side, post-query) rather than via
+  // Supabase query builder, same as the pre-regression version of this page.
+  if (effort === 'light') {
+    rows = rows.filter((r) => effortLevel(r.materials_required) === 'light')
+  }
 
   // Profile fetch depends on the user id above, so it can't join the batch
   // above — only signed-in users pay this extra round-trip.
