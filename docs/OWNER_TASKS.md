@@ -111,6 +111,10 @@ select category, value, label, sort_order from vocab where category = 'event_typ
 ```
 which should now return 13 rows (the existing 11 plus `theatre` at sort_order 12 and `dance` at sort_order 13).
 
+**Re-verified 2026-09-18 (Task 21 backend pass), still not applied.** Direct REST read of `vocab?category=eq.event_type` returns exactly the same 11 rows as before — no `theatre`, no `dance`. `npx supabase migration list` confirms: `0007` remote is empty. Nothing new to do beyond what's already written above — this is a re-confirmation, not new drift.
+
+**One addition worth knowing before you run the push**: `0008_profiles_gallery.sql` and `0009_market_scope.sql` are both already live (their columns/data are confirmed present via direct REST reads — `profiles.gallery`, `markets.is_active` with the correct 11-active/22-inactive split), but `npx supabase migration list` shows their `remote` bookkeeping column as empty too, the same "applied out-of-band, CLI ledger not updated" pattern `0001`-`0004` had earlier in this project. This is bookkeeping-only, not a real gap — no schema or data is missing. Both files are idempotent (`ADD COLUMN IF NOT EXISTS`, `CREATE INDEX IF NOT EXISTS`, and `0009`'s `UPDATE` produces the same result if re-run), so running `npx supabase db push --linked` to apply the real gap (`0007`) will also harmlessly re-run `0008`/`0009` and, as a side effect, bring the CLI's bookkeeping for all three back in sync with reality. No separate `migration repair` step is needed first.
+
 ### Step 4g: Confirm the real signup → profile → public-profile flow (Task 07 §10)
 
 The Task 07 pass could not exercise the full `/signup` → email confirmation → `/profile/edit?welcome=1` → `is_public` toggle → `/a/{handle}` round trip end to end (no real inbox / live Supabase session available in that session). The code paths were read and the individual screens verified in isolation (`/signin?next=/profile/edit` routes correctly now that the nav bug is fixed; `/profile/edit`, `/a/[handle]` render as expected against seed/demo data). Since Roi is registering as the first real user per the task brief, please run this exact sequence yourself on the deployed site and note here (or in a new `docs/DECISIONS.md` entry) if any step fails: `/signup` with email+password → confirm email if required → lands on `/profile/edit?welcome=1` → fill handle/full_name/discipline, toggle `is_public` on, save → open `/a/{handle}` signed out → confirm it renders.
@@ -164,6 +168,51 @@ That applies both pending migrations (`0007` and the new `0008`) in order. After
 select column_name, data_type from information_schema.columns where table_name = 'profiles' and column_name = 'gallery';
 ```
 which should return one row (`gallery`, `ARRAY`). Do not test profile save (or deploy this branch to production) before running that push, or the save will fail with a "column profiles.gallery does not exist" Postgres error.
+
+### Step 4n: THE BIG ONE — the Israeli feed has no real live content (Task 21, 2026-09-18)
+
+This is the most important item on this page. It is a content problem, not a code problem, and only
+you can clear it.
+
+With the Israel-only scope applied, I queried the live database directly:
+
+- `hub_feed` (the view behind the Hub: `status = 'live'` AND deadline not past) holds 45 rows.
+  **Only 4 of them are in Israeli cities.**
+- **All 4 of those Israeli rows are `is_demo = true`** — the fictional ones: Independent Choreography
+  Grant, Somatosensory Listening Lab, Levant Sound Performance Lab, Tel Aviv Sound Art Biennale.
+- Every **real** Israeli opportunity is sitting at `status = 'draft'` with `deadline = NULL`:
+  - Suzanne Dellal Centre Residency 2026/27
+  - Artis — International Residency Grant
+  - Artis — Studio Partnership Program
+  - Pitching Program 2026
+  - (plus two rows correctly marked "off-cycle (no live call)" — those are good data, not gaps)
+  - Jerusalem International Choreography Competition — draft, and its deadline 2026-06-15 has passed.
+
+**What this means in practice:** with `NEXT_PUBLIC_SHOW_DEMO=true` the Israeli Hub shows four
+invented rows and nothing real. With it set to `false`, the Hub is empty.
+
+**What is needed from you:** the four real programmes above need a verified deadline and a promotion
+from `draft` to `live`. Neither can be done from the app — `opportunities` is a curated table the app
+never writes (rule 5) — and neither can be done by an agent inventing a plausible date (rule 1). A
+researcher pass has been commissioned to verify whether those four currently have open calls and what
+their real deadlines are; check `docs/research/` for its findings before deciding.
+
+### Step 4o: Action needed — apply migration 0007 (2026-09-18)
+
+`supabase/migrations/0007_vocab_event_type_theatre_dance.sql` (the `theatre`/`dance` event_type rows,
+see Step 4k) is still **not applied** to the live database — re-verified this session by reading the
+`vocab` table, which still has exactly 11 `event_type` rows.
+
+Migrations `0008` (profiles.gallery) and `0009` (market_scope) **were** applied this session and are
+verified live. `0007` could not be: the sandbox blocked further database writes partway through the
+session. It is additive and idempotent (`ON CONFLICT DO UPDATE`), so:
+
+```
+npx supabase db push --linked
+```
+
+applies `0007` and harmlessly resyncs the CLI's migration bookkeeping for `0008`/`0009` in one pass.
+Low urgency — it adds two vocabulary labels and blocks nothing.
 
 ### Step 4: Google Service Account & Sheet Setup
 1. Create a Google Cloud Service Account and download its JSON key.

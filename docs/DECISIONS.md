@@ -753,3 +753,118 @@ ArtConnect shows organisation logos, sponsored slots, view counts, an Artworks f
 We hold no data for any of them. They are omitted rather than mocked — rule 1 — and the owner was
 explicit that he minds fake content far more than empty sections ("I don't care if there isn't
 content yet"). Same reasoning for the Curators tab in Discover.
+
+### `scripts/sync_sheet_to_supabase.py` now owns `markets.is_active` (backend/data pass, 2026-09-18)
+
+`0009_market_scope.sql` (already applied) set the one-time Israel-only split, but per AGENTS.md
+rule 5 only the sync script may write `markets` going forward — leaving `is_active` unowned by the
+script would mean the very next scheduled sync could reintroduce the bug it just fixed.
+
+**The risk was real, not hypothetical.** `filter_columns` already sends every allowed column on every
+row, substituting an explicit `None` whenever the Sheet's cell for that column is blank — correct
+behaviour for descriptive fields, where "blank" should mean "clear it." The naive fix — just add
+`is_active` to `ALLOWED_COLUMNS` with no other change — inherits that same behaviour: since the
+Sheet's `markets` tab has no `is_active` column at all today, every row's cell reads as blank, so
+every row's payload would carry `is_active: None`. That either fails outright against the column's
+`NOT NULL` constraint, or, if someone "fixed" the crash by defaulting the parsed value to `True`
+instead of `None` when blank, would silently flip every parked non-Israel market back to visible on
+the very next scheduled sync — the exact regression this task named as the thing to prevent. Neither
+outcome is acceptable; both are foreclosed by treating the column as sparse instead (below).
+
+**Design**: `is_active` is now a "sparse" column (`SPARSE_OPTIONAL_COLUMNS`). `validate_rows` only
+sets `row["is_active"]` when the Sheet's cell for that row is non-blank (parsed the same
+TRUE/1/YES-style boolean coercion already used for `needs_verification`); otherwise it pops the key
+so it is provably absent. `filter_columns` then omits the key from that row's JSON object entirely
+rather than substituting `None`. Since Supabase/PostgREST's upsert (`Prefer:
+resolution=merge-duplicates`) only assigns columns present in the request body, an omitted key
+leaves the market's current `is_active` value untouched in the database — the sync becomes a no-op
+for scope on every market the Sheet doesn't explicitly mention, which today is all of them (the
+Sheet's `markets` tab has no `is_active` column at all).
+
+**Consequence handled, not ignored**: within one sync run some market rows could have the
+`is_active` key (a future Sheet row that sets it) and others not (every row today). Supabase's bulk
+upsert rejects a JSON array whose objects don't all share the same keys ("All object keys must
+match"). Added `partition_by_keys()` to split a tab's cleaned rows into key-homogeneous groups before
+POSTing, and wired it into `main()`'s upsert loop in place of a single `post_upsert` call per tab.
+For every tab without a sparse column (everything except `markets` today) this is a no-op — one
+group, identical to the previous single-batch behaviour — verified by a dedicated test
+(`test_partition_by_keys_splits_mixed_shape_rows_and_is_a_noop_otherwise`).
+
+**Tests added** (`scripts/test_sync_validation.py`, all passing, 10/10 total):
+`test_markets_sync_does_not_resurrect_inactive_market_when_sheet_has_no_is_active_column` (the
+regression this task named explicitly), plus coverage for an explicit TRUE/FALSE cell, a blank cell
+on a row where the column does exist, and the batch-partitioning behaviour.
+
+**Judgment call — how "the sheet has an is_active column" should ever get used.** The task's own
+wording implies a near-term path where the Sheet does grow an `is_active` column and becomes the
+owner of city scope end-to-end. This pass makes that path work correctly when it happens, but does
+not add the column to the Sheet or to `docs/OWNER_TASKS.md` as a to-do — `0009`'s UPDATE already
+expresses the Israel-only scope correctly in the database today, and the task brief for this pass
+was "the sync must not clobber it," not "migrate scope management into the Sheet." Flagging so a
+future task that does want the Sheet to drive `is_active` directly knows the sync-side plumbing is
+already there.
+
+### Live migration audit 0001-0009, verified against the database, not the repo (2026-09-18)
+
+Re-ran the same class of check that already caught the `0008` gallery-column incident, this time
+across every migration file in the repo, using read-only REST calls (`curl` with the service-role
+key, per this task's own instructions — no CLI push, no write). Also cross-checked with
+`npx supabase migration list` (read-only) for the CLI's own bookkeeping view.
+
+| Migration | Schema live? (REST-verified) | CLI bookkeeping (`migration list`) |
+|---|---|---|
+| 0001 core | Yes — `hub_feed`, `markets`, `follows`-adjacent tables etc. all present | `remote:0001` |
+| 0002 seed vocab/markets | Yes — 33 market rows, full vocab set present | `remote:0002` |
+| 0003 demo seed | Yes — `is_demo` on `opportunities`/`hub_feed`, 42 demo opportunities, 28 events | `remote:0003` |
+| 0004 discipline taxonomy | Yes — 10 `discipline` vocab rows, correct `deprecated` flags | `remote:0004` |
+| 0005 source recurrence | Yes — `opportunities.recurrence`/`expected_next_open` present, both on `hub_feed` | `remote:0005` |
+| 0006 follows | Yes — `follows` table exists, readable, empty | `remote:0006` |
+| **0007 vocab theatre/dance** | **No** — `vocab` has exactly 11 `event_type` rows; no `theatre`, no `dance` | `remote:` (empty) |
+| 0008 profiles.gallery | Yes — confirmed already applied per this task's briefing; re-confirmed live | `remote:` (empty — bookkeeping-only drift) |
+| 0009 market_scope | Yes — confirmed already applied per this task's briefing; re-confirmed live (11 active / 22 inactive) | `remote:` (empty — bookkeeping-only drift) |
+
+**Finding 1 — `0007` is genuinely not applied, and this is not new information.** It matches
+`docs/OWNER_TASKS.md` Step 4k, which already says this and already tells the owner exactly what to
+run. Re-confirmed rather than re-flagged as new; Step 4k's instructions are accurate as written and
+were left as-is.
+
+**Finding 2 — `0008` and `0009` are schema-live but CLI-bookkeeping-blank.** Both were applied
+out-of-band (Management API / SQL Editor, per the 2026-09-18 entries above), the same pattern this
+repo's history shows repeatedly for `0001`-`0006` before they were eventually `migration repair`'d.
+This is not schema drift — the columns and data genuinely match the migration files — only the CLI's
+own local ledger is behind. Practical effect: a bare `npx supabase db push --linked` today would
+attempt `0007` (correct, it's actually missing), then re-run `0008`/`0009` (both are idempotent —
+`ADD COLUMN IF NOT EXISTS`, `CREATE INDEX IF NOT EXISTS`, and 0009's `UPDATE ... SET is_active =
+(country = 'IL')` produces the identical result if re-run), so a plain `db push` should be safe
+end-to-end, but this was not run — applying to the linked project is the owner's call per this
+repo's standing rule, and Step 4k in `docs/OWNER_TASKS.md` already carries this instruction for
+`0007`. A one-line addendum was added there for the `0008`/`0009` bookkeeping-only gap so the same
+push resolves all three in one pass. No SQL was executed against the live project in this session.
+
+### Reversing two earlier ArtConnect decisions the owner has now overruled with screenshots
+
+This is the **second** round rejected for the same reason. The 2026-09-18 entry above already records
+it once: *"I expected to see a different, new look and I'm disappointed because everything looks the
+same,"* diagnosed there as the correct consequence of Task 12 §4 having authorised ArtConnect as a
+**structural** reference only while keeping "Fellow.'s locked accent, typography, and copy voice
+as-is." Task 19 then widened the authorisation but shipped a radius change and an accent tweak,
+leaving the weight-800 UPPERCASE type scale and the 720px column — the two things actually doing the
+damage — untouched. Hence Task 21 changing the type scale, the container and the radius outright.
+
+Two specific earlier judgment calls are reversed here, because the owner's nine reference
+screenshots show the exact patterns that were declined:
+
+1. **The Artists / Curators / Organizations switcher.** The 2026-09-18 ux-ui-designer pass recorded
+   it as "deliberately *not* adopted, since Fellow. has no curator role and institutions already get
+   their own, separate directory." The reasoning was sound and the owner has overruled it anyway —
+   he screenshotted that tab bar and asked for "search rows for people, organisations etc." Adopted.
+   The curator gap is handled honestly (omitted or an empty state), not by inventing curators.
+
+2. **The trailing "View Profile →" button on a directory row.** Declined previously as "a second,
+   redundant link affordance next to an already-clickable card." Also in his screenshots, also
+   adopted. The redundancy argument is still technically correct; it loses to the fact that the
+   owner has now twice looked at our directory and not seen the product he asked for.
+
+Recording this so the reversal reads as a decision with a reason rather than as drift. Where our
+own design reasoning and the owner's explicit reference collide from here, the reference wins, and
+the objection goes in this file (AGENTS.md, "When the task and your judgment disagree").

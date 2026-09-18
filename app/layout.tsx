@@ -43,14 +43,29 @@ export default async function RootLayout({
     data: { user },
   } = await supabase.auth.getUser()
 
+  // Only fetched for the account control in TopBar (avatar + initials
+  // fallback). Not persisted client-side (rule 3) — read fresh on every
+  // request like the rest of the shell.
+  let avatarUrl: string | null = null
+  let fullName: string | null = null
+  if (user) {
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('avatar_url, full_name')
+      .eq('id', user.id)
+      .maybeSingle()
+    avatarUrl = profile?.avatar_url ?? null
+    fullName = profile?.full_name ?? null
+  }
+
   return (
     <html
       lang="en"
       className={`${archivo.variable} ${manrope.variable}`}
     >
       <body className="min-h-screen flex flex-col bg-bg text-fg font-body antialiased">
-        <TopBar isSignedIn={Boolean(user)} />
-        <main className="flex-1 w-full mx-auto pb-[72px] md:pb-0">
+        <TopBar isSignedIn={Boolean(user)} avatarUrl={avatarUrl} fullName={fullName} />
+        <main className="flex-1 w-full container-page pb-[72px] md:pb-0">
           {children}
         </main>
         <Footer />
