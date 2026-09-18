@@ -145,11 +145,25 @@ A gallery-photo-upload feature was added to `components/profile/ProfileForm.tsx`
 
 **This means: until a migration adds `profiles.gallery TEXT[] DEFAULT ARRAY[]::TEXT[]`, saving a profile edit of any kind (not just gallery — bio, handle, disciplines, anything) will fail for every signed-in user**, because Postgrest will reject the whole `UPDATE` with a "column profiles.gallery does not exist" error the moment this branch reaches a real Supabase project. Per this repo's standing rule (`AGENTS.md` rule 6), writing that migration is Backend/Data Engineer scope, not something done unprompted in this pass — full reasoning in `docs/DECISIONS.md`, "Gallery photo upload — ProfileForm."
 
-**What to do**: before merging/deploying this branch, get a small additive migration written and applied — `ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS gallery TEXT[] DEFAULT ARRAY[]::TEXT[];` — via the Backend/Data Engineer or the Supabase SQL Editor. Confirm afterward with:
+**Update (2026-09-18, Backend/Data Engineer)**: the migration now exists — `supabase/migrations/0008_profiles_gallery.sql` (`ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS gallery TEXT[] NOT NULL DEFAULT ARRAY[]::TEXT[];`). It has **not** been applied to the linked project — per this repo's standing rule, an agent never pushes schema changes to the shared production database without your explicit action. `npx supabase migration list` currently shows (read-only check, not a push):
+
+```
+0001 remote:0001  0002 remote:0002  0003 remote:0003  0004 remote:0004  0005 remote:0005  0006 remote:0006  0007 remote:(none)  0008 remote:(none)
+```
+
+So `0007` was also already pending before this fix — not new drift introduced here.
+
+**What you need to run before testing profile save**, from the repo root, once linked (`npx supabase link`):
+
+```
+npx supabase db push --linked
+```
+
+That applies both pending migrations (`0007` and the new `0008`) in order. Afterward, confirm with:
 ```sql
 select column_name, data_type from information_schema.columns where table_name = 'profiles' and column_name = 'gallery';
 ```
-which should return one row (`gallery`, `ARRAY`). Do not merge this branch to `main`/deploy to production before that column exists, or every profile save will break.
+which should return one row (`gallery`, `ARRAY`). Do not test profile save (or deploy this branch to production) before running that push, or the save will fail with a "column profiles.gallery does not exist" Postgres error.
 
 ### Step 4: Google Service Account & Sheet Setup
 1. Create a Google Cloud Service Account and download its JSON key.
