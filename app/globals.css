@@ -8,7 +8,7 @@
   --line-strong: #2E2E2E;
   --fg: #F2F2F2;
   --muted: #8C8C8C;
-  --accent: #B39DFF;
+  --accent: #AA80FF;
   --urgent: #E5484D;
   --backdrop: rgba(0, 0, 0, 0.6);
   --radius: 2px;
@@ -173,7 +173,6 @@
   .t-title {
     font-family: var(--font-display), sans-serif;
     font-weight: 800;
-    text-transform: uppercase;
     letter-spacing: -0.02em;
     line-height: 1.0;
     font-size: 22px;

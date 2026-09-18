@@ -372,6 +372,24 @@ Built `app/sources/page.tsx` + `components/sources/{SourcesFilterBar,SourceCard}
 
 **Verification (raw output)**: `npm run lint` — no warnings/errors; `npm run build` — compiled successfully, `/sources` listed as a new dynamic route; `python -m unittest discover -s scripts` — 6/6 pass; all of Task 14 §6's grep checks pass (`status` filter present, `OK_no_client_persistence`, `OK_no_hex`, `OK_no_competitor_string_in_code`, and the `/sources` entry-point link confirmed present in `components/hub/OpportunityDetailView.tsx`, the file that actually renders the opportunity detail page's meta-line area).
 
+## QA re-audit directive — deeper double-check requested by the owner (2026-09-18)
+
+**Owner instruction, in plain terms**: after reviewing today's shipped work (Tasks 07, 09, 11, 14), the owner said "I expected to see a different, new look and I'm disappointed because everything looks the same" (addressed separately by Task 19, above/below). Alongside that, he explicitly asked for **more depth and research across the board and a full double-check of everything already shipped** — a deeper re-check than the first pass each task's own verification block already did, not a repeat of the same surface-level checks.
+
+**Directive for `qa-release`, next time it is dispatched**: re-audit all of the following, more thoroughly than each task's own original verification block:
+
+- **Task 07** (brand and visual polish) — re-verify every punch-list item in `docs/tasks/TASK_07_brand_and_visual_polish.md` against the live/preview site directly (not just against the DECISIONS.md implementation notes), including the accent closed-list fixes (`SaveOpportunityButton.tsx`, the `+N more` link) and the `Demo` chip on both `OpportunityRow` and `OpportunityDetailView`.
+- **Task 08** (source recurrence migration) — confirm live schema state directly (`recurrence`/`expected_next_open` columns on `opportunities`, `hub_feed` view), not from the DECISIONS.md note alone.
+- **Task 09** (source detail page) — walk `/sources/[id]` for at least one real (non-demo) source and one demo source; confirm the two-tab structure, the `source_type` fallback label, and that no `draft`/`approved` opportunity row leaks into the "past calls" archive.
+- **Task 10** (Discover/Connect backend) — confirm `follows` table RLS directly (`pg_policies`), confirm no public-read policy exists.
+- **Task 11** (Discover/Connect frontend) — this task's own entry above already discloses an unverified gap (zero `is_public=true` profiles existed at the time, so the Follow/Following toggle round-trip was never exercised against two real accounts). Re-check whether real profiles now exist and, if so, actually exercise the toggle end to end; if not, restate the gap explicitly rather than letting it go silently unverified a second time.
+- **Task 13** (event-type vocab gap check) — confirm the two new rows (`theatre`, `dance`) actually reach the live `vocab` table once the Sheet's `vocab`-tab-format blocker (documented in `docs/OWNER_TASKS.md` Step 4f) is resolved; if still blocked, confirm it is still blocked and say so, don't assume it resolved itself.
+- **Task 14** (sources directory) — walk `/sources` with and without filters against the live row count (not a cached number), confirm the entry-point link from the opportunity detail page still resolves.
+- **Today's direct data insert** (`israel_pilot_data_insert.sql`, run by the owner in the Supabase SQL editor) — confirm the 10 markets, 18 sources, 5 opportunities, and 5 events actually landed as expected (row counts, `ON CONFLICT DO NOTHING` didn't silently skip anything unexpected), and confirm the 5 opportunities are still `status='draft'` (never auto-promoted to live) per the script's own stated intent.
+- **Task 20** (market reassignment cleanup, once it lands) — spot-check a sample of the reassigned `source_id`s directly against their `notes` field to confirm the reassignment was justified, and confirm the "left unchanged, insufficient evidence" bucket wasn't just skipped entirely.
+
+This is a standing re-audit list for the next `qa-release` dispatch, not a new task file — `qa-release`'s own role (per `docs/AGENT_ROSTER.md`) is verification, not a coding task with its own numbered scope.
+
 ## Task 11 — Discover/Connect v1 frontend, implemented (2026-09-18)
 
 Built `app/discover/page.tsx` + `components/discover/{DiscoverFilterBar,ProfileCard}.tsx` per `docs/design/DISCOVER_V1_SPEC.md`, and the `Follow`/`Following` toggle on `/a/[handle]` (`components/profile/FollowButton.tsx`, wired into `components/profile/PublicProfileView.tsx` and `app/a/[handle]/page.tsx`) per the same spec's §3. Both hard dependencies were satisfied: Task 10's `follows` migration is confirmed live (Task 08/10 entries above), and the ux-ui-designer spec + copy doc already existed.
@@ -383,3 +401,130 @@ Built `app/discover/page.tsx` + `components/discover/{DiscoverFilterBar,ProfileC
 - **Verification gap, disclosed rather than worked around**: the live `profiles` table has **zero** rows with `is_public = true` as of this session (confirmed via `select id, handle, full_name, is_public from profiles where is_public=true` — empty result), since the owner has not yet completed his own real signup. This means the "Follow toggles to Following and back" interaction and the "another signed-in user's public profile shows the button" checklist items from Task 11 §6 could not be exercised against two real accounts in this session — doing so would have meant creating throwaway test accounts directly in the live production Supabase Auth/`profiles` tables, which this session chose not to do unprompted (creating fake accounts in a live user-auth system is a different risk category than seeding a curated table, and no task or owner instruction asked for it). What **was** verified live: `/discover` renders the correct "No public profiles yet" empty state (real, not a placeholder — there genuinely are zero rows) and the correct "No profiles match these filters." + Reset state under `?city=&discipline=`; `/a/does-not-exist` still 404s (no regression from adding `viewerId`/`initialFollowing` props); `/dev/preview/profile` (the fixture page, always `isOwner=true`) renders unchanged with no Follow button, confirming the `!isOwner && viewerId` guard doesn't false-positive. The toggle logic itself is a close structural mirror of `SaveOpportunityButton.tsx` (already proven working elsewhere in this app) against the already-verified-live `follows` table/RLS (Task 08/10 entries above) — flagging this as the one item in this task that needs a real second-account check once the owner (or a second real signup) exists, rather than silently marking it done.
 
 **Verification (raw output)**: `npm run lint` — no warnings/errors; `npm run build` — compiled successfully, `/discover` listed as a new dynamic route, `/a/[handle]` size grew to reflect the new `FollowButton` import; `python -m unittest discover -s scripts` — 6/6 pass; all of Task 11 §6's grep checks pass (`is_public` present, `OK_no_follower_count`, `OK_no_client_persistence`, `OK_no_hex`, `OK_no_scope_creep`).
+
+## Task planning pass — Tasks 19–20 created, owner feedback on "everything looks the same" (2026-09-18)
+
+**Owner feedback, verbatim in spirit**: "I expected to see a different, new look and I'm disappointed because everything looks the same." Root cause, already implicit in the Task 12 record: Task 12 §4 deliberately scoped ArtConnect as a **structural** reference only (tabs, search-then-detail flow) and explicitly kept "Fellow.'s locked accent (`#B39DFF`), typography, and copy voice... as-is" (`docs/PILOT_PLAN.md`'s own pivot note, quoted there). Tasks 07/09/11/14 shipped exactly that scope — new screen structures, zero new colors/type/spacing — so the owner's disappointment is a correct read of what was actually authorized, not a missed instruction. The owner has now explicitly widened the authorization to include genuine visual values, not just structure.
+
+- **Created `docs/tasks/TASK_19_visual_identity_refresh.md`** (Frontend Engineer, gated on a ux-ui-designer research/spec deliverable per the task's own §1) — scoped strictly through the existing `app/globals.css` token system (`AGENTS.md` rule 7 stays fully in force: new *values*, never new token names, never inline styles, never a second styling system). Explicitly reopens the "Task 07 — accent rule, final" ruling on `--accent` and its closed-list-of-signals rule for reconsideration, per the owner's direct instruction — that ruling is not silently overridden here; the ux-ui-designer is asked to re-derive or re-confirm it with reasoning, not to inherit it as untouchable. Per this department's own scope ("you're not a designer"), the task file does not prescribe new colors/fonts/spacing itself — it names the research deliverable and gates implementation on it, the same pattern already used for Task 07 §5b/§6/§7 and Task 11/14's ux-ui-designer-spec dependencies.
+- **Created `docs/tasks/TASK_20_market_reassignment_cleanup.md`** (Backend/Data Engineer) — a live-data `UPDATE` correcting pre-existing `sources` rows that were mis-tagged `market='tel_aviv'` before `jerusalem`/`haifa` existed as markets (discovered during today's Israel-pilot direct-insert work), with their real city only ever recorded in free-text `notes`. Scoped narrowly: identify by querying `notes` for city mentions, classify by confidence, correct only the confident cases, leave ambiguous rows untouched, and log the full before/after row list in `docs/DECISIONS.md` for auditability — the same standard already applied to today's direct-insert batch. Explicitly not a migration (no schema change, no new column/table) and explicitly not a Sheet edit (these rows predate the Sheet+sync pipeline ever having Jerusalem/Haifa as valid markets, so there's nothing there to reconcile — flagged as a possible follow-up for whoever next reconciles the Sheet, not done as part of this task).
+- **Numbering**: the next literal free file number was 15, but `docs/ROADMAP.md` §3 already earmarks 15–18 for specific, named future features (Pipeline v2, Peer calls, Intros, Weekly digest — several still blocked by `AGENTS.md` rule 10). Reusing those numbers for an unrelated visual-refresh task and a data-cleanup task would corrupt that existing reservation and confuse anyone reading the ledger later. Used **19** and **20** instead — the next numbers not already spoken for by any existing task file or roadmap placeholder.
+- **QA re-audit directive** logged separately, immediately above this entry, per the owner's explicit ask for a deeper double-check of everything shipped today (Tasks 07–14 plus today's direct data insert) — not folded into either new task file, since it's a verification directive for `qa-release`'s next dispatch, not a coding task with its own scope.
+- **`docs/ROADMAP.md` and `docs/PILOT_PLAN.md` updated in the same pass** to list Tasks 19 and 20 and to flag that the Task 12/PILOT_PLAN.md "locked accent" language is now explicitly reopened by Task 19 — see each file's own edits, not duplicated here.
+- **No AGENTS.md hard-rule conflict found**: Task 19 stays inside rule 7 (token values, not new tokens/bypass); Task 20 is a plain `UPDATE` on an existing column of an existing row, not a `DROP`/`DELETE`/destructive `ALTER` (rule 6 governs `supabase/migrations/`, which this task never touches), and does not fabricate a city for any row it can't confidently determine (rule 1). Nothing here required flagging an objection.
+
+## Task 20 — market reassignment cleanup (2026-09-18)
+
+**Query run (read-only, live DB, via `npx supabase db query --linked`)**:
+
+```sql
+select source_id, name, market, notes
+from public.sources
+where market = 'tel_aviv'
+  and (notes ilike '%jerusalem%' or notes ilike '%haifa%')
+order by source_id;
+```
+
+Returned **12 candidate rows** (owner's "~20+" estimate was too high — reported as-is, not treated as an error). Re-ran the identical query a second time immediately before deciding on the write, to check nothing shifted mid-session: same 12 rows, same `market` values, both times.
+
+**Classification (read every row's actual `notes` text, no pattern-matching on the word alone)**:
+
+*Bucket 1 — confidently Jerusalem (9 rows, notes literally contain `city: Jerusalem`)*:
+| source_id | name | notes excerpt |
+|---|---|---|
+| SRC164 | Machol Shalem Dance House (MASH) | "...2026 season open call live \| city: Jerusalem" |
+| SRC165 | Barbur Gallery | "...multidisciplinary art and performance \| city: Jerusalem · orig type: space" |
+| SRC166 | Mamuta Art and Research Center | "...video/sound/electronics labs \| city: Jerusalem" |
+| SRC171 | Manofim | "Jerusalem's largest contemporary-art festival...\| city: Jerusalem" |
+| SRC172 | Musrara Mix Festival | "Naggar Musrara School's annual...festival...\| city: Jerusalem" |
+| SRC173 | Jerusalem Season of Culture / Mekudeshet | "City-specific cross-disciplinary festival...\| city: Jerusalem" |
+| SRC174 | Harama Magazine | "...journal produced by Manofim...\| city: Jerusalem · orig type: magazine" |
+| SRC178 | The Interdisciplinary Arena (Hazira) | "UNVERIFIED; contact office@hazira.org.il...\| city: Jerusalem" |
+| SRC185 | Jerusalem Biennale | "...Distinct from Manofim (SRC126). \| city: Jerusalem" |
+
+*Bucket 2 — confidently Haifa (2 rows, notes literally contain `city: Haifa`)*:
+| source_id | name | notes excerpt |
+|---|---|---|
+| SRC180 | Beit HaGefen — Arab-Jewish Cultural Center | "...Fills the Haifa gap. \| city: Haifa" |
+| SRC181 | Rondel Festival | "Annual urban-arts weekend across Hadar/Wadi Nisnas/Wadi Salib/German Colony...\| city: Haifa" |
+
+*Bucket 3 — checked, left unchanged, insufficient evidence (1 row)*:
+| source_id | name | reason |
+|---|---|---|
+| SRC176 | America-Israel Cultural Foundation (AICF) | notes literally say `city: Tel Aviv / Jerusalem` — both cities listed, no single unambiguous city; description is a US-based funder ("funding Israeli artists across disciplines"), not tied to one physical location. Left as `tel_aviv`, not guessed. |
+
+No row in this candidate set clearly indicated any other Israeli city (Be'er Sheva, Herzliya, Holon, Akko, Eilat, Ramat Gan, Rishon LeZion, Nazareth) — no "other city" bucket needed.
+
+**`opportunities` cross-check (same root cause, same pattern)**:
+
+```sql
+select opp_id, title, city, source_id
+from public.opportunities
+where city = 'tel_aviv'
+  and source_id in ('SRC164','SRC165','SRC166','SRC171','SRC172','SRC173','SRC174','SRC176','SRC178','SRC180','SRC181','SRC185');
+```
+
+Returned **zero rows** — none of these 12 sources has an `opportunities.city='tel_aviv'` row. No `opportunities` update needed or attempted.
+
+**Row counts before any write** (to be re-checked after, once the UPDATE runs): `select count(*) from opportunities;` → **60**. `select count(*) from events;` → **28**.
+
+**UPDATE — prepared but NOT executed in this session.** Per this department's own standing rule ("before running any migration or schema change against the linked live project, say exactly what will run and get confirmation — this is a shared production database, not a scratch environment") and this task file's own explicit contingency ("if you hit the classifier block, stop, write the exact SQL to a file, report back that the owner needs to run it"), this session treated the task-runner's dispatch of this task file as instruction to prepare and verify the change, not as the owner's own live-write confirmation. The owner was reported away from his desk (~3 hours) at dispatch time, so no such confirmation was obtainable in-session. The exact, ready-to-run SQL — the two `UPDATE` statements below, plus before/after verification queries — is saved at `task20_market_reassignment_update.sql` in the repo root (same pattern as `israel_pilot_data_insert.sql`) for the owner to run directly via the Supabase SQL Editor or `npx supabase db query --linked`, or to explicitly authorize in a follow-up message:
+
+```sql
+UPDATE public.sources
+SET market = 'jerusalem'
+WHERE source_id IN ('SRC164', 'SRC165', 'SRC166', 'SRC171', 'SRC172', 'SRC173', 'SRC174', 'SRC178', 'SRC185');
+
+UPDATE public.sources
+SET market = 'haifa'
+WHERE source_id IN ('SRC180', 'SRC181');
+```
+
+Re-verification query to run immediately before applying (confirm the same 12 rows/values still hold, in case anything changed since 2026-09-18):
+
+```sql
+select source_id, name, market, notes
+from public.sources
+where market = 'tel_aviv'
+  and (notes ilike '%jerusalem%' or notes ilike '%haifa%')
+order by source_id;
+```
+
+Post-update verification query:
+
+```sql
+select source_id, name, market from public.sources
+where source_id IN ('SRC164','SRC165','SRC166','SRC171','SRC172','SRC173','SRC174','SRC176','SRC178','SRC180','SRC181','SRC185')
+order by source_id;
+```
+Expected result: SRC164/165/166/171/172/173/174/178/185 → `jerusalem`; SRC180/181 → `haifa`; SRC176 → unchanged, `tel_aviv`.
+
+Then confirm `opportunities`/`events` row counts are still 60/28 (unchanged — this task never writes to either table).
+
+**No `supabase/migrations/*.sql` file was added** — this is a live-data correction on existing rows, not a schema change, per the task's own §0 and §5. **The Google Sheet was not touched.** Noted in `docs/OWNER_TASKS.md` as a follow-up: if the Sheet's own `sources` tab has the same 12 (or a subset of the) mis-tagged rows, that's a separate reconciliation task for whoever next syncs the Sheet — not checked or edited here, per the task's explicit scope.
+
+## QA re-audit findings, 2026-09-18 (deeper double-check pass) — two items logged, not yet fixed
+
+1. **`opp-il-2026-005` (Jerusalem International Choreography Competition) has an internally inconsistent deadline.** Its `deadline` is `2026-06-15` (a past cycle's date, carried over from the original research), but the row's own linked events (`evt-il-2026-002`/`evt-il-2026-003`, December 2026) and its `expected_next_open` (`2027-06-01`) both point to a different cycle. Harmless today — the row is `status='draft'` and confirmed excluded from `hub_feed` (verified: 0 rows) — but whoever verifies this row before promoting it to `live` must correct the deadline first, or the sync script's own housekeeping (`status='expired' WHERE deadline < current_date`) will flip it the moment it's promoted.
+2. **Desktop (≥1280px) is not a "not yet redesigned" gap — QA screenshotted it and found a fixed ~470px mobile-width column pinned to the left of an otherwise-empty black viewport on `/hub`, `/sources`, and an opportunity detail page.** Nothing errors, but it reads as unfinished rather than deliberately mobile-first. This needs an explicit decision (ship mobile-only for the pilot vs. budget a minimal responsive pass) rather than staying an unnoticed void. Folded into Task 19's implementation scope as a companion fix, since both touch global layout — see Task 19.
+3. **Cosmetic**: the demo opportunity `/opportunities/demo-tokyo-site-specific-sound` renders an "Apply" button reading "Apply on cue-radar.vercel.app" — satisfies AGENTS.md rule 1 literally (demo `apply_url` does route to `/demo`) but leaks the pre-rebrand domain name into a customer-facing button. Low priority, noted for whoever next touches demo seed content.
+4. Task 09 §8 and Task 14 §6 verification `grep` commands were re-pointed at the actual file containing the checked links (`components/hub/OpportunityDetailView.tsx`) — both previously pointed at `app/opportunities/[slug]/page.tsx`, a thin wrapper that doesn't contain the checked strings, so the commands passed for the wrong reason. Fixed directly in both task files; no application code changed, the underlying feature was already correct.
+
+## Task 19 — visual identity refresh, implemented (2026-09-18)
+
+Implemented exactly what `docs/design/VISUAL_IDENTITY_REFRESH_SPEC.md` (§3.1, §3.3) specified, once that spec was committed. Two one-line edits in `app/globals.css`:
+
+- `--accent`: `#B39DFF` → `#AA80FF`.
+- `.t-title` (`@layer components`): removed `text-transform: uppercase;`. Everything else in the rule (Archivo, weight 800, `letter-spacing: -0.02em`, `line-height: 1.0`, the 22px/28px responsive size step) is unchanged. `.t-display` (landing hero, `Currently`/Circuit header) was not touched and stays uppercase, per the spec's explicit instruction to keep it as the one reserved loud element.
+
+**Contrast re-verification** (same relative-luminance method as the Task 03/spec precedent, re-checked directly against the shipped code rather than just trusting the spec's numbers):
+- `#AA80FF` text on `--bg` (`#0A0A0A`): **6.8:1** — passes AA (4.5:1) and AA-large/UI (3:1); just under AAA's 7:1.
+- `#AA80FF` text on `--surface` (`#111111`): **6.5:1** — passes AA.
+- `--bg` text on `#AA80FF` fill (`bg-accent text-bg`, the primary-button case in `components/ui/Button.tsx`): same pair, symmetric ratio, **6.8:1** — passes AA.
+- Grepped every current `text-accent`/`border-accent`/`bg-accent` usage (`components/profile/FollowButton.tsx`, `components/hub/OpportunityDetailView.tsx`, `components/sources/SourceDetailView.tsx`, `components/hub/SaveOpportunityButton.tsx`, `components/hub/OpportunityRow.tsx`, `components/ui/Chip.tsx`, `components/ui/Button.tsx`, `components/hub/EmptyState.tsx`) — every one sits on `--bg` or `--surface`, or is the `bg-accent`/`text-bg` fill case. No new pairing outside the three already computed above was found, so no additional pairing needed logging.
+
+**Closed list of 5 accent signals**: left exactly as-is per the spec's ruling (§3.1) — same mechanism, same five meanings (primary action fill, differentiator chip, eligibility confirmation, Follow/Following, recurrence-forecast month), only the underlying hex value changed. No component gating logic needed to change since the list itself didn't change.
+
+**`.t-title` usage audit** (`grep -rl "t-title" app components` — 15 files, matching the spec's own count): all page/section headers already carried correctly-cased text in JSX (`"Discover"`, `"Sources"`, `"Sign in"`, `"Opportunities"`, `"Saved calls"`, `"Create an account"`, `"Page not found"`, `"Privacy"`, `"Profile"`, institution names, initials) — CSS was doing the uppercasing, not the markup, so removing the property was a pure visual change with zero code edits needed anywhere, exactly as the spec predicted (§5/§6). Two usages that must **stay** visually uppercase (`app/page.tsx`'s wordmark lockup, `components/brand/IntroSplash.tsx`'s lockup) already had an explicit Tailwind `uppercase` utility class alongside `.t-title` in the JSX, independent of the CSS rule — confirmed both still render uppercase after the change (screenshot-verified).
+
+**Verified in a running preview** at 390px and 1280px: `/`, `/hub`, an opportunity detail page, `/sources`, a source detail page — mixed-case titles, more saturated violet accent on chips/buttons, no contrast or readability regression. `/discover` and `/a/[handle]` were not separately screenshotted in this pass since they carry no component-level change beyond the same two token edits already verified elsewhere (per the spec's own per-screen table, §5) and are not part of this round's other two work items.
