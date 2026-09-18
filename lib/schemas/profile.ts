@@ -27,6 +27,7 @@ export const profileSchema = z.object({
     .or(z.literal(''))
     .optional(),
   is_public: z.boolean().default(false),
+  gallery: z.array(z.string()).max(6, 'Up to 6 gallery photos').default([]),
 })
 
 export type ProfileFormData = z.infer<typeof profileSchema>

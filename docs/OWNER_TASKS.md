@@ -139,6 +139,18 @@ Urgent fix (not tied to a numbered task): `app/auth/callback/route.ts` gates new
 
 **Action needed**: during your real signup test, after landing on `/profile/edit?welcome=1`, confirm the new "Disciplines" chip picker renders with real values, selecting one or more and saving works, and that signing out/in (or just reloading `/profile/edit`) no longer shows the welcome banner. If it still loops, that's a live bug worth reporting back immediately.
 
+### Step 4m: Action needed before merging — `profiles.gallery` column does not exist yet (2026-09-18)
+
+A gallery-photo-upload feature was added to `components/profile/ProfileForm.tsx` (multi-image upload into the existing `avatars` Storage bucket, up to 6 photos, with remove). It wires `gallery: string[]` into the same single `profiles` `UPDATE` call as every other profile field. **The `profiles` table has no `gallery` column in any of `supabase/migrations/0001`–`0007`** — this was never added, only ever planned as a dev-preview fixture field (see `lib/types.ts`'s prior comment on `ProfileView.gallery`).
+
+**This means: until a migration adds `profiles.gallery TEXT[] DEFAULT ARRAY[]::TEXT[]`, saving a profile edit of any kind (not just gallery — bio, handle, disciplines, anything) will fail for every signed-in user**, because Postgrest will reject the whole `UPDATE` with a "column profiles.gallery does not exist" error the moment this branch reaches a real Supabase project. Per this repo's standing rule (`AGENTS.md` rule 6), writing that migration is Backend/Data Engineer scope, not something done unprompted in this pass — full reasoning in `docs/DECISIONS.md`, "Gallery photo upload — ProfileForm."
+
+**What to do**: before merging/deploying this branch, get a small additive migration written and applied — `ALTER TABLE public.profiles ADD COLUMN IF NOT EXISTS gallery TEXT[] DEFAULT ARRAY[]::TEXT[];` — via the Backend/Data Engineer or the Supabase SQL Editor. Confirm afterward with:
+```sql
+select column_name, data_type from information_schema.columns where table_name = 'profiles' and column_name = 'gallery';
+```
+which should return one row (`gallery`, `ARRAY`). Do not merge this branch to `main`/deploy to production before that column exists, or every profile save will break.
+
 ### Step 4: Google Service Account & Sheet Setup
 1. Create a Google Cloud Service Account and download its JSON key.
 2. Store the JSON key contents in GitHub Secret `GOOGLE_SERVICE_ACCOUNT_JSON`.

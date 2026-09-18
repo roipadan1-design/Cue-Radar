@@ -82,6 +82,13 @@ export interface Profile {
   is_public: boolean
   created_at?: string
   updated_at?: string
+  // NOTE: no `gallery` column exists on the real `profiles` table yet (checked
+  // supabase/migrations/0001-0007 directly — it was never added). This field is wired
+  // through ProfileForm/PublicProfileView so the UI is ready, but saving a profile that
+  // includes gallery data will fail against the live database until a Backend/Data
+  // Engineer migration adds `profiles.gallery TEXT[]`. See docs/DECISIONS.md and
+  // docs/OWNER_TASKS.md for the flagged follow-up.
+  gallery?: string[]
 }
 
 export interface ProfileWork {
@@ -95,11 +102,6 @@ export type ProfileView = Profile & {
   active_since: number | null
   languages: string[]
   works: ProfileWork[]
-  // Preview-only for now: no `gallery` column exists on the real `profiles` table yet
-  // (see docs/ROADMAP.md Task 09). Populated by the dev-only demo fixture
-  // (data/seed/profile_demo.json) so PublicProfileView can render a real gallery grid
-  // in /dev/preview/profile. Safe to leave undefined for real profiles.
-  gallery?: string[]
 }
 
 export interface EventRow {
