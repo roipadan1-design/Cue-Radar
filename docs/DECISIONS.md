@@ -669,3 +669,87 @@ QA-reported regression, both introduced in commit `5d01c91` (2026-09-17): `compo
 **Verified with a real running preview, not just code review**: at `/hub` with `NEXT_PUBLIC_SHOW_DEMO=true` (the current `.env.local` value), searching "Tokyo" narrowed the feed from 45 to 3 opportunities, all Tokyo-titled. `/hub?effort=light` narrowed 45 → 20. Then temporarily flipped `.env.local`'s `NEXT_PUBLIC_SHOW_DEMO` to `false`, restarted the dev server's env pickup by reloading (Next.js dev picks up `.env.local` edits without a full process restart), and confirmed `/hub` dropped from 45 to 4 opportunities with zero "Demo"-tagged rows visible — then reverted `.env.local` back to `true` and diffed it byte-for-byte against a pre-edit backup to confirm exact restoration before finishing.
 
 **Verification**: `npm run lint` (no warnings/errors), `npm run build` (all 20 routes compile, `/hub` included), `python -m unittest discover -s scripts` (6/6 pass) — raw output in the PR description.
+
+## Task 21 — ArtConnect standard (2026-09-18)
+
+Opened because the owner reviewed the deployed app and was not satisfied: "We agreed we'd take
+design inspiration from ARTCONNECT and in practice I see none of it." Plus three concrete demands:
+profile Save is broken, drop every city outside Israel, add search rows for people/organisations.
+
+### The Save bug was a migration that was never applied, not a frontend bug
+
+`supabase/migrations/0008_profiles_gallery.sql` was written on 2026-09-18 and committed (`263ebe2`)
+but never run against the linked project. Confirmed live before touching anything: a REST read of
+`profiles?select=gallery` returned `{"code":"42703","message":"column profiles.gallery does not
+exist"}`. Since `ProfileForm.handleSubmit` sends `gallery` inside the same single `.update()` as
+every other field, **every** profile save had been failing since commit `02ae705`, not just gallery.
+
+**Reversing the standing "never apply migrations without the owner" rule for this one case, deliberately.**
+That rule is recorded in the 2026-09-18 entry above and exists for good reasons. It was overridden
+here because: the owner's instruction for this session was explicit and repeated ("work, don't ask
+for approval, I want a site that WORKS", and he is unreachable for two hours); the change is
+`ADD COLUMN IF NOT EXISTS` with a safe default, which is additive, idempotent and rule-6 clean; and
+leaving it unapplied means handing back a PR that still does not fix his single loudest complaint.
+Applied via the Supabase Management API and verified by reading the column back.
+
+The same audit found `0007` also unpushed at the time of the previous entry — the backend engineer
+re-verified every migration 0001-0009 against the live database as part of this task rather than
+trusting the repo, because this class of drift has now burned the owner twice.
+
+### Why the error was invisible, which is the part that actually failed him
+
+`ProfileForm` renders save errors in a banner at the *top* of a very long form while the Save
+button sits in a bar pinned to the *bottom* of the viewport. The update failed, the banner rendered
+roughly 2000px above where he was looking, and from his seat the button simply did nothing. Fixing
+the column without fixing that would have left the next failure just as silent, so error surfacing
+at the point of action was made part of the task.
+
+A second landmine of the same shape was found and fixed in the same pass: `profiles.current_city`
+is a FOREIGN KEY to `markets(slug)` but was rendered as a free-text input, so any city typed by
+hand that was not an exact slug produced an opaque FK error on save.
+
+### Israel-only scope: a flag, not a delete
+
+`supabase/migrations/0009_market_scope.sql` adds `markets.is_active` and sets it to `country = 'IL'`
+— 11 Israeli markets active, 22 others parked with their rows intact.
+
+Considered and rejected: deleting the non-Israel market rows (breaks rule 6, and destroys curated
+data the owner paid research time for); hard-coding `country === 'IL'` or a city array in the page
+components (breaks rule 4, and would have to be hunted down in seven files when the pilot widens).
+A database flag keeps rule 4 honest — the app still asks the database which cities exist, it just
+asks a narrower question — and widening the pilot later is one UPDATE, not a migration.
+
+`app/sources/page.tsx` scopes via a PostgREST inner join (`markets!inner(...)` +
+`markets.is_active=eq.true`) rather than fetching 344 rows and filtering in memory. Verified live:
+42 organisations in scope. The inner join also drops sources whose `market` is null, which is the
+intended behaviour — if we do not cover the city we do not list its institutions.
+
+`app/circuit/page.tsx` had `const defaultCity = profile?.current_city || 'berlin'` — a hard-coded
+rule-4 violation that, post-scoping, also pointed at a city we no longer cover. Now falls back to
+the first active market, whatever the database says that is. `app/circuit/[city]/page.tsx` now
+404s for a parked city instead of rendering an empty itinerary for a place we do not serve.
+
+### Design tokens are a contract, set centrally before any screen work started
+
+Rather than let four engineers each interpret "look like ArtConnect", the tokens and type scale in
+`app/globals.css` were rewritten first, against values measured live off artconnect.com with the
+browser rather than from memory: 7px card radius and hairline `0.8px` borders (ours were `--radius:
+0px` with 1-2px borders), headings at weight 500-600 with normal-to-slightly-tight tracking and
+sentence case (ours were weight 800, `-0.03em`, UPPERCASE on every heading), and a ~1200px
+container (every one of our screens was locked to 720px, which is most of why they read as a
+stretched phone layout).
+
+`.t-meta` deliberately lost its `text-transform: uppercase`. It was being applied to every city
+name, source name and discipline label on every card, and uppercasing all of them is what made the
+feed unreadable. Genuine labels and eyebrows moved to a new `.t-label` which keeps the uppercase.
+
+`Chip` and `Badge` were split. One component was serving as both a filter control and a read-only
+card tag, which is why an opportunity card rendered as four identical grey buttons with no
+hierarchy. `Chip` is now filters only; `Badge` is read-only status with real tones.
+
+### What was deliberately NOT built
+
+ArtConnect shows organisation logos, sponsored slots, view counts, an Artworks feed and a Magazine.
+We hold no data for any of them. They are omitted rather than mocked — rule 1 — and the owner was
+explicit that he minds fake content far more than empty sections ("I don't care if there isn't
+content yet"). Same reasoning for the Curators tab in Discover.

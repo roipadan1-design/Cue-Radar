@@ -52,13 +52,13 @@ export default function SourceDetailView({
   const hasArchiveContent = liveRows.length > 0 || closedRows.length > 0
 
   return (
-    <div className="max-w-[720px] mx-auto px-4 md:px-6 py-6">
+    <div className="container-page py-8">
       {/* Back link — page-level nav, same position/weight as OpportunityDetailView's
           own back link, so it stays reachable regardless of which tab is active. */}
       {sourcesDirectoryLive && (
         <div className="mb-4">
           <Link href="/sources" className="t-meta text-muted hover:text-fg transition-colors">
-            ← Sources
+            ← Organisations
           </Link>
         </div>
       )}
@@ -70,8 +70,10 @@ export default function SourceDetailView({
           role="tab"
           aria-selected={activeTab === 'overview'}
           onClick={() => setActiveTab('overview')}
-          className={`min-h-[44px] px-3 t-meta rounded-t-[var(--radius)] ${
-            activeTab === 'overview' ? 'bg-fg text-bg' : 'text-muted hover:text-fg'
+          className={`min-h-[44px] px-1 mr-5 text-[15px] font-semibold border-b-2 -mb-px transition-colors ${
+            activeTab === 'overview'
+              ? 'border-fg text-fg'
+              : 'border-transparent text-muted hover:text-fg'
           }`}
         >
           Overview
@@ -81,8 +83,10 @@ export default function SourceDetailView({
           role="tab"
           aria-selected={activeTab === 'archive'}
           onClick={() => setActiveTab('archive')}
-          className={`min-h-[44px] px-3 t-meta rounded-t-[var(--radius)] ${
-            activeTab === 'archive' ? 'bg-fg text-bg' : 'text-muted hover:text-fg'
+          className={`min-h-[44px] px-1 mr-5 text-[15px] font-semibold border-b-2 -mb-px transition-colors ${
+            activeTab === 'archive'
+              ? 'border-fg text-fg'
+              : 'border-transparent text-muted hover:text-fg'
           }`}
         >
           Past &amp; open calls

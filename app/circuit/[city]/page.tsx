@@ -56,10 +56,14 @@ export default async function CircuitCityPage(props: PageProps) {
 
   const supabase = await createClient()
 
+  // Scoped to active markets (migration 0009): a city parked outside the pilot
+  // must 404 rather than render an empty day-by-day page for a place we do not
+  // cover. The flag is read from the database, never a country list in code.
   const { data: market } = await supabase
     .from('markets')
     .select('*')
     .eq('slug', citySlug)
+    .eq('is_active', true)
     .maybeSingle()
 
   if (!market) {
@@ -129,7 +133,7 @@ export default async function CircuitCityPage(props: PageProps) {
   const dayCount = computeDayCount(from, to)
 
   return (
-    <div className="max-w-[720px] mx-auto px-4 md:px-6 py-8 pb-24">
+    <div className="container-reading py-8 pb-24">
       <div className="mb-[32px] flex flex-col">
         <Link href="/circuit" className="t-meta text-muted hover:text-fg transition-colors">
           ← Currently

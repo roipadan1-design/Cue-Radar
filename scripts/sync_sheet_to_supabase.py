@@ -19,7 +19,7 @@ from datetime import datetime
 VALID_VOCAB_CATEGORIES = {"type", "discipline", "funding_type", "covers", "career_stage", "region", "event_type"}
 
 ALLOWED_COLUMNS = {
-    "markets": {"slug", "display_name", "country", "region", "timezone", "currency", "lat", "lng"},
+    "markets": {"slug", "display_name", "country", "region", "timezone", "currency", "lat", "lng", "is_active"},
     "vocab": {"category", "value", "label", "sort_order"},
     "sources": {
         "source_id", "name", "source_type", "market", "discipline_focus",
@@ -38,6 +38,31 @@ ALLOWED_COLUMNS = {
         "event_id", "market", "venue_name", "title", "event_type",
         "disciplines", "date", "time", "price_min", "ticket_url", "lat", "lng"
     }
+}
+
+# Task 21 (Israel-only pilot): `markets.is_active` is a pilot-scope flag owned
+# by this script (supabase/migrations/0009_market_scope.sql adds the column
+# and sets the initial Israel-only values, but from here on the sync script is
+# the writer, per AGENTS.md rule 5). It is deliberately NOT a normal synced
+# column: for every other column in ALLOWED_COLUMNS, a blank/missing Sheet
+# cell is synced as an explicit NULL (see filter_columns), which is correct
+# for descriptive fields but would be actively dangerous for is_active — a
+# Sheet tab that doesn't have an "is_active" column at all (the common case
+# today) would otherwise upsert every market back toward some default on
+# every scheduled run, silently undoing the Israel-only scope.
+#
+# So a column listed here is "sparse": filter_columns only puts the key in a
+# row's upsert payload when the Sheet actually provided a real value for that
+# specific row. When the Sheet has no opinion (no column, or a blank cell),
+# the key is omitted from that row's JSON object entirely. Supabase/PostgREST
+# upsert (Prefer: resolution=merge-duplicates) only assigns columns that are
+# present in the request body, so an omitted key leaves the market's current
+# `is_active` value in the database untouched rather than resetting it to the
+# column's schema default (true). This is how a market that was previously
+# flipped to is_active = false (e.g. every non-Israel market) survives a sync
+# run even when the Sheet never mentions it.
+SPARSE_OPTIONAL_COLUMNS = {
+    "markets": {"is_active"},
 }
 
 TAB_GIDS = {
@@ -64,6 +89,19 @@ def validate_rows(tab_name: str, rows: List[Dict[str, Any]]) -> Tuple[List[Dict[
                 continue
             row["lat"] = float(row.get("lat") or 0.0)
             row["lng"] = float(row.get("lng") or 0.0)
+
+            # is_active: only interpret a real Sheet value. If the tab has no
+            # is_active column, or this row's cell is blank, do NOT set the
+            # key at all -- leave it absent so filter_columns (see
+            # SPARSE_OPTIONAL_COLUMNS) omits it from the upsert payload and
+            # the market's existing DB value (e.g. is_active = false for a
+            # parked non-Israel market) is preserved rather than clobbered.
+            raw_is_active = row.get("is_active")
+            if raw_is_active in (None, ""):
+                row.pop("is_active", None)
+            else:
+                row["is_active"] = str(raw_is_active).strip().upper() in ("TRUE", "1", "YES")
+
             valid_rows.append(row)
 
         elif tab_name == "vocab":
@@ -179,10 +217,20 @@ def filter_demo_rows(rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
 
 def filter_columns(tab_name: str, rows: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     allowed = ALLOWED_COLUMNS.get(tab_name, set())
+    sparse = SPARSE_OPTIONAL_COLUMNS.get(tab_name, set())
     filtered = []
     for r in rows:
         row_dict = {}
         for col in allowed:
+            if col in sparse:
+                # Sparse/optional: only include this key when the row
+                # actually carries a value (validate_rows pops it when the
+                # Sheet had nothing to say). Omitting the key -- instead of
+                # sending it as an explicit None -- is what lets the upsert
+                # leave the existing DB value alone. See SPARSE_OPTIONAL_COLUMNS.
+                if col in r:
+                    row_dict[col] = r[col]
+                continue
             val = r.get(col)
             if val == "":
                 row_dict[col] = None
@@ -190,6 +238,30 @@ def filter_columns(tab_name: str, rows: List[Dict[str, Any]]) -> List[Dict[str, 
                 row_dict[col] = val
         filtered.append(row_dict)
     return filtered
+
+
+def partition_by_keys(rows: List[Dict[str, Any]]) -> List[List[Dict[str, Any]]]:
+    """Group rows into batches that each have an identical set of JSON keys.
+
+    Needed because of SPARSE_OPTIONAL_COLUMNS: within one tab's sync, some
+    rows may carry an optional column (e.g. a market row where the Sheet set
+    is_active) and others may not (the key is omitted entirely). Supabase/
+    PostgREST's bulk upsert requires every object in one POSTed JSON array to
+    have the same keys ("All object keys must match"), so mixed-shape rows
+    must be split into separate upsert calls, not sent in one batch. For
+    every tab that has no sparse columns, this is a no-op: all rows share the
+    same keys and stay in a single group, same as before this function
+    existed.
+    """
+    groups: Dict[frozenset, List[Dict[str, Any]]] = {}
+    order: List[frozenset] = []
+    for r in rows:
+        key = frozenset(r.keys())
+        if key not in groups:
+            groups[key] = []
+            order.append(key)
+        groups[key].append(r)
+    return [groups[k] for k in order]
 
 def post_upsert(supabase_url: str, supabase_key: str, tab_name: str, rows: List[Dict[str, Any]]) -> None:
     if not rows:
@@ -271,7 +343,11 @@ def main():
 
         if not args.dry_run:
             try:
-                post_upsert(supabase_url, supabase_key, tab_name, cleaned_rows)
+                # Split into key-homogeneous groups before posting -- see
+                # partition_by_keys' docstring. Required now that markets
+                # rows can have or lack the sparse `is_active` key row-by-row.
+                for group in partition_by_keys(cleaned_rows):
+                    post_upsert(supabase_url, supabase_key, tab_name, group)
                 print(f"Upserted {len(cleaned_rows)} rows into {tab_name}.")
             except Exception as e:
                 print(f"Error upserting {tab_name}: {e}")

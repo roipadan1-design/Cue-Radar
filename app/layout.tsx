@@ -7,15 +7,17 @@ import { BRAND } from '@/lib/brand'
 import { createClient } from '@/lib/supabase/server'
 import './globals.css'
 
+// 500/600 carry the new heading scale (see app/globals.css). 800 is kept only for
+// the wordmark lockup; nothing else on the site is that heavy any more.
 const archivo = Archivo({
   subsets: ['latin'],
-  weight: ['800'],
+  weight: ['500', '600', '700', '800'],
   variable: '--font-display',
 })
 
 const manrope = Manrope({
   subsets: ['latin'],
-  weight: ['400', '500', '600'],
+  weight: ['400', '500', '600', '700'],
   variable: '--font-body',
 })
 

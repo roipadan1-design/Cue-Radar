@@ -82,12 +82,8 @@ export interface Profile {
   is_public: boolean
   created_at?: string
   updated_at?: string
-  // NOTE: no `gallery` column exists on the real `profiles` table yet (checked
-  // supabase/migrations/0001-0007 directly — it was never added). This field is wired
-  // through ProfileForm/PublicProfileView so the UI is ready, but saving a profile that
-  // includes gallery data will fail against the live database until a Backend/Data
-  // Engineer migration adds `profiles.gallery TEXT[]`. See docs/DECISIONS.md and
-  // docs/OWNER_TASKS.md for the flagged follow-up.
+  // `profiles.gallery TEXT[]` — added by supabase/migrations/0008_profiles_gallery.sql
+  // and applied to the live database (Task 21). Wired through ProfileForm/PublicProfileView.
   gallery?: string[]
 }
 

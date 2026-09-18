@@ -1,6 +1,14 @@
 import React from 'react'
 import Link from 'next/link'
 
+/**
+ * Filter control. Chip is now *only* a filter — the read-only tags it used to
+ * double as on cards are `Badge`. Keeping one component for both is what made
+ * every opportunity card look like a row of identical grey buttons.
+ *
+ * The 44px min-height is retained for touch targets, but chips are no longer
+ * uppercase (see the .t-meta note in app/globals.css).
+ */
 interface ChipProps {
   tone?: 'neutral' | 'accent' | 'urgent'
   active?: boolean
@@ -21,15 +29,15 @@ export default function Chip({
   title,
 }: ChipProps) {
   const baseClasses =
-    'inline-flex items-center justify-center px-2.5 py-1.5 t-meta text-[11px] border rounded-[var(--radius)] transition-colors min-h-[44px] shrink-0 font-medium cursor-pointer'
+    'inline-flex items-center justify-center gap-1.5 px-3 h-9 min-h-[36px] text-[14px] font-medium border rounded-[var(--radius-pill)] transition-colors shrink-0 cursor-pointer whitespace-nowrap'
 
   const activeClasses = active
     ? 'bg-fg text-bg border-fg'
     : tone === 'urgent'
-    ? 'border-urgent text-urgent'
+    ? 'border-urgent text-urgent hover:bg-surface-2'
     : tone === 'accent'
-    ? 'border-accent text-accent'
-    : 'border-line-strong text-muted hover:border-fg hover:text-fg'
+    ? 'border-accent text-accent hover:bg-surface-2'
+    : 'border-line-strong text-fg-soft hover:border-fg hover:text-fg'
 
   const combined = `${baseClasses} ${activeClasses} ${className}`.trim()
 

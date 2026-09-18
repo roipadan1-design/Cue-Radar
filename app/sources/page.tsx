@@ -23,10 +23,17 @@ export default async function SourcesPage(props: SourcesPageProps) {
 
   const supabase = await createClient()
 
+  // `markets!inner(...)` + `markets.is_active` scopes the directory to the pilot
+  // (Israel-only right now) inside the same round-trip, instead of fetching 344
+  // rows and discarding most of them. An inner join also drops the handful of
+  // sources whose market is null or points at a parked city, which is the
+  // correct behaviour: if we are not covering the city, we are not listing its
+  // institutions. See supabase/migrations/0009_market_scope.sql.
   let sourcesQuery = supabase
     .from('sources')
-    .select('*, markets(display_name)')
+    .select('*, markets!inner(display_name, is_active)')
     .eq('status', 'active')
+    .eq('markets.is_active', true)
     .order('name', { ascending: true })
 
   if (q) {
@@ -45,11 +52,22 @@ export default async function SourcesPage(props: SourcesPageProps) {
     { data: sourcesData, error },
     { count: allCount },
   ] = await Promise.all([
-    // Rule 4: dynamic, no hardcoding — markets/vocab come from the database
-    supabase.from('markets').select('*').order('display_name', { ascending: true }),
+    // Rule 4: dynamic, no hardcoding — markets/vocab come from the database.
+    // `is_active` scopes the pilot (Israel-only right now, see migration 0009);
+    // the flag lives in the database precisely so no country or city list ever
+    // gets written into a .tsx file.
+    supabase
+      .from('markets')
+      .select('*')
+      .eq('is_active', true)
+      .order('display_name', { ascending: true }),
     supabase.from('vocab').select('*').order('sort_order', { ascending: true }),
     sourcesQuery,
-    supabase.from('sources').select('source_id', { count: 'exact', head: true }).eq('status', 'active'),
+    supabase
+      .from('sources')
+      .select('source_id, markets!inner(is_active)', { count: 'exact', head: true })
+      .eq('status', 'active')
+      .eq('markets.is_active', true),
   ])
 
   if (error) {
@@ -58,17 +76,21 @@ export default async function SourcesPage(props: SourcesPageProps) {
 
   const markets = (marketsData || []) as Market[]
   const vocab = (vocabData || []) as VocabEntry[]
-  const rows = (sourcesData || []) as (Source & { markets: { display_name: string } | null })[]
+  const rows = (sourcesData || []) as (Source & {
+    markets: { display_name: string; is_active: boolean } | null
+  })[]
   const totalCount = allCount ?? 0
 
   return (
-    <div className="max-w-[960px] mx-auto px-4 md:px-6 py-6">
-      <div className="mb-1">
-        <h1 className="t-title text-fg">Sources</h1>
-        <p className="t-body text-muted mt-1">Institutions running opportunities on Fellow.</p>
+    <div className="container-page py-8">
+      <div className="mb-5">
+        <h1 className="t-title text-fg">Organisations</h1>
+        <p className="t-body text-muted mt-2 max-w-[60ch]">
+          Institutions, residency centres and production houses that run the calls in the feed.
+        </p>
       </div>
 
-      <Suspense fallback={<div className="h-[100px] py-4 border-b border-line" />}>
+      <Suspense fallback={<div className="h-[100px]" />}>
         <SourcesFilterBar markets={markets} vocab={vocab} />
       </Suspense>
 
@@ -83,10 +105,14 @@ export default async function SourcesPage(props: SourcesPageProps) {
         )
       ) : (
         <>
-          <div className="t-meta text-muted mt-4 mb-4">
-            Showing {rows.length} of {totalCount}
+          <div className="flex items-center justify-between mt-5 mb-4 pb-3 border-b border-line">
+            <span className="t-meta">
+              {rows.length === totalCount
+                ? `${totalCount} organisations`
+                : `${rows.length} of ${totalCount} organisations`}
+            </span>
           </div>
-          <div className="flex flex-col gap-4">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
             {rows.map((source) => (
               <SourceCard
                 key={source.source_id}
