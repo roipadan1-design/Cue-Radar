@@ -4,20 +4,25 @@ import { useState, useEffect } from 'react'
 import Link from 'next/link'
 import Field from '@/components/ui/Field'
 import Button from '@/components/ui/Button'
+import Chip from '@/components/ui/Chip'
 import { profileSchema, type ProfileFormData } from '@/lib/schemas/profile'
 import { createClient } from '@/lib/supabase/client'
-import type { Profile } from '@/lib/types'
+import type { Profile, VocabEntry } from '@/lib/types'
 
 interface ProfileFormProps {
   initialProfile?: Profile | null
   userId?: string
+  // Rule 4: dynamic, no hardcoding — discipline options come from the `vocab` table,
+  // fetched server-side by the page and passed down (same pattern as FilterBar).
+  disciplineOptions?: VocabEntry[]
 }
 
-export default function ProfileForm({ initialProfile, userId }: ProfileFormProps) {
+export default function ProfileForm({ initialProfile, userId, disciplineOptions = [] }: ProfileFormProps) {
   const [formData, setFormData] = useState<ProfileFormData>({
     handle: initialProfile?.handle || '',
     full_name: initialProfile?.full_name || '',
     role_label: initialProfile?.role_label || '',
+    disciplines: initialProfile?.disciplines || [],
     bio: initialProfile?.bio || '',
     locations: initialProfile?.locations ? initialProfile.locations.join(', ') : '',
     current_city: initialProfile?.current_city || '',
@@ -56,6 +61,7 @@ export default function ProfileForm({ initialProfile, userId }: ProfileFormProps
                   handle: p.handle || '',
                   full_name: p.full_name || '',
                   role_label: p.role_label || '',
+                  disciplines: p.disciplines || [],
                   bio: p.bio || '',
                   locations: p.locations ? p.locations.join(', ') : '',
                   current_city: p.current_city || '',
@@ -77,6 +83,15 @@ export default function ProfileForm({ initialProfile, userId }: ProfileFormProps
 
   function handleChange<K extends keyof ProfileFormData>(field: K, value: ProfileFormData[K]) {
     setFormData((prev) => ({ ...prev, [field]: value }))
+  }
+
+  function toggleDiscipline(value: string) {
+    setFormData((prev) => ({
+      ...prev,
+      disciplines: prev.disciplines.includes(value)
+        ? prev.disciplines.filter((d) => d !== value)
+        : [...prev.disciplines, value],
+    }))
   }
 
   async function handleAvatarUpload(e: React.ChangeEvent<HTMLInputElement>) {
@@ -149,6 +164,7 @@ export default function ProfileForm({ initialProfile, userId }: ProfileFormProps
         handle: formData.handle,
         full_name: formData.full_name,
         role_label: formData.role_label || '',
+        disciplines: formData.disciplines,
         bio: formData.bio || '',
         avatar_url: avatarUrl,
         locations: locationsArray,
@@ -241,6 +257,23 @@ export default function ProfileForm({ initialProfile, userId }: ProfileFormProps
           onChange={(e) => handleChange('role_label', e.target.value)}
           className="w-full h-11 px-3 bg-surface border border-line rounded-[var(--radius)] t-body text-fg focus:outline-none focus:border-fg"
         />
+      </Field>
+
+      <Field label="Disciplines" error={errors.disciplines}>
+        <div className="flex flex-wrap gap-2">
+          {disciplineOptions.map((d) => (
+            <Chip
+              key={d.value}
+              active={formData.disciplines.includes(d.value)}
+              onClick={() => toggleDiscipline(d.value)}
+            >
+              {d.label}
+            </Chip>
+          ))}
+          {disciplineOptions.length === 0 && (
+            <span className="t-meta text-muted normal-case">No disciplines available.</span>
+          )}
+        </div>
       </Field>
 
       <Field label="Bio" error={errors.bio}>

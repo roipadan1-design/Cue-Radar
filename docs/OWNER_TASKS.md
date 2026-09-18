@@ -133,6 +133,12 @@ QA reported `/hub`, `/sources`, and an opportunity detail page rendering a fixed
 
 Task 19's companion fix (this session) stopped the Apply button's **label** from showing "cue-radar.vercel.app" for demo rows (now shows "Apply on the demo page"), by changing the label-generation logic in `components/hub/OpportunityDetailView.tsx`, not the underlying data. The demo rows' actual `apply_url` value (`https://cue-radar.vercel.app/demo`, set in `supabase/migrations/0003_demo_seed.sql`, already live) is untouched — clicking Apply on a demo row still opens that URL, which still correctly routes to the app's own `/demo` page (satisfies `AGENTS.md` rule 1), just via the old domain name rather than a relative path. If you'd like the literal stored value cleaned up too (e.g. to a real relative `/demo` or the current canonical domain), that needs a small additive `UPDATE` migration against the live `sources`/`opportunities`/`events` tables — flagging as optional follow-up, not done in this pass since it wasn't necessary to fix the visible bug and migrations are Backend/Data Engineer scope.
 
+### Step 4l: Confirm the welcome-gate fix during your real signup test (2026-09-18)
+
+Urgent fix (not tied to a numbered task): `app/auth/callback/route.ts` gates new users on `role_label` AND `disciplines` being set, but `components/profile/ProfileForm.tsx` had no way to set `disciplines` at all — the welcome banner would never clear for any new signup. Added a discipline multi-select (options from the `vocab` table, `category='discipline'`) to the form; see `docs/DECISIONS.md`, "Urgent fix — onboarding welcome-gate had no way to be satisfied," for the full change and what could/couldn't be verified in this environment (no real Supabase Auth session available here).
+
+**Action needed**: during your real signup test, after landing on `/profile/edit?welcome=1`, confirm the new "Disciplines" chip picker renders with real values, selecting one or more and saving works, and that signing out/in (or just reloading `/profile/edit`) no longer shows the welcome banner. If it still loops, that's a live bug worth reporting back immediately.
+
 ### Step 4: Google Service Account & Sheet Setup
 1. Create a Google Cloud Service Account and download its JSON key.
 2. Store the JSON key contents in GitHub Secret `GOOGLE_SERVICE_ACCOUNT_JSON`.

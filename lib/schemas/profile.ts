@@ -8,6 +8,7 @@ export const profileSchema = z.object({
     .regex(/^[a-z0-9][a-z0-9_-]{2,29}$/, 'Handle must contain only lowercase letters, numbers, underscores, or hyphens'),
   full_name: z.string().min(1, 'Full name is required'),
   role_label: z.string().optional(),
+  disciplines: z.array(z.string()).default([]),
   bio: z.string().max(600, 'Bio must be at most 600 characters').optional(),
   locations: z.string().optional(),
   current_city: z.string().optional(),

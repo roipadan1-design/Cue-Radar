@@ -217,7 +217,9 @@ export default function DevPreviewPage() {
           <Chip>DRAFT</Chip>
         </div>
         <div className="border-t border-line pt-4">
-          <ProfileForm />
+          <ProfileForm
+            disciplineOptions={vocab.filter((v) => v.category === 'discipline' && !v.deprecated)}
+          />
         </div>
       </section>
     </div>
