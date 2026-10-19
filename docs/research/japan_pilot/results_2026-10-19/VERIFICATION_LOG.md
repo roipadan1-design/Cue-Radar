@@ -81,3 +81,33 @@
 - No score below 3: yes.
 - Dance ≥ 1/3 of events: yes (45 of 110, 41%).
 - Coverage targets: events met; places not met (see REPORT.md → Gaps).
+
+---
+
+# Curators — partial batch, 2026-10-19
+
+**Delivered: 14 of 23 for the first batch (9 Kyoto of 8, 5 Tokyo of 15).** The Tokyo target was not met. Search results for small Tokyo venues came back thin, and most of those venues don't name their staff on their own sites.
+
+## Checked: 31 people/roles. Included: 14. Dropped or pending: 17
+Pending (role confirmed, but something is still missing):
+- Naohiro Ukawa 宇川直宏 (SUPER DOMMUNE): the Oct 2026 schedule shows him only as MC/host. The page doesn't say "founder/director", so he stays out (one mention isn't enough).
+- 芳賀菜々花 (RAW PARTY, BUoY): credited as 主催 on buoy.or.jp/program/rawparty (10 Oct 2026). No published romanised name, so she stays out until it's confirmed.
+- Shoko Nishida 西田祥子: listed as KAC Program Director on the HAPS committee page (current), but the disciplines she programmes are unknown.
+- Satoshi Agoh あごうさとし (THEATRE E9): a 2024 report names a successor (Taiki Murakami). The handover date is unclear.
+- Taku Sugimoto, Leo Okagawa and others (Ftarri): organisers of individual concerts, not of the venue. Ftarri's owner isn't named on the site.
+- Mizuyo Takamura (Token Art Center): the evidence is from 2024. No 2025-26 mention found.
+- Maki Miyakubo (Dance New Air): the site was last updated in 2021, so the role may be out of date.
+Dropped:
+- Youkobo (Murata): the site has had no news since 2023, so it may be inactive.
+- UrBANGUILD, Forestlimit: the bookers/owners aren't named on any official page.
+- Sound Live Tokyo / YPAM (Hiromi Maruoka): soundlivetokyo.com didn't load and the YPAM about page returns 404, so it couldn't be verified.
+- Kosei Sakamoto (Monochrome Circus): teaches at KIDWF 2026, but his programming role isn't stated. The company site was last updated in 2023.
+- Akaji Maro (Dairakudakan), MIMINOIMI, XYZ collective, Morishita Studio, TOKAS, d-倉庫: no official 2025-26 page naming a person in the role was found.
+
+## Weak-evidence rows (included, flagged in notes)
+- Ryuichi Tani (KAC) and Kako Kishimoto (BUoY): named on the organisation's live site, but the page carries no date.
+- Jinichiro Iida and Mogura (Boro Festa): the evidence is an interview published on a ticketing site (l-tike), not the festival's own site.
+
+## Inactive rows: none.
+
+## Added to places.csv: tyo-theatercommons (for the link from Chiaki Soma).
