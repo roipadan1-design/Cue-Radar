@@ -24,8 +24,12 @@ The product has three parts that matter for this pilot:
 1. **Explore the city** (in the app it is called *Currently*): pick a city and a date range and see
    performances, concerts, exhibitions, classes, workshops, talks, parties, and meetups worth
    catching, grouped by day.
-2. **Places**: a directory of the venues, spaces, collectives, and festivals that make up a city's
-   scene, each with a short "why it matters / how to get involved" note.
+2. **Discover → Organizations**: a directory of the venues, spaces, collectives, and festivals
+   that make up a city's scene. Each one has its own page: name, "Type · City, Country", an
+   **About** section (your `about` text), how to get in the door, its upcoming events, and its
+   links.
+   **Discover → Curators**: the same kind of page for the people who programme the scene (see
+   `FABLE_CURATORS_PROMPT.md`).
 3. **Artist profile**: one page that shows who the artist is (practice, disciplines, current city
    and dates, links), so they can introduce themselves to the people they meet.
 

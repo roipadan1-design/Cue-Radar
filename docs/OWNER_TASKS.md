@@ -306,3 +306,15 @@ fee (₪148) are **aggregator-sourced and not yet confirmed at Fresh Paint's own
 2. **Master Sheet `markets` tab:** add a `kyoto` row. If the tab has an `is_active` column, set Kyoto/Tokyo to TRUE and every other city to FALSE, or the next sync will undo step 1.
 3. **Master Sheet `sources`:** SRC072 Kyoto Experiment is tagged `tokyo` and should be `kyoto`.
 4. Send `docs/research/japan_pilot/FABLE_PROMPT.md` + `FABLE_CONTEXT.md` to the external researcher (fill in the client block first) and hand back the results for merging.
+
+### Task 22, part 2: directory pages (2026-10-19)
+
+5. **Run `supabase/migrations/0012_japan_pilot_directory_fields.sql`** in the SQL Editor. It adds the organisation-page fields (`about`, neighbourhood, etc.), the event fields (`end_date`, `description`, `source_id`, etc.), the new `curators` table, and labels for organisation types. Until it runs, the Curators tab says "being researched" and the city Explore pages show no events.
+6. Send `docs/research/japan_pilot/FABLE_CURATORS_PROMPT.md` to Fable after the first research brief (or in parallel).
+7. Master Sheet: when you want curators synced from the Sheet, add a `curators` tab (columns as in the curators prompt) and give me its gid.
+
+### Task 22, part 3: Japan data load (2026-10-19)
+
+8. **After 0012, run `japan_pilot_load_2026-10-19.sql`** in the SQL Editor (39 places, 110 events; it updates 8 existing SRC rows and hides 4 below-threshold ones without deleting them). Write "I ran it" and I'll check the live DB.
+9. **Drive:** upload `Fellow_Master_Database_v2.xlsx` to the master folder as a Google Sheet. v1 stays as a backup.
+10. **Switch sync to v2:** once v2 is in Drive, update the GitHub secret `GOOGLE_SHEETS_ID` to the v2 id (and the gids in `scripts/sync_sheet_to_supabase.py`, which I can do once the file exists).

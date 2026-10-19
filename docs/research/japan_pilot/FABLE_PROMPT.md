@@ -27,6 +27,27 @@ week, **19 to 25 Oct**, matters most.
 
 ---
 
+### 0.1 Deadline: deliver in two phases
+
+The pilot goes in front of the client **tomorrow, Tuesday 20 October 2026**. Work in two phases
+and **hand back Phase 1 as soon as it is done**. Don't wait for Phase 2.
+
+**Phase 1 (urgent, needed for tomorrow):**
+- `places.csv`: the **25 most important Tokyo** and **15 most important Kyoto** organisations
+  (tier 1 first), every one with a full `about`, `neighborhood`, links, and `status` checked.
+  Spread them across dance, music and exhibitions, plus festivals and collectives.
+- `events.csv`: everything you can verify for **19 to 25 Oct**, at least **25 Tokyo** and
+  **12 Kyoto**, linked to those places, plus the recurring open classes and jams.
+- A five-line note: what is in, what is still missing.
+
+**Phase 2 (the rest of the brief):** full coverage targets, the rest of the window up to 15 Nov,
+`feeds.csv`, `REPORT.md`, `VERIFICATION_LOG.md`.
+
+Same quality rules in both phases. A smaller Phase 1 that is fully verified beats a bigger one
+that isn't.
+
+---
+
 ## 1. Client profile (the owner fills this in before sending)
 
 ```
@@ -181,7 +202,7 @@ UTF-8 CSV, header row exactly as below. Multi-value fields are comma-separated i
 cell. Leave unknown cells **empty**. Never guess.
 
 ```
-source_id,existing_source_id,name,name_ja,source_type,market,neighborhood,address,lat,lng,discipline_focus,scene_tags,underground_score,underground_reason,tier,website_url,calendar_url,instagram_url,other_links,listing_language,ticketing,scrape_method,newcomer_friendly,foreigner_friendly_notes,status,last_active_evidence,evidence_url,verified_at,notes
+source_id,existing_source_id,name,name_ja,about,source_type,market,neighborhood,address,lat,lng,discipline_focus,scene_tags,underground_score,underground_reason,tier,website_url,calendar_url,instagram_url,other_links,listing_language,ticketing,scrape_method,newcomer_friendly,foreigner_notes,status,last_active_evidence,evidence_url,verified_at,notes
 ```
 
 | Column | Rule |
@@ -198,12 +219,13 @@ source_id,existing_source_id,name,name_ja,source_type,market,neighborhood,addres
 | `ticketing` | Where they sell, e.g. `door`, `email reservation`, `peatix`, `ra`, `tiget` |
 | `scrape_method` | How we would get their events: `html_calendar`, `peatix`, `ra`, `instagram_only`, `x_only`, `newsletter`, `manual` |
 | `newcomer_friendly` | `yes`, `no`, `unknown`: can someone with no contacts just show up or sign up? |
-| `foreigner_friendly_notes` | e.g. "English-speaking staff", "Japanese-only reservations by email", "cash only, drink charge" |
+| `foreigner_notes` | e.g. "English-speaking staff", "Japanese-only reservations by email", "cash only, drink charge" |
 | `status` | `active`, `dormant` (nothing for 6+ months), or `closed` |
 | `last_active_evidence` | Date (YYYY-MM-DD) of the most recent dated activity you found |
 | `evidence_url` | The page proving it exists and is active |
 | `verified_at` | The date you checked, YYYY-MM-DD |
 | `notes` | 1–2 sentences: why it matters to an underground artist, and how to get involved |
+| `about` | **Shown as the "About" section of the organisation page.** 2–4 short paragraphs, 400–1000 characters, English, your own words: what the place is, what it programmes and for whom, its scene and lineage, and how a visiting artist gets involved. Separate paragraphs with a blank line inside the quoted cell. Facts only from pages you opened. |
 
 ### 5.2 `events.csv` (one row per event or recurring activity in the window)
 

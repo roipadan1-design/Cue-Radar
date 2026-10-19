@@ -37,8 +37,31 @@ ALLOWED_COLUMNS = {
     "events": {
         "event_id", "market", "venue_name", "title", "event_type",
         "disciplines", "date", "time", "price_min", "ticket_url", "lat", "lng"
+    },
+    # Task 22 (migration 0012): researched curator profiles for the Japan pilot.
+    "curators": {
+        "curator_id", "name", "name_ja", "role_label", "market", "about",
+        "disciplines", "affiliations", "website_url", "instagram_url",
+        "evidence_url", "verified_at", "status"
     }
 }
+
+# Task 22 (migration 0012) columns. Added as SPARSE (see below) rather than as
+# normal synced columns: the Japan rows are first loaded from the research CSVs,
+# and a Sheet tab that hasn't grown these columns yet must not null them out on
+# the next scheduled run.
+TASK22_SOURCE_COLUMNS = {
+    "name_ja", "about", "neighborhood", "address", "calendar_url", "scene_tags",
+    "underground_score", "newcomer_friendly", "foreigner_notes", "evidence_url",
+    "verified_at"
+}
+TASK22_EVENT_COLUMNS = {
+    "source_id", "title_ja", "end_date", "end_time", "recurrence", "price_max",
+    "currency", "lineup", "description", "language_barrier", "booking_required",
+    "evidence_url", "verified_at"
+}
+ALLOWED_COLUMNS["sources"] |= TASK22_SOURCE_COLUMNS
+ALLOWED_COLUMNS["events"] |= TASK22_EVENT_COLUMNS
 
 # Task 21 (Israel-only pilot): `markets.is_active` is a pilot-scope flag owned
 # by this script (supabase/migrations/0009_market_scope.sql adds the column
@@ -63,6 +86,8 @@ ALLOWED_COLUMNS = {
 # run even when the Sheet never mentions it.
 SPARSE_OPTIONAL_COLUMNS = {
     "markets": {"is_active"},
+    "sources": TASK22_SOURCE_COLUMNS,
+    "events": TASK22_EVENT_COLUMNS,
 }
 
 TAB_GIDS = {
@@ -129,6 +154,25 @@ def validate_rows(tab_name: str, rows: List[Dict[str, Any]]) -> Tuple[List[Dict[
             row["needs_verification"] = str(row.get("needs_verification", "")).upper() in ("TRUE", "1", "YES")
             if not row.get("market"):
                 row["market"] = None
+            tags = row.get("scene_tags")
+            if isinstance(tags, str) and tags.strip():
+                row["scene_tags"] = [t.strip() for t in tags.split(",") if t.strip()]
+            valid_rows.append(row)
+
+        elif tab_name == "curators":
+            required = ["curator_id", "name"]
+            missing = [f for f in required if not row.get(f)]
+            if missing:
+                errors.append(f"Row {idx} in curators missing required fields: {missing}")
+                continue
+            for array_field in ["disciplines", "affiliations"]:
+                val = row.get(array_field, "")
+                if isinstance(val, str):
+                    row[array_field] = [item.strip() for item in val.split(",") if item.strip()]
+            if not row.get("role_label"):
+                row["role_label"] = "Curator"
+            if not row.get("status"):
+                row["status"] = "active"
             valid_rows.append(row)
 
         elif tab_name == "opportunities":
@@ -228,7 +272,7 @@ def filter_columns(tab_name: str, rows: List[Dict[str, Any]]) -> List[Dict[str, 
                 # Sheet had nothing to say). Omitting the key -- instead of
                 # sending it as an explicit None -- is what lets the upsert
                 # leave the existing DB value alone. See SPARSE_OPTIONAL_COLUMNS.
-                if col in r:
+                if col in r and r[col] not in ("", None):
                     row_dict[col] = r[col]
                 continue
             val = r.get(col)
@@ -322,7 +366,10 @@ def main():
     # considered and the reasoning. New vocab values ship as a small additive
     # migration (see supabase/migrations/0007_vocab_event_type_theatre_dance.sql
     # for the pattern), not a Sheet edit.
-    tabs = ["markets", "sources", "opportunities", "events"]
+    # "curators" (Task 22) has no TAB_GIDS entry yet: it syncs with the service
+    # account (worksheet by name) and is skipped on the public-CSV path until the
+    # owner adds the tab and its gid.
+    tabs = ["markets", "sources", "opportunities", "events", "curators"]
     for tab_name in tabs:
         try:
             records = fetch_tab_records(sheet_id, tab_name, service_acc_json)

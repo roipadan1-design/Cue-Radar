@@ -114,6 +114,19 @@ export interface EventRow {
   lat?: number | null
   lng?: number | null
   is_demo: boolean
+  // Task 22 (migration 0012)
+  source_id?: string | null
+  title_ja?: string | null
+  end_date?: string | null
+  end_time?: string | null
+  recurrence?: string | null
+  price_max?: number | null
+  currency?: string | null
+  lineup?: string | null
+  description?: string | null
+  language_barrier?: 'none' | 'some' | 'high' | null
+  booking_required?: 'yes' | 'no' | 'recommended' | null
+  evidence_url?: string | null
 }
 
 export interface Source {
@@ -131,6 +144,35 @@ export interface Source {
   needs_verification: boolean
   notes?: string | null
   is_demo: boolean
+  // Task 22 (migration 0012)
+  name_ja?: string | null
+  about?: string | null
+  neighborhood?: string | null
+  address?: string | null
+  calendar_url?: string | null
+  scene_tags?: string[] | null
+  underground_score?: number | null
+  newcomer_friendly?: 'yes' | 'no' | 'unknown' | null
+  foreigner_notes?: string | null
+  evidence_url?: string | null
+  verified_at?: string | null
+}
+
+/** Researched public profile of a curator / programmer (migration 0012). Not a user. */
+export interface Curator {
+  curator_id: string
+  name: string
+  name_ja?: string | null
+  role_label: string
+  market?: string | null
+  about?: string | null
+  disciplines: string[]
+  affiliations: string[]
+  website_url?: string | null
+  instagram_url?: string | null
+  evidence_url?: string | null
+  verified_at?: string | null
+  status: 'active' | 'inactive'
 }
 
 export interface Follow {

@@ -5,11 +5,21 @@ import OpportunityRow from '@/components/hub/OpportunityRow'
 import GroupHeader from '@/components/hub/GroupHeader'
 import EventRow from '@/components/radar/EventRow'
 import EmptyState from '@/components/hub/EmptyState'
+import ListingFilterBar from '@/components/filters/ListingFilterBar'
+import { Suspense } from 'react'
 import type { HubFeedRow, EventRow as EventRowType, Profile, VocabEntry } from '@/lib/types'
 
 interface PageProps {
   params: Promise<{ city: string }>
-  searchParams?: Promise<{ from?: string; to?: string }>
+  searchParams?: Promise<{
+    from?: string
+    to?: string
+    q?: string
+    type?: string
+    discipline?: string
+    free?: string
+    no_japanese?: string
+  }>
 }
 
 // Event types shown under "Workshops & classes" (§7.2). Everything else in
@@ -103,14 +113,27 @@ export default async function CircuitCityPage(props: PageProps) {
   }
   const closingOpportunities = (oppData || []) as HubFeedRow[]
 
-  // Sections (b) and (c): events in this city and window.
+  // Sections (b) and (c): events in this city and window. A multi-day run
+  // (exhibition, festival) that started before the window but is still open
+  // counts too (end_date, migration 0012).
   let eventQuery = supabase
     .from('events')
     .select('*')
     .eq('market', citySlug)
-    .gte('date', from)
     .lte('date', to)
+    .or(`date.gte.${from},end_date.gte.${from}`)
     .order('date', { ascending: true })
+
+  // Task 22 filter bar (ArtConnect layout). Every option comes from vocab.
+  const { q, type, discipline } = searchParams
+  if (q) {
+    const e = q.replace(/[,()]/g, ' ').replace(/[%_]/g, '\\$&')
+    eventQuery = eventQuery.or(`title.ilike.%${e}%,venue_name.ilike.%${e}%,lineup.ilike.%${e}%`)
+  }
+  if (type) eventQuery = eventQuery.eq('event_type', type)
+  if (discipline) eventQuery = eventQuery.contains('disciplines', [discipline])
+  if (searchParams.free === 'true') eventQuery = eventQuery.eq('price_min', 0)
+  if (searchParams.no_japanese === 'true') eventQuery = eventQuery.eq('language_barrier', 'none')
 
   if (process.env.NEXT_PUBLIC_SHOW_DEMO === 'false') {
     eventQuery = eventQuery.or('is_demo.eq.false,is_demo.is.null')
@@ -121,6 +144,13 @@ export default async function CircuitCityPage(props: PageProps) {
     console.error('Error querying events for circuit:', eventError.message)
   }
   const events = (eventData || []) as EventRowType[]
+
+  const typeOptions = vocab
+    .filter((v) => v.category === 'event_type')
+    .map((v) => ({ value: v.value, label: v.label }))
+  const disciplineOptions = vocab
+    .filter((v) => v.category === 'discipline' && !v.deprecated)
+    .map((v) => ({ value: v.value, label: v.label }))
 
   const workshopsAndClasses = events.filter((e) => WORKSHOP_EVENT_TYPES.includes(e.event_type))
   const stageAndExhibitions = events.filter((e) => !WORKSHOP_EVENT_TYPES.includes(e.event_type))
@@ -136,7 +166,7 @@ export default async function CircuitCityPage(props: PageProps) {
     <div className="container-reading py-8 pb-24">
       <div className="mb-[32px] flex flex-col">
         <Link href="/circuit" className="t-meta text-muted hover:text-fg transition-colors">
-          ← Currently
+          ← Explore
         </Link>
         <h1 className="t-title text-fg mt-[8px]">{market.display_name}</h1>
         <div className="t-body text-muted mt-[4px]">
@@ -144,6 +174,25 @@ export default async function CircuitCityPage(props: PageProps) {
           <span className="t-num">{formatHeaderDate(to)}</span>
           {dayCount > 0 && ` · ${dayCount} ${dayCount === 1 ? 'day' : 'days'}`}
         </div>
+      </div>
+
+      <div className="mb-8">
+        <Suspense fallback={<div className="h-[160px]" />}>
+          <ListingFilterBar
+            basePath={`/circuit/${citySlug}`}
+            searchPlaceholder="Search events, venues, artists"
+            dropdowns={[
+              { param: 'type', label: 'Type', options: typeOptions },
+              { param: 'discipline', label: 'Field', options: disciplineOptions },
+            ]}
+            toggles={[
+              { param: 'free', label: 'Free' },
+              { param: 'no_japanese', label: 'No Japanese needed' },
+            ]}
+            resultCount={events.length}
+            resultNoun={['event', 'events']}
+          />
+        </Suspense>
       </div>
 
       {!hasAnyContent && (

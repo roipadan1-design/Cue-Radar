@@ -35,7 +35,7 @@ export default function TopBarNav({ isSignedIn }: TopBarNavProps) {
           >
             {item.label}
             {item.soon && (
-              <span className="ml-1.5 align-super text-[10px] uppercase tracking-[0.06em] text-muted">
+              <span className="relative -top-1.5 ml-1.5 text-[10px] uppercase tracking-[0.06em] text-muted">
                 Soon
               </span>
             )}
