@@ -316,5 +316,5 @@ fee (₪148) are **aggregator-sourced and not yet confirmed at Fresh Paint's own
 ### Task 22, part 3: Japan data load (2026-10-19)
 
 8. ~~**After 0012, run `japan_pilot_load_2026-10-19.sql`**~~ **Done 2026-10-19** (run by Claude at the owner's request; verified: 42 Kyoto/Tokyo active sources, 110 events). in the SQL Editor (39 places, 110 events; it updates 8 existing SRC rows and hides 4 below-threshold ones without deleting them). Write "I ran it" and I'll check the live DB.
-9. **Drive:** upload `Fellow_Master_Database_v2.xlsx` to the master folder as a Google Sheet. v1 stays as a backup.
-10. **Switch sync to v2:** once v2 is in Drive, update the GitHub secret `GOOGLE_SHEETS_ID` to the v2 id (and the gids in `scripts/sync_sheet_to_supabase.py`, which I can do once the file exists).
+9. ~~**Drive:** upload v2~~ **Done 2026-10-19**: Fellow_Master_Database_v2 (Google Sheet id `1lIfynPsXzsnhfYMj6eWpahaXZAD_l5jS8O9IYftS-tk`), verified tab-by-tab against the live DB export. 7 old PASTE-INTO helper files trashed.
+10. **Sheet → Supabase sync is not running at all**: the GitHub secrets `GOOGLE_SHEETS_ID`, `GOOGLE_SHEET_URL`, `GOOGLE_SERVICE_ACCOUNT_JSON`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` are empty, so every scheduled run fails at start (seen 2026-10-19). To turn it on: set those secrets, with `GOOGLE_SHEETS_ID` = the v2 id above, and share v2 with the service account email.
