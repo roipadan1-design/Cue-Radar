@@ -37,6 +37,11 @@ export default function ProfileForm({ initialProfile, userId, disciplineOptions 
     showreel_url: initialProfile?.showreel_url || '',
     instagram: initialProfile?.social_links?.instagram || '',
     website: initialProfile?.social_links?.website || '',
+    spotify: initialProfile?.social_links?.spotify || '',
+    soundcloud: initialProfile?.social_links?.soundcloud || '',
+    bandcamp: initialProfile?.social_links?.bandcamp || '',
+    youtube: initialProfile?.social_links?.youtube || '',
+    vimeo: initialProfile?.social_links?.vimeo || '',
     is_public: initialProfile?.is_public || false,
     gallery: initialProfile?.gallery || [],
   })
@@ -105,6 +110,11 @@ export default function ProfileForm({ initialProfile, userId, disciplineOptions 
                   showreel_url: p.showreel_url || '',
                   instagram: p.social_links?.instagram || '',
                   website: p.social_links?.website || '',
+                  spotify: p.social_links?.spotify || '',
+                  soundcloud: p.social_links?.soundcloud || '',
+                  bandcamp: p.social_links?.bandcamp || '',
+                  youtube: p.social_links?.youtube || '',
+                  vimeo: p.social_links?.vimeo || '',
                   is_public: p.is_public || false,
                   gallery: p.gallery || [],
                 })
@@ -257,8 +267,11 @@ export default function ProfileForm({ initialProfile, userId, disciplineOptions 
     const socialLinks = {
       instagram: formData.instagram || '',
       website: formData.website || '',
-      spotify: initialProfile?.social_links?.spotify || '',
-      vimeo: initialProfile?.social_links?.vimeo || '',
+      spotify: formData.spotify || '',
+      soundcloud: formData.soundcloud || '',
+      bandcamp: formData.bandcamp || '',
+      youtube: formData.youtube || '',
+      vimeo: formData.vimeo || '',
     }
 
     const { error } = await supabase
@@ -525,6 +538,66 @@ export default function ProfileForm({ initialProfile, userId, disciplineOptions 
             type="url"
             value={formData.website}
             onChange={(e) => handleChange('website', e.target.value)}
+            className="w-full h-11 px-3 bg-surface border border-line rounded-[var(--radius)] t-body text-fg focus:outline-none focus:border-fg"
+          />
+        </Field>
+      </div>
+
+      <div ref={registerField('spotify')}>
+        <Field label="Spotify" error={errors.spotify}>
+          <input
+            type="url"
+            value={formData.spotify}
+            onChange={(e) => handleChange('spotify', e.target.value)}
+            placeholder="https://"
+            className="w-full h-11 px-3 bg-surface border border-line rounded-[var(--radius)] t-body text-fg focus:outline-none focus:border-fg"
+          />
+        </Field>
+      </div>
+
+      <div ref={registerField('soundcloud')}>
+        <Field label="SoundCloud" error={errors.soundcloud}>
+          <input
+            type="url"
+            value={formData.soundcloud}
+            onChange={(e) => handleChange('soundcloud', e.target.value)}
+            placeholder="https://"
+            className="w-full h-11 px-3 bg-surface border border-line rounded-[var(--radius)] t-body text-fg focus:outline-none focus:border-fg"
+          />
+        </Field>
+      </div>
+
+      <div ref={registerField('bandcamp')}>
+        <Field label="Bandcamp" error={errors.bandcamp}>
+          <input
+            type="url"
+            value={formData.bandcamp}
+            onChange={(e) => handleChange('bandcamp', e.target.value)}
+            placeholder="https://"
+            className="w-full h-11 px-3 bg-surface border border-line rounded-[var(--radius)] t-body text-fg focus:outline-none focus:border-fg"
+          />
+        </Field>
+      </div>
+
+      <div ref={registerField('youtube')}>
+        <Field label="YouTube" error={errors.youtube}>
+          <input
+            type="url"
+            value={formData.youtube}
+            onChange={(e) => handleChange('youtube', e.target.value)}
+            placeholder="https://"
+            className="w-full h-11 px-3 bg-surface border border-line rounded-[var(--radius)] t-body text-fg focus:outline-none focus:border-fg"
+          />
+        </Field>
+      </div>
+
+      <div ref={registerField('vimeo')}>
+        <Field label="Vimeo" error={errors.vimeo}>
+          <input
+            type="url"
+            value={formData.vimeo}
+            onChange={(e) => handleChange('vimeo', e.target.value)}
+            placeholder="https://"
             className="w-full h-11 px-3 bg-surface border border-line rounded-[var(--radius)] t-body text-fg focus:outline-none focus:border-fg"
           />
         </Field>

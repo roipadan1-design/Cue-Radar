@@ -26,6 +26,11 @@ export const profileSchema = z.object({
     .url('Must be a valid URL')
     .or(z.literal(''))
     .optional(),
+  spotify: z.string().url('Must be a valid URL').or(z.literal('')).optional(),
+  soundcloud: z.string().url('Must be a valid URL').or(z.literal('')).optional(),
+  bandcamp: z.string().url('Must be a valid URL').or(z.literal('')).optional(),
+  youtube: z.string().url('Must be a valid URL').or(z.literal('')).optional(),
+  vimeo: z.string().url('Must be a valid URL').or(z.literal('')).optional(),
   is_public: z.boolean().default(false),
   gallery: z.array(z.string()).max(6, 'Up to 6 gallery photos').default([]),
 })

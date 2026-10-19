@@ -61,6 +61,10 @@ export interface ProfileSocialLinks {
   spotify?: string | null
   website?: string | null
   vimeo?: string | null
+  // Task 23
+  youtube?: string | null
+  soundcloud?: string | null
+  bandcamp?: string | null
 }
 
 export interface Profile {

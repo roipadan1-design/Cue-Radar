@@ -3,14 +3,15 @@ import Button from '@/components/ui/Button'
 import Badge from '@/components/ui/Badge'
 import Mark from '@/components/brand/Mark'
 import { BRAND } from '@/lib/brand'
+import { ArrowRight } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 
-// "Kyoto and Tokyo" / "Kyoto, Osaka and Tokyo" — built from the active markets
-// so the copy follows the pilot scope without naming a city in code (rule 4).
-function joinCities(names: string[]): string {
-  if (names.length <= 1) return names[0] ?? ''
-  return `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`
-}
+const PILLARS: { label: string; line: string; href: string; soon?: boolean }[] = [
+  { label: "What's on", line: 'Shows, classes, jams, parties and openings, today and this week.', href: '/circuit' },
+  { label: 'People', line: 'Artists, curators, collectives and spaces, and a page that introduces you.', href: '/discover' },
+  { label: 'Open calls', line: 'Residencies, commissions and calls for work, with the deadline up front.', href: '/hub', soon: true },
+  { label: 'Funding', line: "Grants and support for independent work, checked before they're listed.", href: '/hub', soon: true },
+]
 
 export default async function LandingPage() {
   const supabase = await createClient()
@@ -26,7 +27,6 @@ export default async function LandingPage() {
     .eq('is_active', true)
     .order('display_name', { ascending: true })
   const markets = marketsData || []
-  const cities = joinCities(markets.map((m) => m.display_name))
 
   return (
     <div className="container-page py-10 md:py-16">
@@ -37,16 +37,17 @@ export default async function LandingPage() {
         <span className="text-muted font-normal select-none t-title">]</span>
       </div>
 
-      {/* Task 22: the pilot is now about exploring the city (dance, music,
-          exhibitions from the underground), not the open-calls feed, which is
-          paused behind "coming soon" at /hub. */}
+      {/* Task 23 copy: docs/creative/TASK_23_HOME_COPY.md (creative-director). The
+          product is four things at once: the city guide, people, open calls and
+          funding. No city names in the copy; the chips below come from the DB. */}
       <h1 className="t-display text-fg max-w-[20ch]">
-        What&apos;s happening in your scene this week.
+        Where to be tonight, who to know, what comes next.
       </h1>
 
       <p id="about" className="t-body text-muted max-w-[60ch] mt-5 scroll-mt-16">
-        Dance, music and exhibitions from the underground{cities ? ` of ${cities}` : ''}: the
-        rooms, the people and the nights worth knowing, checked by people, not scraped.
+        For independent artists outside the mainstream: this week&apos;s shows, classes and
+        openings, the people and spaces behind them, and the open calls and grants that carry
+        the work further.
       </p>
 
       <div className="mt-8 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6">
@@ -58,10 +59,33 @@ export default async function LandingPage() {
             Your profile
           </Link>
         ) : (
-          <Link href="/signin" className="t-body text-fg underline underline-offset-4 hover:opacity-80">
-            Sign in
+          <Link href="/signup" className="t-body text-fg underline underline-offset-4 hover:opacity-80">
+            Create your profile
           </Link>
         )}
+      </div>
+
+      <div className="mt-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+        {PILLARS.map((p) => (
+          <Link
+            key={p.label}
+            href={p.href}
+            className="group card p-5 flex flex-col gap-2 hover:border-line-strong transition-colors"
+          >
+            <span className="flex items-center justify-between gap-2">
+              <span className="t-row text-fg">
+                {p.label}
+                {p.soon && (
+                  <span className="relative -top-1.5 ml-1.5 text-[10px] uppercase tracking-[0.06em] text-muted">
+                    Soon
+                  </span>
+                )}
+              </span>
+              <ArrowRight size={16} aria-hidden="true" className="text-muted group-hover:text-accent transition-colors" />
+            </span>
+            <span className="t-body text-[14px] text-muted">{p.line}</span>
+          </Link>
+        ))}
       </div>
 
       <div className="mt-16 pt-8 border-t border-line">
@@ -73,9 +97,6 @@ export default async function LandingPage() {
             </Link>
           ))}
         </div>
-        <p className="t-meta text-muted mt-6">
-          Open calls, residencies and grants: <Link href="/hub" className="underline underline-offset-4 hover:text-fg">coming soon</Link>.
-        </p>
       </div>
     </div>
   )

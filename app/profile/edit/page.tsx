@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import ProfileForm from '@/components/profile/ProfileForm'
+import ProfileAreaTabs from '@/components/profile/ProfileAreaTabs'
 import type { Profile, VocabEntry } from '@/lib/types'
 
 interface PageProps {
@@ -35,6 +36,7 @@ export default async function ProfileEditPage({ searchParams }: PageProps) {
         </div>
       )}
       <h1 className="t-title text-fg mb-6">Profile</h1>
+      <ProfileAreaTabs active="profile" />
       <ProfileForm
         initialProfile={(profile as Profile) || null}
         userId={user.id}

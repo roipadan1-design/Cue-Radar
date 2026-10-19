@@ -1,6 +1,6 @@
 import React from 'react'
 import Link from 'next/link'
-import { Instagram } from 'lucide-react'
+import { IconLinkRow, toInstagramUrl } from '@/components/ui/LinkIcon'
 import ShareLink from './ShareLink'
 import FollowButton from './FollowButton'
 import Button from '@/components/ui/Button'
@@ -237,52 +237,19 @@ export default function PublicProfileView({
         </div>
       )}
 
-      {/* 9. Links */}
+      {/* 9. Links: one logo per link (Task 23) */}
       {profile.social_links && (
-        <div className="flex flex-wrap items-center gap-4">
-          {profile.social_links.instagram && (
-            <a
-              href={profile.social_links.instagram}
-              target="_blank"
-              rel="noopener noreferrer"
-              aria-label="Instagram"
-              title="Instagram"
-              className="text-fg hover:text-muted"
-            >
-              <Instagram size={20} strokeWidth={1.75} />
-            </a>
-          )}
-          {profile.social_links.website && (
-            <a
-              href={profile.social_links.website}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="t-body text-fg hover:underline hover:underline-offset-4"
-            >
-              Website
-            </a>
-          )}
-          {profile.social_links.spotify && (
-            <a
-              href={profile.social_links.spotify}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="t-body text-fg hover:underline hover:underline-offset-4"
-            >
-              Spotify
-            </a>
-          )}
-          {profile.social_links.vimeo && (
-            <a
-              href={profile.social_links.vimeo}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="t-body text-fg hover:underline hover:underline-offset-4"
-            >
-              Vimeo
-            </a>
-          )}
-        </div>
+        <IconLinkRow
+          links={[
+            { href: toInstagramUrl(profile.social_links.instagram), kind: 'instagram' },
+            { href: profile.social_links.website, kind: 'website' },
+            { href: profile.social_links.spotify },
+            { href: profile.social_links.soundcloud },
+            { href: profile.social_links.bandcamp },
+            { href: profile.social_links.youtube },
+            { href: profile.social_links.vimeo },
+          ]}
+        />
       )}
     </div>
   )
