@@ -1,0 +1,23 @@
+feed_id,name,market,url,feed_type,language,covers,update_frequency,has_structured_dates,requires_login,usefulness,notes
+feed-kyo-urbanguild,UrBANGUILD events (list + iCal),kyoto,http://urbanguild.net/events/,venue_calendar,ja,"music,dance,performance,theatre",weekly,yes,no,5,WordPress 'The Events Calendar' with public iCal export: easiest Kyoto feed to automate.
+feed-kyo-kyotoex,Kyoto Experiment program (EN),kyoto,https://kyoto-ex.jp/en/program/,venue_calendar,en,"dance,theatre,performance,music,visual_art",seasonal (Jul-Oct),yes,no,5,Only live Aug-Oct each year; fringe listings included.
+feed-kyo-kac,Kyoto Art Center events,kyoto,https://www.kac.or.jp/events/,venue_calendar,ja+en,"dance,theatre,music,visual_art,workshops",weekly,yes,no,4,Monthly Meirin Workshop page lists free classes by resident dance companies.
+feed-kyo-butohfes,Kyoto International Butoh Festival site + Peatix,kyoto,https://kyoto-butohfes.com/,venue_calendar,ja+en,dance,seasonal,yes,no,4,Peatix page carries the ticket structure.
+feed-kyo-dancebox,DANCE BOX events (Kobe),kyoto,https://db-dancebox.org/event,venue_calendar,ja,dance,weekly,yes,no,4,Tags 'オープンクラス' and '参加者募集' flag joinable things.
+feed-kyo-haps,HAPS news & Kyoto event info,kyoto,https://haps-kyoto.com/blog,community,ja,"visual_art,performance,open_calls",weekly,partial,no,4,Also an open-call digest page; English top page.
+feed-kyo-artbox,Kyoto Art Box events,kyoto,https://kyoto-artbox.jp/event/,aggregator,ja,"visual_art,dance,theatre,music",daily,yes,no,3,Searchable by genre/area/free; low underground density.
+feed-kyo-kyototravel,Kyoto tourism night-event list,kyoto,https://ja.kyoto.travel/times/night/event/,aggregator,ja,"music,performance",weekly,yes,no,2,Cross-check for Club Metro / UrBANGUILD nights only.
+feed-kyo-eplus-kansai,e+ (eplus) Kansai dance/performance and venue pages,kyoto,https://eplus.jp/sf/play/dance/osaka/others,ticketing,ja,"dance,music",daily,yes,no (login to buy),2,Mostly mainstream; useful for festivals like Boro Festa.
+feed-kyo-instagram,"Instagram: @urbanguild, @kyotoexperiment, @kyotoartcenter, @hapskyoto, @dancebox_kobe",kyoto,https://www.instagram.com/urbanguild,instagram,ja,all,daily,no,yes,4,"Needed for Club Metro one-offs, Kiraza, and last-minute changes; human read."
+feed-tyo-ftarri,Ftarri concert schedule (EN),tokyo,https://www.ftarri.com/suidobashi/index-e.html,venue_calendar,en,music,weekly,yes (plain HTML),no,5,Also mirrored on Tokyo Gig Guide with structured fields.
+feed-tyo-forestlimit,FORESTLIMIT schedule,tokyo,https://www.forestlimit.com,venue_calendar,ja,"music,visual_art",daily,yes (Wix events),no,5,Per-event pages hold lineup/price; list page gives title+date only.
+feed-tyo-sessionhouse,Session House Live Navi + class schedule,tokyo,https://session-house.net/live_news.html,venue_calendar,ja (EN mirror),dance,weekly,yes,no,5,Classes: https://session-house.net/schedule.html; EN site en.session-house.net.
+feed-tyo-geigeki,Tokyo Metropolitan Theatre calendar / Autumn Meteorite,tokyo,https://www.geigeki.jp/calendar/,venue_calendar,ja+en,"theatre,dance,music",weekly,yes,no,3,Only the Okada-curated festival matters (autumnmeteorite.jp).
+feed-tyo-buoy,BUoY programs,tokyo,https://buoy.or.jp/#event,venue_calendar,ja,"performance,dance,music,visual_art",weekly,yes,no,4,Instagram @buoy_tokyo mirrors it.
+feed-tyo-ongoing,Art Center Ongoing exhibitions/news,tokyo,https://www.ongoing.jp/exhibition/,venue_calendar,ja+en,"visual_art,performance,sound",biweekly,yes,no,4,Has a newsletter signup.
+feed-tyo-dommune,DOMMUNE schedule,tokyo,https://www.dommune.com/,venue_calendar,ja,"music,visual_art,talks",daily,yes,no,3,Best used to spot touring DJs/musicians in town.
+feed-tyo-tokyoartbeat,Tokyo Art Beat events,tokyo,https://www.tokyoartbeat.com/en/events,aggregator,ja+en,"visual_art,performance",daily,yes,no,4,Filter 'performance' / 'opening reception'.
+feed-tyo-tokyogigguide,Tokyo Gig Guide,tokyo,https://www.tokyogigguide.com/en/gigs,aggregator,en,music,daily,yes,no,5,Category filters Experimental/Avant garde/Ambient; venue pages.
+feed-tyo-ra,Resident Advisor Tokyo,tokyo,https://ra.co/,ticketing,en,music,daily,yes,no (login to buy),4,Covers Forestlimit/VENT/Bonobo collective nights; listing page not opened this pass.
+feed-tyo-peatix,"Peatix (search 'ambient', 'butoh', 'improvisation', 'contact improvisation')",tokyo,https://peatix.com/,ticketing,ja+en,all,daily,yes,no (login to buy),3,Small organisers' default; search-driven.
+feed-tyo-instagram,"Instagram: @forestlimit_info, @buoy_tokyo, @_raw_party, @artcenter_ongoing, @geigeki_info",tokyo,https://www.instagram.com/forestlimit_info/,instagram,ja,"music,performance,visual_art",daily,no,yes,4,RAW PARTY exists only here; human read.

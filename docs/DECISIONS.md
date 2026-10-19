@@ -1072,3 +1072,11 @@ concurrently hitting the same directory) and compiled clean for every file this 
 second `next build` mid-task hit the same cross-agent `.next` corruption everyone else did. `npm
 run lint` is clean (see report). Stopped on the orchestrator's instruction and deferred to their
 single authoritative build.
+
+## Task 22 — Japan pilot pivot (2026-10-19)
+
+- Owner direction: the Hub (open calls) is paused as "coming soon"; the pilot is Kyoto + Tokyo only, focused on exploring the city (dance, music, exhibitions; underground only).
+- The Hub feed was moved, unchanged, to `app/hub/_feed/` (an unrouted private folder) instead of being deleted, so it comes back with one file move.
+- The nav label "Currently" is now "Explore", first in the nav and active on `/`; Hub comes last with a "Soon" marker. Default post-sign-in redirect is now `/circuit`.
+- The landing copy names cities from `markets.is_active` (rule 4); no city is written in code.
+- No task file existed for this pivot; it came straight from the owner in chat. This entry and OWNER_TASKS stand in until a TASK_22 file is written.

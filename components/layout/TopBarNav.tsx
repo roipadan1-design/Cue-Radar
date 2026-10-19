@@ -34,6 +34,11 @@ export default function TopBarNav({ isSignedIn }: TopBarNavProps) {
             }`}
           >
             {item.label}
+            {item.soon && (
+              <span className="relative -top-1.5 ml-1.5 text-[10px] uppercase tracking-[0.06em] text-muted">
+                Soon
+              </span>
+            )}
             <span
               className={`absolute inset-x-0 -bottom-[1px] h-[2px] rounded-full transition-colors ${
                 isActive ? 'bg-accent' : 'bg-transparent'

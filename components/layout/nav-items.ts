@@ -19,23 +19,18 @@ export interface NavItem {
   href: string
   icon: LucideIcon
   isActive: (pathname: string) => boolean
+  /** Paused feature (Task 22): still linked, rendered with a "Soon" marker. */
+  soon?: boolean
 }
 
 export function getNavItems(isSignedIn: boolean): NavItem[] {
   return [
     {
-      key: 'hub',
-      label: 'Hub',
-      href: '/hub',
-      icon: LayoutList,
-      isActive: (pathname) => pathname === '/hub' || pathname === '/',
-    },
-    {
       key: 'circuit',
-      label: 'Currently',
+      label: 'Explore',
       href: '/circuit',
       icon: Route,
-      isActive: (pathname) => pathname.startsWith('/circuit'),
+      isActive: (pathname) => pathname.startsWith('/circuit') || pathname === '/',
     },
     {
       key: 'discover',
@@ -50,6 +45,14 @@ export function getNavItems(isSignedIn: boolean): NavItem[] {
       href: '/saved',
       icon: Bookmark,
       isActive: (pathname) => pathname.startsWith('/saved'),
+    },
+    {
+      key: 'hub',
+      label: 'Hub',
+      href: '/hub',
+      icon: LayoutList,
+      isActive: (pathname) => pathname === '/hub',
+      soon: true,
     },
     {
       key: 'profile',

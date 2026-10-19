@@ -24,7 +24,7 @@ function mapAuthError(message: string): string {
 function SignInContent() {
   const router = useRouter()
   const searchParams = useSearchParams()
-  const nextParam = searchParams.get('next') || '/hub'
+  const nextParam = searchParams.get('next') || '/circuit'
   const showApple = process.env.NEXT_PUBLIC_AUTH_APPLE === 'true'
 
   const [formData, setFormData] = useState<SignInFormData>({

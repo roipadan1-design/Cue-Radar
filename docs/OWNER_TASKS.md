@@ -299,3 +299,22 @@ fee (₪148) are **aggregator-sourced and not yet confirmed at Fresh Paint's own
 3. Create a Google Sheet, share it with the service account email (Viewer access), and set `GOOGLE_SHEETS_ID`.
 4. Copy seed CSVs from `data/seed/` (`markets.csv`, `vocab.csv`, `sources.csv`) into the matching tabs of the Google Sheet.
 5. Copy `opportunities_staging.csv` into `opportunities_staging` tab for human verification.
+
+## Task 22 — Japan pilot (Kyoto + Tokyo), 2026-10-19
+
+1. **Run `supabase/migrations/0011_japan_pilot_scope.sql`** (`npx supabase db push --linked`, or paste into the SQL Editor). It adds the Kyoto market, switches the pilot to Kyoto + Tokyo only (Israeli rows are hidden, not deleted), and adds the missing event types (including 0007's `theatre`/`dance`, which were never applied live).
+2. **Master Sheet `markets` tab:** add a `kyoto` row. If the tab has an `is_active` column, set Kyoto/Tokyo to TRUE and every other city to FALSE, or the next sync will undo step 1.
+3. **Master Sheet `sources`:** SRC072 Kyoto Experiment is tagged `tokyo` and should be `kyoto`.
+4. Send `docs/research/japan_pilot/FABLE_PROMPT.md` + `FABLE_CONTEXT.md` to the external researcher (fill in the client block first) and hand back the results for merging.
+
+### Task 22, part 2: directory pages (2026-10-19)
+
+5. **Run `supabase/migrations/0012_japan_pilot_directory_fields.sql`** in the SQL Editor. It adds the organisation-page fields (`about`, neighbourhood, etc.), the event fields (`end_date`, `description`, `source_id`, etc.), the new `curators` table, and labels for organisation types. Until it runs, the Curators tab says "being researched" and the city Explore pages show no events.
+6. Send `docs/research/japan_pilot/FABLE_CURATORS_PROMPT.md` to Fable after the first research brief (or in parallel).
+7. Master Sheet: when you want curators synced from the Sheet, add a `curators` tab (columns as in the curators prompt) and give me its gid.
+
+### Task 22, part 3: Japan data load (2026-10-19)
+
+8. ~~**After 0012, run `japan_pilot_load_2026-10-19.sql`**~~ **Done 2026-10-19** (run by Claude at the owner's request; verified: 42 Kyoto/Tokyo active sources, 110 events). in the SQL Editor (39 places, 110 events; it updates 8 existing SRC rows and hides 4 below-threshold ones without deleting them). Write "I ran it" and I'll check the live DB.
+9. ~~**Drive:** upload v2~~ **Done 2026-10-19**: Fellow_Master_Database_v2 (Google Sheet id `1lIfynPsXzsnhfYMj6eWpahaXZAD_l5jS8O9IYftS-tk`), verified tab-by-tab against the live DB export. 7 old PASTE-INTO helper files trashed.
+10. **Sheet → Supabase sync is not running at all**: the GitHub secrets `GOOGLE_SHEETS_ID`, `GOOGLE_SHEET_URL`, `GOOGLE_SERVICE_ACCOUNT_JSON`, `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY` are empty, so every scheduled run fails at start (seen 2026-10-19). To turn it on: set those secrets, with `GOOGLE_SHEETS_ID` = the v2 id above, and share v2 with the service account email.

@@ -159,5 +159,31 @@ class TestSyncValidation(unittest.TestCase):
         self.assertEqual(len(filtered), 2)
         self.assertEqual([r["title"] for r in filtered], ["Real Opp", "Real Opp 2"])
 
+    def test_task22_source_columns_are_sparse_and_parsed(self):
+        # A Sheet without the new columns must not null them; one that has them
+        # must send them, with scene_tags split into a list.
+        bare = {"source_id": "SRC1", "name": "A", "source_type": "venue", "status": "active"}
+        rich = dict(bare, source_id="SRC2", about="Small improv room.", scene_tags="noise, improv", neighborhood="")
+        valid, errors = validate_rows("sources", [bare, rich])
+        self.assertEqual(errors, [])
+        cleaned = filter_columns("sources", valid)
+        self.assertNotIn("about", cleaned[0])
+        self.assertNotIn("scene_tags", cleaned[0])
+        self.assertEqual(cleaned[1]["about"], "Small improv room.")
+        self.assertEqual(cleaned[1]["scene_tags"], ["noise", "improv"])
+        self.assertNotIn("neighborhood", cleaned[1])
+
+    def test_curators_tab_validation(self):
+        rows = [
+            {"curator_id": "tyo-cur-a", "name": "A", "disciplines": "dance, music", "affiliations": "tyo-x", "role_label": ""},
+            {"curator_id": "", "name": "No id"},
+        ]
+        valid, errors = validate_rows("curators", rows)
+        self.assertEqual(len(valid), 1)
+        self.assertEqual(len(errors), 1)
+        self.assertEqual(valid[0]["disciplines"], ["dance", "music"])
+        self.assertEqual(valid[0]["role_label"], "Curator")
+        self.assertEqual(valid[0]["status"], "active")
+
 if __name__ == '__main__':
     unittest.main()

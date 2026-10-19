@@ -2,7 +2,8 @@ import { notFound } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import { getActiveMarketSlugs, isInPilotScope } from '@/lib/markets'
 import SourceDetailView, { type ClosedOpportunity } from '@/components/sources/SourceDetailView'
-import type { HubFeedRow, Profile, Source, VocabEntry } from '@/lib/types'
+import { vocabLabel } from '@/lib/labels'
+import type { Curator, EventRow, HubFeedRow, Profile, Source, VocabEntry } from '@/lib/types'
 
 interface PageProps {
   params: Promise<{ id: string }>
@@ -15,7 +16,7 @@ export default async function SourceDetailPage({ params }: PageProps) {
 
   const { data: sourceData } = await supabase
     .from('sources')
-    .select('*, markets(display_name)')
+    .select('*, markets(display_name, country)')
     .eq('source_id', id)
     .maybeSingle()
 
@@ -30,8 +31,10 @@ export default async function SourceDetailPage({ params }: PageProps) {
     notFound()
   }
 
-  const marketObj = sourceData.markets as { display_name: string } | null
+  const marketObj = sourceData.markets as { display_name: string; country: string } | null
   const cityName = marketObj?.display_name ?? null
+  const country = marketObj?.country ?? null
+  const today = new Date().toISOString().split('T')[0]
   const source = sourceData as Source
 
   const [
@@ -41,6 +44,8 @@ export default async function SourceDetailPage({ params }: PageProps) {
     { data: vocabData },
     { data: liveRowsData },
     { data: allOppsData },
+    eventsResult,
+    peopleResult,
   ] = await Promise.all([
     supabase.auth.getUser(),
     supabase.from('vocab').select('*').order('sort_order', { ascending: true }),
@@ -54,7 +59,23 @@ export default async function SourceDetailPage({ params }: PageProps) {
       .eq('source_id', id)
       .in('status', ['live', 'expired', 'archived'])
       .order('deadline', { ascending: false, nullsFirst: false }),
+    // Task 22 (migration 0012): events this organisation runs, still on or ahead.
+    // Multi-day runs (exhibitions) count while end_date has not passed.
+    supabase
+      .from('events')
+      .select('*')
+      .eq('source_id', id)
+      .or(`date.gte.${today},end_date.gte.${today}`)
+      .order('date', { ascending: true }),
+    supabase.from('curators').select('*').eq('status', 'active').contains('affiliations', [id]),
   ])
+
+  // Before migration 0012 is applied these two columns/tables do not exist; the
+  // page still renders (no events, no people) and the error is logged.
+  if (eventsResult.error) console.error('Error querying events for source:', eventsResult.error.message)
+  if (peopleResult.error) console.error('Error querying curators for source:', peopleResult.error.message)
+  const upcomingEvents = (eventsResult.data || []) as EventRow[]
+  const people = (peopleResult.data || []) as Curator[]
 
   const vocab = (vocabData || []) as VocabEntry[]
   const liveRows = (liveRowsData || []) as HubFeedRow[]
@@ -69,12 +90,7 @@ export default async function SourceDetailPage({ params }: PageProps) {
     profile = profileData as Profile | null
   }
 
-  const sourceTypeEntry = vocab.find((v) => v.category === 'source_type' && v.value === source.source_type)
-  const sourceTypeLabel = sourceTypeEntry
-    ? sourceTypeEntry.label
-    : source.source_type
-    ? source.source_type.charAt(0).toUpperCase() + source.source_type.slice(1)
-    : ''
+  const sourceTypeLabel = vocabLabel(vocab, 'source_type', source.source_type)
 
   const allOpps = allOppsData || []
   const liveOppIds = new Set(liveRows.map((r) => r.opp_id))
@@ -110,13 +126,15 @@ export default async function SourceDetailPage({ params }: PageProps) {
     <SourceDetailView
       source={source}
       cityName={cityName}
+      country={country}
+      upcomingEvents={upcomingEvents}
+      people={people}
       sourceTypeLabel={sourceTypeLabel}
       liveRows={liveRows}
       closedRows={closedRows}
       recurrenceMonth={recurrenceMonth}
       vocab={vocab}
       profile={profile}
-      sourcesDirectoryLive={true}
     />
   )
 }

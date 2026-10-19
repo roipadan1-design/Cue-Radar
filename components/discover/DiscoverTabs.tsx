@@ -1,16 +1,15 @@
 'use client'
 
 import Link from 'next/link'
-import { useSearchParams } from 'next/navigation'
 
 // The ArtConnect discover pattern: sub-tabs across the top of the directory.
-// "Curators" has no real data behind it (rule 1 — no invented profiles), so it's
-// listed here too but the page renders an honest empty state for it rather than
-// a query.
-const TABS: { key: string; label: string }[] = [
-  { key: 'artists', label: 'Artists' },
+// Task 22 order: Organizations first (the Kyoto/Tokyo scene map is the pilot's
+// core content), Curators, then Artists, which is paused as "coming soon" until
+// the pilot has artist profiles to show.
+const TABS: { key: string; label: string; soon?: boolean }[] = [
   { key: 'organizations', label: 'Organizations' },
   { key: 'curators', label: 'Curators' },
+  { key: 'artists', label: 'Artists', soon: true },
 ]
 
 interface DiscoverTabsProps {
@@ -18,24 +17,15 @@ interface DiscoverTabsProps {
 }
 
 export default function DiscoverTabs({ active }: DiscoverTabsProps) {
-  const searchParams = useSearchParams()
-
-  function tabHref(key: string) {
-    const params = new URLSearchParams(searchParams.toString())
-    params.set('tab', key)
-    // "Search by name" is scoped to the entity type of the previous tab (artist
-    // name vs. organisation name) — drop it on switch. City + discipline still
-    // apply to both entity types, so they carry over.
-    params.delete('q')
-    return `/discover?${params.toString()}`
-  }
-
+  // Filters differ per tab (orgs have Type, curators don't), so a tab switch
+  // starts clean rather than carrying params that mean nothing on the next tab.
   return (
-    <div className="flex items-center gap-6 border-b border-line overflow-x-auto">
+    <div className="flex items-center gap-6 border-b border-line overflow-x-auto overflow-y-hidden">
       {TABS.map((tab) => (
         <Link
           key={tab.key}
-          href={tabHref(tab.key)}
+          href={`/discover?tab=${tab.key}`}
+          aria-current={active === tab.key ? 'page' : undefined}
           className={`pb-3 -mb-px shrink-0 t-row text-[15px] border-b-2 transition-colors ${
             active === tab.key
               ? 'border-fg text-fg'
@@ -43,6 +33,11 @@ export default function DiscoverTabs({ active }: DiscoverTabsProps) {
           }`}
         >
           {tab.label}
+          {tab.soon && (
+            <span className="relative -top-1.5 ml-1.5 text-[10px] uppercase tracking-[0.06em] text-muted">
+              Soon
+            </span>
+          )}
         </Link>
       ))}
     </div>
