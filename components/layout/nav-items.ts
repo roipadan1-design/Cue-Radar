@@ -1,5 +1,5 @@
 import type { LucideIcon } from 'lucide-react'
-import { LayoutList, Route, Compass, Bookmark, User } from 'lucide-react'
+import { House, LayoutList, Route, Compass, User } from 'lucide-react'
 
 /**
  * Single source of truth for the app's primary navigation destinations.
@@ -25,12 +25,20 @@ export interface NavItem {
 
 export function getNavItems(isSignedIn: boolean): NavItem[] {
   return [
+    // Task 23: Home is its own nav item so the landing page is always one tap away.
+    {
+      key: 'home',
+      label: 'Home',
+      href: '/',
+      icon: House,
+      isActive: (pathname) => pathname === '/',
+    },
     {
       key: 'circuit',
       label: 'Explore',
       href: '/circuit',
       icon: Route,
-      isActive: (pathname) => pathname.startsWith('/circuit') || pathname === '/',
+      isActive: (pathname) => pathname.startsWith('/circuit'),
     },
     {
       key: 'discover',
@@ -38,13 +46,6 @@ export function getNavItems(isSignedIn: boolean): NavItem[] {
       href: '/discover',
       icon: Compass,
       isActive: (pathname) => pathname.startsWith('/discover'),
-    },
-    {
-      key: 'saved',
-      label: 'Saved',
-      href: '/saved',
-      icon: Bookmark,
-      isActive: (pathname) => pathname.startsWith('/saved'),
     },
     {
       key: 'hub',
@@ -59,7 +60,8 @@ export function getNavItems(isSignedIn: boolean): NavItem[] {
       label: 'Profile',
       href: isSignedIn ? '/profile/edit' : '/signin?next=/profile/edit',
       icon: User,
-      isActive: (pathname) => pathname.startsWith('/profile'),
+      // Saved lives inside the profile area since Task 23.
+      isActive: (pathname) => pathname.startsWith('/profile') || pathname.startsWith('/saved'),
     },
   ]
 }

@@ -1,6 +1,7 @@
 import { redirect } from 'next/navigation'
 import { createClient } from '@/lib/supabase/server'
 import SavedPipelineView from '@/components/saved/SavedPipelineView'
+import ProfileAreaTabs from '@/components/profile/ProfileAreaTabs'
 import type { SavedRow, HubFeedRow } from '@/lib/types'
 
 interface SavedPageProps {
@@ -77,7 +78,8 @@ export default async function SavedPage(props: SavedPageProps) {
 
   return (
     <div className="container-page py-8 md:py-10">
-      <h1 className="t-title text-fg mb-6">Saved calls</h1>
+      <h1 className="t-title text-fg mb-6">Profile</h1>
+      <ProfileAreaTabs active="saved" />
       <SavedPipelineView
         initialRows={savedRows}
         activeStatus={activeStatus}

@@ -1080,3 +1080,11 @@ single authoritative build.
 - The nav label "Currently" is now "Explore", first in the nav and active on `/`; Hub comes last with a "Soon" marker. Default post-sign-in redirect is now `/circuit`.
 - The landing copy names cities from `markets.is_active` (rule 4); no city is written in code.
 - No task file existed for this pivot; it came straight from the owner in chat. This entry and OWNER_TASKS stand in until a TASK_22 file is written.
+
+## Task 23: home, nav, sign-up, link logos (2026-10-19)
+
+- **New definition:** the product is four things (city guide, people, open calls, funding). Copy by creative-director in `docs/creative/TASK_23_HOME_COPY.md`. Open calls and Funding carry "Soon" on the home page because the Hub is still paused; saying they're live would be untrue.
+- **Home** is its own nav item: a square icon button on desktop and a tab on mobile. **Saved** left the main nav and now sits as a tab inside the profile area (`/profile/edit` and `/saved` share `ProfileAreaTabs`). The `/saved` URL still works.
+- **Sign-up:** email + password and Google are both on in Supabase (checked through the Management API). Google now fills in the name and profile photo (migration 0013).
+- **Instagram sign-in: not built, on purpose.** Supabase has no Instagram provider. Meta shut down the Instagram Basic Display API (Dec 2024), and the replacement "Instagram API with Instagram Login" only works for Business/Creator accounts and needs Meta app review. Instagram's profile-picture URLs are also signed and expire, so they can't be stored as an avatar. What we do instead: an Instagram field on the profile (a handle or URL) that turns into a clickable Instagram logo.
+- **Link logos:** `components/ui/LinkIcon.tsx` detects the service from the URL. It uses lucide for the brands lucide has; Spotify, Vimeo, SoundCloud, Bandcamp and TikTok are hand-drawn in the same line style. Everything is in site colours (no brand colours, rule 7). No new dependency (rule 8).

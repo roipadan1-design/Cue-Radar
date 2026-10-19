@@ -24,6 +24,26 @@ export default function TopBarNav({ isSignedIn }: TopBarNavProps) {
       {items.map((item) => {
         const isActive = item.isActive(pathname)
 
+        // Task 23: Home gets its own square in the bar, so the way back to the
+        // landing page is always visible and distinct from the section links.
+        if (item.key === 'home') {
+          const Icon = item.icon
+          return (
+            <Link
+              key={item.key}
+              href={item.href}
+              aria-label={item.label}
+              aria-current={isActive ? 'page' : undefined}
+              title={item.label}
+              className={`inline-flex items-center justify-center w-9 h-9 rounded-[var(--radius)] border transition-colors ${
+                isActive ? 'border-accent bg-accent text-accent-ink' : 'border-line-strong text-fg-soft hover:border-fg hover:text-fg'
+              }`}
+            >
+              <Icon size={18} aria-hidden="true" />
+            </Link>
+          )
+        }
+
         return (
           <Link
             key={item.key}
