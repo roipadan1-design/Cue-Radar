@@ -16,6 +16,8 @@ Then read the task you were assigned in `docs/tasks/`. Do only what the task say
 9. **No secrets.** `.env.local` is gitignored and stays that way.
 10. **Do not start deferred features (amended by Task 06, Task 10).** Trip Radar v1 (`/circuit`, née `/radar`) and a minimal events UI are unblocked by Task 06 in the reduced scope defined in Task 06. A first slice of Connect is unblocked by Task 10 (`docs/tasks/TASK_10_discover_connect_backend.md`), in this exact scope only: opt-in discoverable public profiles (reusing the existing `profiles.is_public` column — no second opt-in column), a search/filter directory screen (discipline + city filters), and a one-directional follow that is private between the two parties (no public follower count anywhere). Everything else stays blocked: open messaging/DM, a public follower count, an activity feed, algorithmic match recommendations, peer calls, digest, analytics. No task may widen the Connect scope beyond what Task 10 and its companion Task 11 define without a new task explicitly naming the addition.
 
+11. **No yellow.** No yellow, yellow-green, lime, chartreuse, amber, gold, mustard, or any hue between roughly 45° and 110° on the color wheel, at any saturation, anywhere: tokens, Tailwind classes (`yellow-*`, `amber-*`, `lime-*`), inline styles, SVGs, images. This includes the legacy `#D7FF3F`. Urgency is expressed with a true red, not orange.
+
 ## When the task and your judgment disagree
 
 Do what the task says. Write your objection in `docs/DECISIONS.md` under the task number. Do not implement your alternative.

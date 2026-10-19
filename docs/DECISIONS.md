@@ -1088,3 +1088,7 @@ single authoritative build.
 - **Sign-up:** email + password and Google are both on in Supabase (checked through the Management API). Google now fills in the name and profile photo (migration 0013).
 - **Instagram sign-in: not built, on purpose.** Supabase has no Instagram provider. Meta shut down the Instagram Basic Display API (Dec 2024), and the replacement "Instagram API with Instagram Login" only works for Business/Creator accounts and needs Meta app review. Instagram's profile-picture URLs are also signed and expire, so they can't be stored as an avatar. What we do instead: an Instagram field on the profile (a handle or URL) that turns into a clickable Instagram logo.
 - **Link logos:** `components/ui/LinkIcon.tsx` detects the service from the URL. It uses lucide for the brands lucide has; Spotify, Vimeo, SoundCloud, Bandcamp and TikTok are hand-drawn in the same line style. Everything is in site colours (no brand colours, rule 7). No new dependency (rule 8).
+
+## Housekeeping — no-yellow rule and sync workflow dedupe (2026-10-19)
+- Added the "no yellow" rule (previously only in open PRs #4/#5) to `AGENTS.md` as rule 11, text taken from PR #5. The CI check from PR #4 (`ci.yml` + `globals.css`) was NOT ported; it needs its own task if wanted.
+- Deleted `.github/workflows/sync.yml`: it was a duplicate of `data_sync.yml` (same schedule `0 */6 * * *`, same script, minus the optional `GOOGLE_SHEET_URL`). `data_sync.yml` is kept. Both were failing because the GitHub secrets are empty (see `docs/OWNER_TASKS.md`, Task 22 part 3, item 10).
