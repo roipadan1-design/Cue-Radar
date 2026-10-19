@@ -37,22 +37,22 @@ export default async function LandingPage() {
         <span className="text-muted font-normal select-none t-title">]</span>
       </div>
 
-      {/* Task 23 copy: docs/creative/TASK_23_HOME_COPY.md (creative-director). The
-          product is four things at once: the city guide, people, open calls and
-          funding. No city names in the copy; the chips below come from the DB. */}
+      {/* Copy: docs/creative/HERO_COPY_FINAL_DRAFT_2026-10-19.md, shortened by the
+          owner on 2026-10-19. No city names in the copy; the chips below come from the DB.
+          Open calls and funding are in the future tense because the pillars below say "Soon". */}
       <h1 className="t-display text-fg max-w-[20ch]">
-        Where to be tonight, who to know, what comes next.
+        Land anywhere. Someone is already making something.
       </h1>
 
       <p id="about" className="t-body text-muted max-w-[60ch] mt-5 scroll-mt-16">
-        For independent artists outside the mainstream: this week&apos;s shows, classes and
-        openings, the people and spaces behind them, and the open calls and grants that carry
-        the work further.
+        Wherever the work takes you, there are opportunities around every corner. Shows, classes
+        and openings on your dates, the makers and curators behind them, and the open calls,
+        residencies and funding on their way. Based in the city? Be found.
       </p>
 
       <div className="mt-8 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6">
         <Button variant="primary" href="/circuit">
-          Explore the city
+          Land here
         </Button>
         {user ? (
           <Link href="/profile/edit" className="t-body text-fg underline underline-offset-4 hover:opacity-80">
@@ -64,6 +64,10 @@ export default async function LandingPage() {
           </Link>
         )}
       </div>
+
+      <h2 className="t-display text-fg max-w-[24ch] mt-16 md:mt-20">
+        Art. Culture. Making. Production. Let&apos;s make connections.
+      </h2>
 
       <div className="mt-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {PILLARS.map((p) => (
