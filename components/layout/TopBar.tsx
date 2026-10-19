@@ -32,8 +32,8 @@ export default function TopBar({ isSignedIn, avatarUrl, fullName }: TopBarProps)
         <div className="flex items-center gap-3 shrink-0">
           {isSignedIn ? (
             <>
-              <Button href="/hub" size="sm" className="hidden sm:inline-flex">
-                Browse open calls
+              <Button href="/circuit" size="sm" className="hidden sm:inline-flex">
+                Explore the city
               </Button>
               <Link
                 href={profileHref}

@@ -29,8 +29,11 @@ export default function MobileNav({ isSignedIn = false }: MobileNavProps) {
                 isActive ? 'bg-fg text-bg font-semibold' : 'text-muted hover:text-fg'
               }`}
             >
-              <Icon size={20} />
-              <span className="text-[10px] tracking-normal leading-none">{item.label}</span>
+              <Icon size={20} className={item.soon && !isActive ? 'opacity-50' : undefined} />
+              <span className="text-[10px] tracking-normal leading-none">
+                {item.label}
+                {item.soon && <span className="sr-only"> (coming soon)</span>}
+              </span>
             </span>
           </Link>
         )
