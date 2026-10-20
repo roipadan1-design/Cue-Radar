@@ -9,7 +9,7 @@ export default function NotFound() {
         The page you are looking for does not exist or has been moved.
       </p>
       <Link href="/circuit" className="mt-4 t-body text-fg underline underline-offset-4 hover:opacity-80">
-        Explore the city
+        Around me
       </Link>
     </div>
   )

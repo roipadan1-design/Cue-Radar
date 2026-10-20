@@ -31,23 +31,22 @@ export default async function LandingPage() {
   return (
     <div className="container-page py-10 md:py-16">
       <div className="animate-mark-fade mb-10 flex items-center gap-2 text-fg">
-        <span className="text-muted font-normal select-none t-title">[</span>
         <Mark size="sm" />
         <span className="t-title text-fg tracking-[0.04em] uppercase">{BRAND.wordmark}</span>
-        <span className="text-muted font-normal select-none t-title">]</span>
       </div>
 
-      {/* Copy: docs/creative/HERO_COPY_FINAL_DRAFT_2026-10-19.md, shortened by the
-          owner on 2026-10-19. No city names in the copy; the chips below come from the DB.
-          Open calls and funding are in the future tense because the pillars below say "Soon". */}
-      <h1 className="t-display text-fg max-w-[20ch]">
-        Land anywhere. Someone is already making something.
+      {/* Copy: written by the owner, 2026-10-20 (see docs/DECISIONS.md). No city names in
+          the copy; the chips below come from the DB. */}
+      <h1 className="t-display text-fg max-w-[24ch]">
+        Art. Culture. Creation. Inspiration. Let&apos;s make connections.
       </h1>
 
-      <p id="about" className="t-body text-muted max-w-[60ch] mt-5 scroll-mt-16">
-        Wherever the work takes you, there are opportunities around every corner. Shows, classes
-        and openings on your dates, the makers and curators behind them, and the open calls,
-        residencies and funding on their way. Based in the city? Be found.
+      <p id="about" className="t-body text-fg max-w-[60ch] mt-5 scroll-mt-16">
+        Wherever your art takes you, the opportunities are all around you, all the time.
+      </p>
+      <p className="t-body text-muted max-w-[60ch] mt-2">
+        Open calls. Funding for art productions. Workshops and masterclasses. Concerts and
+        exhibitions. People.
       </p>
 
       <div className="mt-8 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6">
@@ -64,10 +63,6 @@ export default async function LandingPage() {
           </Link>
         )}
       </div>
-
-      <h2 className="t-display text-fg max-w-[24ch] mt-16 md:mt-20">
-        Art. Culture. Making. Production. Let&apos;s make connections.
-      </h2>
 
       <div className="mt-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {PILLARS.map((p) => (

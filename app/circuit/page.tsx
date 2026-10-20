@@ -49,7 +49,7 @@ export default async function CircuitPage() {
   return (
     <div className="container-reading py-8">
       <div className="mb-8 flex flex-col gap-2">
-        <h1 className="t-title text-fg">Explore the city</h1>
+        <h1 className="t-title text-fg">Around you</h1>
         <p className="t-body text-muted">What&apos;s on where you&apos;ll be.</p>
       </div>
 

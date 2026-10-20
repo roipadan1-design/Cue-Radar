@@ -33,7 +33,7 @@ export default function TopBar({ isSignedIn, avatarUrl, fullName }: TopBarProps)
           {isSignedIn ? (
             <>
               <Button href="/circuit" size="sm" className="hidden sm:inline-flex">
-                Explore the city
+                Around me
               </Button>
               <Link
                 href={profileHref}
