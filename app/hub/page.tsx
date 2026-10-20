@@ -18,7 +18,7 @@ export default function HubComingSoonPage() {
       </p>
       <div className="mt-8">
         <Button variant="primary" href="/circuit">
-          Explore the city
+          Around me
         </Button>
       </div>
     </div>

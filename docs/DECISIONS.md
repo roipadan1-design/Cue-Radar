@@ -1103,3 +1103,4 @@ single authoritative build.
 - The list names open calls and funding although the pillars below still say "Soon"; this is the owner's call.
 - Removed the word "independent" from the Funding pillar line (owner rule: never label the audience).
 - Nav and button labels ("Explore the city") are still pending the owner's decision.
+- Update, same day (owner): "Production" became "Inspiration" in the headline; "Talks" became "Concerts" in the list line; the word "independent" is back in the Funding pillar line (this reverses the earlier bullet); the "Explore the city" labels are now "Around me" (top bar, Hub, 404) and "Around you" (page title of `/circuit`). Bottom-nav labels (Explore, Discover) are unchanged.
