@@ -160,6 +160,12 @@ export interface Source {
   foreigner_notes?: string | null
   evidence_url?: string | null
   verified_at?: string | null
+  // Migration 0014: contact routes
+  contact_email?: string | null
+  email_type?: 'organisation_role' | 'personal_published' | null
+  contact_form_url?: string | null
+  phone_public?: string | null
+  other_links?: string[] | null
 }
 
 /** Researched public profile of a curator / programmer (migration 0012). Not a user. */
@@ -177,6 +183,12 @@ export interface Curator {
   evidence_url?: string | null
   verified_at?: string | null
   status: 'active' | 'inactive'
+  // Migration 0014: contact routes
+  contact_email?: string | null
+  email_type?: 'organisation_role' | 'personal_published' | null
+  contact_form_url?: string | null
+  portfolio_url?: string | null
+  other_links?: string[] | null
 }
 
 export interface Follow {

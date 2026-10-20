@@ -1104,3 +1104,10 @@ single authoritative build.
 - Chat 1 suggested removing DANCE BOX (Kobe); kept, per the earlier owner decision on existing day-trip rows.
 - Six Tokyo Gig Guide venues have no address yet and 11 of their events are `medium` confidence.
 - Contact data (emails, form URLs, phones) from the research is not stored: the DB and Sheet have no columns for them yet.
+
+## Contact routes (2026-10-20)
+
+- Owner direction: as many public contact routes as possible; the product is about connections. Migration `0014_contact_routes.sql` (additive) adds `contact_email, email_type, contact_form_url, phone_public, other_links` to `sources` and `contact_email, email_type, contact_form_url, portfolio_url, other_links` to `curators`. Applied to the live DB.
+- Loaded `other_links` and `contact_form_url` for the Tokyo/Kyoto organisations from the research (`japan_pilot_contact_routes_2026-10-20.sql`). No e-mails or phones exist yet: the research has not delivered them (see `docs/research/FOLLOWUP_RESEARCH_PROMPT_2026-10-20.md`).
+- UI: organisation and curator pages show all routes (`ContactBlock`). A curator page also lists "Through their organisation" so a person with no own route still has a way in.
+- Master Sheet got matching columns (`sources` AE-AH, `curators` P-T). The Sheet-to-DB sync script has not been taught the new columns (its secrets are empty anyway).
