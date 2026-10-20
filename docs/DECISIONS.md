@@ -1092,3 +1092,8 @@ single authoritative build.
 ## Housekeeping — no-yellow rule and sync workflow dedupe (2026-10-19)
 - Added the "no yellow" rule (previously only in open PRs #4/#5) to `AGENTS.md` as rule 11, text taken from PR #5. The CI check from PR #4 (`ci.yml` + `globals.css`) was NOT ported; it needs its own task if wanted.
 - Deleted `.github/workflows/sync.yml`: it was a duplicate of `data_sync.yml` (same schedule `0 */6 * * *`, same script, minus the optional `GOOGLE_SHEET_URL`). `data_sync.yml` is kept. Both were failing because the GitHub secrets are empty (see `docs/OWNER_TASKS.md`, Task 22 part 3, item 10).
+
+## Landing copy — owner-directed rewrite (2026-10-19)
+- Landing hero in `app/page.tsx` replaced at the owner's direct request (not a numbered task): headline "Land anywhere. Someone is already making something.", a shorter follow-up, button "Land here" (same `/circuit` link), and a large closing line "Art. Culture. Making. Production. Let's make connections."
+- Rules applied: no audience labels ("alternative", "underground", "independent"), no "Explore the city", no "rooms"/"bill"; open calls, residencies and funding in the future tense because the pillars say "Soon".
+- Not changed: nav labels (Explore, Discover), the 404 and Hub pages still say "Explore the city" until the owner decides the names. Draft and alternatives: `docs/creative/HERO_COPY_FINAL_DRAFT_2026-10-19.md` (in PR #24).
