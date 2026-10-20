@@ -111,3 +111,33 @@ Dropped:
 ## Inactive rows: none.
 
 ## Added to places.csv: tyo-theatercommons (for the link from Chiaki Soma).
+
+## Curators, round 2 (same day): 3 parallel Tokyo agents + browser check
+- **Result:** 7 more Tokyo people, bringing the total to **21: Kyoto 9, Tokyo 12**. All 3 agents stopped early when they hit the WebFetch/WebSearch limit. The music agent brought back 0 rows.
+- **Added after a browser check:** Hiroko Takahashi and Maaya Fukumoto (C.I.N.N., contact improv); Kota Yamazaki, Aokid, Mina Nishimura and Kanako Iwanaka (Body Arts Laboratory / WWFes 2026); Tomoya Iwata (The 5th Floor).
+- **New places:** tyo-cinn, tyo-bal, tyo-the5thfloor.
+- **Dropped:**
+  - Mai Endo: Art Week Tokyo 2026 credits the Multiple Spirits collective as curator, not her by name. She is also an artist in the show.
+  - 五月めい (WWFes curator): no published romanised name.
+  - Mari Fukutome: listed only on the BAL about page, with no 2026 programme role.
+  - Wataru Kitao (Kichijoji Dance ReLIGHT): the only evidence is from 2021–2025, and the 2026 press PDF wouldn't open.
+- **The music agent checked:** Sound Live Tokyo (dormant since about 2015), TOKAS Experimental Festival (dormant since 2016), MIMINOIMI (no person named), SCOOL (no person named), Minoru Hatanaka (left ICC in March 2025), MUTEK.JP (out of scope), Ochiai Soup, Bar Isshee and Pit Inn (no names). Open leads: Yoshitaka Shirakura (Shindou party), HEADZ/SCOOL.
+- **Weak evidence:** Kanako Iwanaka (her 2026 credit is production, not curating). Fukumoto (the staff page is undated; her activity is backed by the 2026 festival).
+- **Wording fix:** removed gendered pronouns from all the about texts.
+
+## Curators, round 3: experimental music in Tokyo (in the browser)
+- **Added 4:** Koichi Makigami (JAZZ ART SENGAWA, Arts Council Tokyo FY2025), Naohiro Ukawa (DOMMUNE founder per the about page, hosting in October 2026), Yama Yuki and kentaro nagata (MIMINOIMI, festival May 2026). New place: tyo-jazzartsengawa.
+- **Total: 25 people (Kyoto 9, Tokyo 16).** The Tokyo target of 15 is met.
+- **Checked and not added:**
+  - Yoshitaka Shirakura: on RA (2026) only as a DJ. No organising role named.
+  - Rumble series (Forestlimit): no organiser named.
+  - Forestlimit events: no organiser names.
+  - Ftarri label: owner not named.
+  - SCOOL: mainly a rental theatre.
+  - Pit Inn: mainly mainstream jazz.
+  - MODE: London-based platform.
+  - ICC curators: media art, not music.
+  - Asian Meeting Festival: domain now hijacked.
+  - Hiromichi Sakamoto and Kiyoto Fujiwara: sources are old.
+  - FeLid (MIMINOIMI): thin information. Could be added later.
+- **Weak evidence:** Yama Yuki and nagata (2026 membership confirmed; the organising role comes from a 2024 interview). Ukawa (role label is our own reading).
