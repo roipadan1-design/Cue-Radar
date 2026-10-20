@@ -7,7 +7,7 @@ import { ArrowRight } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 
 const PILLARS: { label: string; line: string; href: string; soon?: boolean }[] = [
-  { label: "What's on", line: 'Shows, classes, jams, parties and openings, today and this week.', href: '/circuit' },
+  { label: "What's on", line: 'Concerts, exhibitions, workshops and masterclasses, happening around you this week.', href: '/circuit' },
   { label: 'People', line: 'Artists, curators, collectives and spaces, and a page that introduces you.', href: '/discover' },
   { label: 'Open calls', line: 'Residencies, commissions and calls for work, with the deadline up front.', href: '/hub', soon: true },
   { label: 'Funding', line: "Grants and support for independent work, checked before they're listed.", href: '/hub', soon: true },
@@ -31,28 +31,27 @@ export default async function LandingPage() {
   return (
     <div className="container-page py-10 md:py-16">
       <div className="animate-mark-fade mb-10 flex items-center gap-2 text-fg">
-        <span className="text-muted font-normal select-none t-title">[</span>
         <Mark size="sm" />
         <span className="t-title text-fg tracking-[0.04em] uppercase">{BRAND.wordmark}</span>
-        <span className="text-muted font-normal select-none t-title">]</span>
       </div>
 
-      {/* Task 23 copy: docs/creative/TASK_23_HOME_COPY.md (creative-director). The
-          product is four things at once: the city guide, people, open calls and
-          funding. No city names in the copy; the chips below come from the DB. */}
-      <h1 className="t-display text-fg max-w-[20ch]">
-        Where to be tonight, who to know, what comes next.
+      {/* Copy: written by the owner, 2026-10-20 (see docs/DECISIONS.md). No city names in
+          the copy; the chips below come from the DB. */}
+      <h1 className="t-display text-fg max-w-[24ch]">
+        Art. Culture. Creation. Inspiration. Let&apos;s make connections.
       </h1>
 
-      <p id="about" className="t-body text-muted max-w-[60ch] mt-5 scroll-mt-16">
-        For independent artists outside the mainstream: this week&apos;s shows, classes and
-        openings, the people and spaces behind them, and the open calls and grants that carry
-        the work further.
+      <p id="about" className="t-body text-fg max-w-[60ch] mt-5 scroll-mt-16">
+        Wherever your art takes you, the opportunities are all around you.
+      </p>
+      <p className="t-body text-muted max-w-[60ch] mt-2">
+        Open calls. Funding for art productions. Workshops and masterclasses. Concerts and
+        exhibitions. People.
       </p>
 
       <div className="mt-8 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6">
         <Button variant="primary" href="/circuit">
-          Explore the city
+          Land here
         </Button>
         {user ? (
           <Link href="/profile/edit" className="t-body text-fg underline underline-offset-4 hover:opacity-80">

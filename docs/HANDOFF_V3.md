@@ -35,6 +35,8 @@ Branch strategy: agent works on `rebuild/nextjs`, opens one PR per phase against
 
 ## PART C — PRODUCT (unchanged)
 
+> **Amended 2026-10-19 (owner):** the audience is makers in the experimental/alternative scenes mainly in Europe and the US, both travellers arriving in a new city and people based there who want to be found. The product copy never labels the audience as "alternative" or "underground". See "Audience and voice" in `docs/VISION.md`. The paragraph below is the original text.
+
 Career OS for independent contemporary dance, performance and experimental sound artists across ~23 European / Mediterranean / East-Asian alternative scenes. Three pillars: (1) verified opportunities feed with deadlines — **the Hub**; (2) **Trip Radar** — what's on / closing in a city while the artist is there; (3) shareable editorial **artist profile**.
 
 Design register: dark editorial — Resident Advisor / Are.na / Ableton. Mono for metadata, one display face for titles, no descriptions on cards, dense lists not boxes.

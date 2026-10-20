@@ -1111,3 +1111,23 @@ single authoritative build.
 - Loaded `other_links` and `contact_form_url` for the Tokyo/Kyoto organisations from the research (`japan_pilot_contact_routes_2026-10-20.sql`). No e-mails or phones exist yet: the research has not delivered them (see `docs/research/FOLLOWUP_RESEARCH_PROMPT_2026-10-20.md`).
 - UI: organisation and curator pages show all routes (`ContactBlock`). A curator page also lists "Through their organisation" so a person with no own route still has a way in.
 - Master Sheet got matching columns (`sources` AE-AH, `curators` P-T). The Sheet-to-DB sync script has not been taught the new columns (its secrets are empty anyway).
+## Housekeeping — no-yellow rule and sync workflow dedupe (2026-10-19)
+- Added the "no yellow" rule (previously only in open PRs #4/#5) to `AGENTS.md` as rule 11, text taken from PR #5. The CI check from PR #4 (`ci.yml` + `globals.css`) was NOT ported; it needs its own task if wanted.
+- Deleted `.github/workflows/sync.yml`: it was a duplicate of `data_sync.yml` (same schedule `0 */6 * * *`, same script, minus the optional `GOOGLE_SHEET_URL`). `data_sync.yml` is kept. Both were failing because the GitHub secrets are empty (see `docs/OWNER_TASKS.md`, Task 22 part 3, item 10).
+
+## Landing copy — owner-directed rewrite (2026-10-19)
+- Landing hero in `app/page.tsx` replaced at the owner's direct request (not a numbered task): headline "Land anywhere. Someone is already making something.", a shorter follow-up, button "Land here" (same `/circuit` link), and a large closing line "Art. Culture. Making. Production. Let's make connections."
+- Rules applied: no audience labels ("alternative", "underground", "independent"), no "Explore the city", no "rooms"/"bill"; open calls, residencies and funding in the future tense because the pillars say "Soon".
+- Not changed: nav labels (Explore, Discover), the 404 and Hub pages still say "Explore the city" until the owner decides the names. Draft and alternatives: `docs/creative/HERO_COPY_FINAL_DRAFT_2026-10-19.md` (in PR #24).
+
+## Landing copy v2 — owner text (2026-10-20)
+- Hero rewritten to the owner's wording: headline "Art. Culture. Creation. Production. Let's make connections." (replaces the earlier headline and the closing line; "Creation" is my rendering of the owner's "creative"), a lead line "Wherever your art takes you, the opportunities are all around you, all the time.", and a list line "Open calls. Funding for art productions. Workshops and masterclasses. Talks and exhibitions. People."
+- The list names open calls and funding although the pillars below still say "Soon"; this is the owner's call.
+- Removed the word "independent" from the Funding pillar line (owner rule: never label the audience).
+- Nav and button labels ("Explore the city") are still pending the owner's decision.
+- Update, same day (owner): "Production" became "Inspiration" in the headline; "Talks" became "Concerts" in the list line; the word "independent" is back in the Funding pillar line (this reverses the earlier bullet); the "Explore the city" labels are now "Around me" (top bar, Hub, 404) and "Around you" (page title of `/circuit`). Bottom-nav labels (Explore, Discover) are unchanged.
+- Removed the square brackets around the logo/wordmark (landing page, top bar wordmark, intro splash) at the owner's request.
+
+## Landing and nav copy v3 (2026-10-20, owner)
+- Lead line: removed "all the time". "What's on" pillar line rewritten without jams and parties: "Concerts, exhibitions, workshops and masterclasses, happening around you this week."
+- Bottom nav label "Explore" is now "Around" (also the "← Explore" back link on city pages). "Discover" is unchanged.

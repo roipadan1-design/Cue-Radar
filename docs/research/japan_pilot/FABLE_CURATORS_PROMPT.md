@@ -6,6 +6,30 @@
 
 ---
 
+## ROUND 2 (written Tuesday 20 October 2026): read this first, it overrides anything below that conflicts
+
+Round 1 is delivered and live: **25 curators (Kyoto 9, Tokyo 16)**. Attached: round 1's
+`curators.csv` and `places.csv`. The "tomorrow" deadline below is finished. Deliver in batches of
+at least 10 verified rows. Round 2 fixes two gaps:
+
+1. **Contact routes are missing: 0 of the 25 round-1 people have a `website_url` or `instagram_url`.**
+   From now on **every person must have at least one public way to reach them**: their own
+   website, their own professional Instagram, **or their organisation's official contact page or
+   form** (put that page in `website_url` and write `contact = organisation page` in `notes`).
+   No emails, phone numbers or private accounts, as before. If you find no route at all, still
+   return the row, write `NO CONTACT ROUTE` in `notes`, and list the person in `VERIFICATION_LOG.md`;
+   the team decides.
+2. **Backfill round 1.** Return `curators_backfill.csv` with the same `curator_id`s and the contact
+   fields filled in for the existing 25 people. Change nothing else in those rows.
+3. **Broaden the disciplines.** Round 1 mix: dance 14, performance 14, music 9, theatre 6, visual
+   art 5, sound 4, film 1. Add people from exhibitions and artist-run galleries (`visual_art`,
+   `photography`, `film`), music club bookers and DIY promoters, sound, noise and ambient series,
+   and residency directors. At least **40% of the new rows** should be from those groups.
+4. **Full target:** 40 Tokyo + 20 Kyoto in total, so add about **24 Tokyo and 11 Kyoto**.
+5. **Scope is Kyoto and Tokyo only.** No Osaka, Kobe or Nara.
+
+---
+
 ## 0. What this is for
 
 Fellow. has a **Curators** directory. Each person gets a page that looks like a professional

@@ -35,7 +35,7 @@ export function getNavItems(isSignedIn: boolean): NavItem[] {
     },
     {
       key: 'circuit',
-      label: 'Explore',
+      label: 'Around',
       href: '/circuit',
       icon: Route,
       isActive: (pathname) => pathname.startsWith('/circuit'),
