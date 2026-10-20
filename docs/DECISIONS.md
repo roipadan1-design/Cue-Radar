@@ -1089,6 +1089,28 @@ single authoritative build.
 - **Instagram sign-in: not built, on purpose.** Supabase has no Instagram provider. Meta shut down the Instagram Basic Display API (Dec 2024), and the replacement "Instagram API with Instagram Login" only works for Business/Creator accounts and needs Meta app review. Instagram's profile-picture URLs are also signed and expire, so they can't be stored as an avatar. What we do instead: an Instagram field on the profile (a handle or URL) that turns into a clickable Instagram logo.
 - **Link logos:** `components/ui/LinkIcon.tsx` detects the service from the URL. It uses lucide for the brands lucide has; Spotify, Vimeo, SoundCloud, Bandcamp and TikTok are hand-drawn in the same line style. Everything is in site colours (no brand colours, rule 7). No new dependency (rule 8).
 
+## Network expansion scope (2026-10-20)
+
+- **Owner direction:** Osaka, Kobe and Nara are NOT targets for research or the directory. Japan scope is Tokyo and Kyoto only (Yokohama only as a day trip filed under `tokyo`). Do not propose them as new markets.
+- Mission files for the external researcher live in `docs/research/network_expansion_2026-10-20/`. The two existing rows that mention Kobe (e.g. DANCE BOX) are earlier day-trip entries and stay as they are.
+
+## Network expansion round 2 import (2026-10-20)
+
+- Imported research chats 1-3 (places, events, curators) into the master Sheet (`sources`, `events`, `feeds`, `curators`) and the live DB. Files: `docs/research/japan_pilot/results_2026-10-20_round2/`, SQL: `japan_pilot_places_round2_2026-10-20.sql`, `japan_pilot_events_curators_round2_2026-10-20.sql`.
+- Chat 3 proposed `tyo-xyzcollective`; it duplicates chat 1's `tyo-xyz`, so it was not created and the XYZ curators link to `tyo-xyz`.
+- `bar_venue` (chat 2) is not an allowed source_type; mapped to `shop_venue`.
+- Event `tyo-sessionhouse` mapped to existing `SRC075`; `kyo-kyotoexperiment` to `SRC072`.
+- `booking_required` = `unknown` is not allowed by the DB check; stored as NULL.
+- Chat 1 suggested removing DANCE BOX (Kobe); kept, per the earlier owner decision on existing day-trip rows.
+- Six Tokyo Gig Guide venues have no address yet and 11 of their events are `medium` confidence.
+- Contact data (emails, form URLs, phones) from the research is not stored: the DB and Sheet have no columns for them yet.
+
+## Contact routes (2026-10-20)
+
+- Owner direction: as many public contact routes as possible; the product is about connections. Migration `0014_contact_routes.sql` (additive) adds `contact_email, email_type, contact_form_url, phone_public, other_links` to `sources` and `contact_email, email_type, contact_form_url, portfolio_url, other_links` to `curators`. Applied to the live DB.
+- Loaded `other_links` and `contact_form_url` for the Tokyo/Kyoto organisations from the research (`japan_pilot_contact_routes_2026-10-20.sql`). No e-mails or phones exist yet: the research has not delivered them (see `docs/research/FOLLOWUP_RESEARCH_PROMPT_2026-10-20.md`).
+- UI: organisation and curator pages show all routes (`ContactBlock`). A curator page also lists "Through their organisation" so a person with no own route still has a way in.
+- Master Sheet got matching columns (`sources` AE-AH, `curators` P-T). The Sheet-to-DB sync script has not been taught the new columns (its secrets are empty anyway).
 ## Housekeeping — no-yellow rule and sync workflow dedupe (2026-10-19)
 - Added the "no yellow" rule (previously only in open PRs #4/#5) to `AGENTS.md` as rule 11, text taken from PR #5. The CI check from PR #4 (`ci.yml` + `globals.css`) was NOT ported; it needs its own task if wanted.
 - Deleted `.github/workflows/sync.yml`: it was a duplicate of `data_sync.yml` (same schedule `0 */6 * * *`, same script, minus the optional `GOOGLE_SHEET_URL`). `data_sync.yml` is kept. Both were failing because the GitHub secrets are empty (see `docs/OWNER_TASKS.md`, Task 22 part 3, item 10).

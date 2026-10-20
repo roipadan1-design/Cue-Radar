@@ -4,7 +4,7 @@ import OpportunityRow from '@/components/hub/OpportunityRow'
 import EventRow from '@/components/radar/EventRow'
 import EntityHeader from '@/components/profile/EntityHeader'
 import EntityTabs, { type EntityTab } from '@/components/profile/EntityTabs'
-import EntitySection, { Paragraphs, ContactLinks } from '@/components/profile/EntitySection'
+import EntitySection, { Paragraphs, ContactBlock, hasContactRoutes } from '@/components/profile/EntitySection'
 import { vocabLabel, placeLine } from '@/lib/labels'
 import type { Curator, EventRow as EventRowType, HubFeedRow, Profile, Source, VocabEntry } from '@/lib/types'
 
@@ -129,16 +129,8 @@ export default function SourceDetailView({
       )}
 
       <EntitySection title="Contact">
-        <ContactLinks
-          links={[
-            { label: 'Website', href: source.website_url },
-            { label: 'Instagram', href: source.instagram_url },
-            { label: 'Calendar', href: source.calendar_url },
-          ]}
-        />
-        {!source.website_url && !source.instagram_url && !source.calendar_url && (
-          <p className="t-body text-muted">No public links on record.</p>
-        )}
+        <ContactBlock routes={source} />
+        {!hasContactRoutes(source) && <p className="t-body text-muted">No public links on record.</p>}
       </EntitySection>
     </div>
   )

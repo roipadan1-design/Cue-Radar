@@ -5,7 +5,7 @@ import { getActiveMarketSlugs, isInPilotScope } from '@/lib/markets'
 import Badge from '@/components/ui/Badge'
 import EntityHeader from '@/components/profile/EntityHeader'
 import EntityTabs from '@/components/profile/EntityTabs'
-import EntitySection, { Paragraphs, ContactLinks } from '@/components/profile/EntitySection'
+import EntitySection, { Paragraphs, ContactBlock, hasContactRoutes } from '@/components/profile/EntitySection'
 import { vocabLabel, placeLine } from '@/lib/labels'
 import type { Curator, Source, VocabEntry } from '@/lib/types'
 
@@ -43,11 +43,11 @@ export default async function CuratorPage({ params }: PageProps) {
   const [{ data: vocabData }, { data: orgData }] = await Promise.all([
     supabase.from('vocab').select('*').order('sort_order', { ascending: true }),
     curator.affiliations?.length
-      ? supabase.from('sources').select('source_id, name, source_type').in('source_id', curator.affiliations)
+      ? supabase.from('sources').select('source_id, name, source_type, website_url, instagram_url, calendar_url, contact_email, contact_form_url, phone_public, other_links').in('source_id', curator.affiliations)
       : Promise.resolve({ data: [] }),
   ])
   const vocab = (vocabData || []) as VocabEntry[]
-  const orgs = (orgData || []) as Pick<Source, 'source_id' | 'name' | 'source_type'>[]
+  const orgs = (orgData || []) as Pick<Source, 'source_id' | 'name' | 'source_type' | 'website_url' | 'instagram_url' | 'calendar_url' | 'contact_email' | 'contact_form_url' | 'phone_public' | 'other_links'>[]
   const fields = (curator.disciplines || []).map((d) => vocabLabel(vocab, 'discipline', d))
 
   const overview = (
@@ -73,16 +73,28 @@ export default async function CuratorPage({ params }: PageProps) {
       )}
 
       <EntitySection title="Contact">
-        <ContactLinks
-          links={[
-            { label: 'Website', href: curator.website_url },
-            { label: 'Instagram', href: curator.instagram_url },
-          ]}
-        />
-        {!curator.website_url && !curator.instagram_url && (
-          <p className="t-body text-muted">No public links on record.</p>
+        <ContactBlock routes={curator} />
+        {!hasContactRoutes(curator) && (
+          <p className="t-body text-muted">No personal links on record. Try them through their organisation below.</p>
         )}
       </EntitySection>
+
+      {orgs.some((o) => hasContactRoutes(o)) && (
+        <EntitySection title="Through their organisation">
+          <div className="flex flex-col gap-5">
+            {orgs
+              .filter((o) => hasContactRoutes(o))
+              .map((o) => (
+                <div key={o.source_id} className="flex flex-col gap-2">
+                  <Link href={`/sources/${o.source_id}`} className="t-body text-fg hover:text-accent">
+                    {o.name}
+                  </Link>
+                  <ContactBlock routes={o} />
+                </div>
+              ))}
+          </div>
+        </EntitySection>
+      )}
     </div>
   )
 
