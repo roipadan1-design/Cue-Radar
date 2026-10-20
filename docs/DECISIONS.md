@@ -1105,3 +1105,7 @@ single authoritative build.
 - Nav and button labels ("Explore the city") are still pending the owner's decision.
 - Update, same day (owner): "Production" became "Inspiration" in the headline; "Talks" became "Concerts" in the list line; the word "independent" is back in the Funding pillar line (this reverses the earlier bullet); the "Explore the city" labels are now "Around me" (top bar, Hub, 404) and "Around you" (page title of `/circuit`). Bottom-nav labels (Explore, Discover) are unchanged.
 - Removed the square brackets around the logo/wordmark (landing page, top bar wordmark, intro splash) at the owner's request.
+
+## Landing and nav copy v3 (2026-10-20, owner)
+- Lead line: removed "all the time". "What's on" pillar line rewritten without jams and parties: "Concerts, exhibitions, workshops and masterclasses, happening around you this week."
+- Bottom nav label "Explore" is now "Around" (also the "← Explore" back link on city pages). "Discover" is unchanged.

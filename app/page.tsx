@@ -7,7 +7,7 @@ import { ArrowRight } from 'lucide-react'
 import { createClient } from '@/lib/supabase/server'
 
 const PILLARS: { label: string; line: string; href: string; soon?: boolean }[] = [
-  { label: "What's on", line: 'Shows, classes, jams, parties and openings, today and this week.', href: '/circuit' },
+  { label: "What's on", line: 'Concerts, exhibitions, workshops and masterclasses, happening around you this week.', href: '/circuit' },
   { label: 'People', line: 'Artists, curators, collectives and spaces, and a page that introduces you.', href: '/discover' },
   { label: 'Open calls', line: 'Residencies, commissions and calls for work, with the deadline up front.', href: '/hub', soon: true },
   { label: 'Funding', line: "Grants and support for independent work, checked before they're listed.", href: '/hub', soon: true },
@@ -42,7 +42,7 @@ export default async function LandingPage() {
       </h1>
 
       <p id="about" className="t-body text-fg max-w-[60ch] mt-5 scroll-mt-16">
-        Wherever your art takes you, the opportunities are all around you, all the time.
+        Wherever your art takes you, the opportunities are all around you.
       </p>
       <p className="t-body text-muted max-w-[60ch] mt-2">
         Open calls. Funding for art productions. Workshops and masterclasses. Concerts and
