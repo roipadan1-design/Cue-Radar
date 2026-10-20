@@ -7,6 +7,27 @@
 
 ---
 
+## ROUND 2 (written Tuesday 20 October 2026): read this first, it overrides anything below that conflicts
+
+Round 1 is delivered and live in the product: **44 places (25 Tokyo, 19 Kyoto)** and **110 events**
+(19 Oct to 30 Nov). Attached to this brief: round 1's `places.csv`, `events.csv` and `curators.csv`.
+Do not repeat those rows. Reuse their `source_id`s when a new event belongs to an existing place.
+The "tomorrow" deadline and the two-phase plan in 0.1 are finished; deliver round 2 in batches of
+at least 10 verified rows each.
+
+Round 2 goals:
+
+1. **Grow the institutions.** Add at least **15 Tokyo and 6 Kyoto places**, which brings the
+   totals to the 40 / 25 coverage targets in Part A. Priority gaps: clubs, parties and DIY music
+   nights in Tokyo beyond the ones already listed; independent galleries and artist-run spaces in
+   Kyoto; exhibition spaces, studios that run classes and workshops, and residencies in both cities.
+2. **Keep events going** to 30 Nov for every place, old and new.
+3. **Every place needs a way to reach it:** at least one of website, Instagram, or an official
+   contact page or form (use `website_url`, `instagram_url` or `other_links`). No private emails or phone numbers.
+4. **Scope is Kyoto and Tokyo only.** Do not include places or events in Osaka, Kobe or Nara.
+
+---
+
 ## 0. Who you are and what you're producing
 
 You are the lead field researcher for **Fellow.**, a small product that helps independent artists
@@ -134,10 +155,9 @@ For **each city**, map the ecosystem. You are building the list of *who makes th
 40 thin ones. Go past the first page of English results. Most of this scene only exists in
 Japanese.
 
-**Kyoto note:** treat the Kansai area around Kyoto (Osaka, Kobe, Nara) as a day trip. Include
-places there **only** when they are major hubs for these disciplines, and mark them
-`market = kyoto` with `notes` beginning `Day trip – Osaka:` (or Kobe, Nara). Same for Tokyo and
-Yokohama: `market = tokyo`, `notes` beginning `Day trip – Yokohama:`.
+**Scope note:** Kyoto and Tokyo only. Do not include places or events in Osaka, Kobe or Nara.
+For Tokyo, a place in Yokohama may be included **only** when it is a major hub for these
+disciplines: `market = tokyo`, `notes` beginning `Day trip – Yokohama:`.
 
 ### Part B: what's on (events in the window)
 
@@ -266,7 +286,7 @@ Sections, in this order:
    places per city a newcomer should know.
 2. **Tokyo scene map**: by discipline (dance / music / art), then by neighbourhood: the hubs, the
    weekly rhythm (which nights things happen, which areas), and which collectives connect them.
-3. **Kyoto scene map**: same structure, plus how Kyoto connects to Osaka, Kobe and Tokyo.
+3. **Kyoto scene map**: same structure, plus how Kyoto connects to Tokyo.
 4. **Festival calendar (12 months)**: one table per city of the underground and experimental
    festivals across the year, with usual dates, discipline, and whether they take open
    applications from artists.
