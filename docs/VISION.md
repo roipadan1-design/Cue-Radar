@@ -4,6 +4,16 @@ Written 2026-09-16, by the research pass documented in `docs/RESEARCH_market_sca
 
 **One line:** Fellow. is a Career OS for independent contemporary dance, performance and experimental-sound artists working across ~23 European/Mediterranean/East-Asian scenes — a place that tells you what's open, what's on where you're headed, and gives you one page that shows who you are.
 
+## Audience and voice — owner update, 2026-10-19
+
+This section amends the one line above where they differ.
+
+- **Who it is for.** Artists, makers and collectives in the experimental and alternative scenes, mainly in **Europe and the US**, where artists move easily between cities and countries for projects, residencies and shows. The pilot data currently covers Kyoto and Tokyo, but the product is not a Japan product; copy stays city-agnostic.
+- **Two kinds of users, one platform.** (1) **The traveller**: an artist arriving in a city that is new to them, who needs to know what is on there on their dates, who to meet (local artists, curators, spaces), and which residencies and open calls exist. (2) **The local**: someone based in the city who wants to be found, meet visitors and be part of the scene. Both are first-class. Features and copy must work for both, not only for people passing through.
+- **What it does.** Connects makers with makers ("connecting worlds"); shows what is happening in the city today and on your dates; and leads to opportunities: open calls, residencies, grants and funding (the last two are not live yet and are shown as coming soon).
+- **How it speaks.** In the scene's own language: art, culture, connections, makers, scene. It never labels its audience ("alternative", "underground", "independent", "outside the mainstream"). It avoids generic app vocabulary ("explore the city", "discover", "browse") and the words "rooms" and "bill" in marketing copy. No invented claims or numbers.
+- **Copy sources.** `docs/creative/HERO_COPY_FINAL_DRAFT_2026-10-19.md` (current landing draft) and the earlier option files in `docs/creative/`.
+
 **Why now (from the gap analysis):** no existing product combines a performing-arts-native opportunities feed, an explicit verification/trust layer, a location-aware "what to do while I'm here" surface, and a career-identity profile that has a reason to be opened weekly rather than sitting dormant like a resume. Each piece exists somewhere in isolation (see `docs/RESEARCH_market_scan.md` Part 3); nobody has bundled them for this audience.
 
 ---
