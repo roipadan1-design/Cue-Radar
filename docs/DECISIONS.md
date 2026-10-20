@@ -1097,3 +1097,9 @@ single authoritative build.
 - Landing hero in `app/page.tsx` replaced at the owner's direct request (not a numbered task): headline "Land anywhere. Someone is already making something.", a shorter follow-up, button "Land here" (same `/circuit` link), and a large closing line "Art. Culture. Making. Production. Let's make connections."
 - Rules applied: no audience labels ("alternative", "underground", "independent"), no "Explore the city", no "rooms"/"bill"; open calls, residencies and funding in the future tense because the pillars say "Soon".
 - Not changed: nav labels (Explore, Discover), the 404 and Hub pages still say "Explore the city" until the owner decides the names. Draft and alternatives: `docs/creative/HERO_COPY_FINAL_DRAFT_2026-10-19.md` (in PR #24).
+
+## Landing copy v2 — owner text (2026-10-20)
+- Hero rewritten to the owner's wording: headline "Art. Culture. Creation. Production. Let's make connections." (replaces the earlier headline and the closing line; "Creation" is my rendering of the owner's "creative"), a lead line "Wherever your art takes you, the opportunities are all around you, all the time.", and a list line "Open calls. Funding for art productions. Workshops and masterclasses. Talks and exhibitions. People."
+- The list names open calls and funding although the pillars below still say "Soon"; this is the owner's call.
+- Removed the word "independent" from the Funding pillar line (owner rule: never label the audience).
+- Nav and button labels ("Explore the city") are still pending the owner's decision.

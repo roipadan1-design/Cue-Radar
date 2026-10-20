@@ -10,7 +10,7 @@ const PILLARS: { label: string; line: string; href: string; soon?: boolean }[] =
   { label: "What's on", line: 'Shows, classes, jams, parties and openings, today and this week.', href: '/circuit' },
   { label: 'People', line: 'Artists, curators, collectives and spaces, and a page that introduces you.', href: '/discover' },
   { label: 'Open calls', line: 'Residencies, commissions and calls for work, with the deadline up front.', href: '/hub', soon: true },
-  { label: 'Funding', line: "Grants and support for independent work, checked before they're listed.", href: '/hub', soon: true },
+  { label: 'Funding', line: "Grants and support for new work, checked before they're listed.", href: '/hub', soon: true },
 ]
 
 export default async function LandingPage() {
@@ -37,17 +37,18 @@ export default async function LandingPage() {
         <span className="text-muted font-normal select-none t-title">]</span>
       </div>
 
-      {/* Copy: docs/creative/HERO_COPY_FINAL_DRAFT_2026-10-19.md, shortened by the
-          owner on 2026-10-19. No city names in the copy; the chips below come from the DB.
-          Open calls and funding are in the future tense because the pillars below say "Soon". */}
-      <h1 className="t-display text-fg max-w-[20ch]">
-        Land anywhere. Someone is already making something.
+      {/* Copy: written by the owner, 2026-10-20 (see docs/DECISIONS.md). No city names in
+          the copy; the chips below come from the DB. */}
+      <h1 className="t-display text-fg max-w-[24ch]">
+        Art. Culture. Creation. Production. Let&apos;s make connections.
       </h1>
 
-      <p id="about" className="t-body text-muted max-w-[60ch] mt-5 scroll-mt-16">
-        Wherever the work takes you, there are opportunities around every corner. Shows, classes
-        and openings on your dates, the makers and curators behind them, and the open calls,
-        residencies and funding on their way. Based in the city? Be found.
+      <p id="about" className="t-body text-fg max-w-[60ch] mt-5 scroll-mt-16">
+        Wherever your art takes you, the opportunities are all around you, all the time.
+      </p>
+      <p className="t-body text-muted max-w-[60ch] mt-2">
+        Open calls. Funding for art productions. Workshops and masterclasses. Talks and
+        exhibitions. People.
       </p>
 
       <div className="mt-8 flex flex-col sm:flex-row items-start sm:items-center gap-3 sm:gap-6">
@@ -64,10 +65,6 @@ export default async function LandingPage() {
           </Link>
         )}
       </div>
-
-      <h2 className="t-display text-fg max-w-[24ch] mt-16 md:mt-20">
-        Art. Culture. Making. Production. Let&apos;s make connections.
-      </h2>
 
       <div className="mt-14 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
         {PILLARS.map((p) => (
