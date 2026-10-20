@@ -1088,3 +1088,19 @@ single authoritative build.
 - **Sign-up:** email + password and Google are both on in Supabase (checked through the Management API). Google now fills in the name and profile photo (migration 0013).
 - **Instagram sign-in: not built, on purpose.** Supabase has no Instagram provider. Meta shut down the Instagram Basic Display API (Dec 2024), and the replacement "Instagram API with Instagram Login" only works for Business/Creator accounts and needs Meta app review. Instagram's profile-picture URLs are also signed and expire, so they can't be stored as an avatar. What we do instead: an Instagram field on the profile (a handle or URL) that turns into a clickable Instagram logo.
 - **Link logos:** `components/ui/LinkIcon.tsx` detects the service from the URL. It uses lucide for the brands lucide has; Spotify, Vimeo, SoundCloud, Bandcamp and TikTok are hand-drawn in the same line style. Everything is in site colours (no brand colours, rule 7). No new dependency (rule 8).
+
+## Network expansion scope (2026-10-20)
+
+- **Owner direction:** Osaka, Kobe and Nara are NOT targets for research or the directory. Japan scope is Tokyo and Kyoto only (Yokohama only as a day trip filed under `tokyo`). Do not propose them as new markets.
+- Mission files for the external researcher live in `docs/research/network_expansion_2026-10-20/`. The two existing rows that mention Kobe (e.g. DANCE BOX) are earlier day-trip entries and stay as they are.
+
+## Network expansion round 2 import (2026-10-20)
+
+- Imported research chats 1-3 (places, events, curators) into the master Sheet (`sources`, `events`, `feeds`, `curators`) and the live DB. Files: `docs/research/japan_pilot/results_2026-10-20_round2/`, SQL: `japan_pilot_places_round2_2026-10-20.sql`, `japan_pilot_events_curators_round2_2026-10-20.sql`.
+- Chat 3 proposed `tyo-xyzcollective`; it duplicates chat 1's `tyo-xyz`, so it was not created and the XYZ curators link to `tyo-xyz`.
+- `bar_venue` (chat 2) is not an allowed source_type; mapped to `shop_venue`.
+- Event `tyo-sessionhouse` mapped to existing `SRC075`; `kyo-kyotoexperiment` to `SRC072`.
+- `booking_required` = `unknown` is not allowed by the DB check; stored as NULL.
+- Chat 1 suggested removing DANCE BOX (Kobe); kept, per the earlier owner decision on existing day-trip rows.
+- Six Tokyo Gig Guide venues have no address yet and 11 of their events are `medium` confidence.
+- Contact data (emails, form URLs, phones) from the research is not stored: the DB and Sheet have no columns for them yet.
