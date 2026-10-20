@@ -31,10 +31,8 @@ export default async function LandingPage() {
   return (
     <div className="container-page py-10 md:py-16">
       <div className="animate-mark-fade mb-10 flex items-center gap-2 text-fg">
-        <span className="text-muted font-normal select-none t-title">[</span>
         <Mark size="sm" />
         <span className="t-title text-fg tracking-[0.04em] uppercase">{BRAND.wordmark}</span>
-        <span className="text-muted font-normal select-none t-title">]</span>
       </div>
 
       {/* Copy: written by the owner, 2026-10-20 (see docs/DECISIONS.md). No city names in
