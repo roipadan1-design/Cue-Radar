@@ -1,0 +1,49 @@
+﻿source_id,existing_source_id,name,name_ja,source_type,market,neighborhood,discipline_focus,underground_score,website_url,instagram_url,status
+kyo-kyotoexperiment,SRC072,Kyoto Experiment,KYOTO EXPERIMENT 京都国際舞台芸術祭,festival,kyoto,"Citywide (KAC, ROHM, Shunjuza, E9)","dance,theatre,performance,music,visual_art",4,https://kyoto-ex.jp/en/,https://www.instagram.com/kyotoexperiment/,active
+kyo-urbanguild,,UrBANGUILD,アバンギルド,live_house,kyoto,Kiyamachi / Sanjo,"music,dance,performance,theatre",5,https://urbanguild.net/,https://www.instagram.com/urbanguild,active
+kyo-kac,,Kyoto Art Center,京都芸術センター,art_centre,kyoto,Muromachi / Shijo,"dance,theatre,visual_art,music",3,https://www.kac.or.jp/,https://www.instagram.com/kyotoartcenter/,active
+kyo-butohfes,,Kyoto International Butoh Festival,京都国際舞踏祭,festival,kyoto,Higashiyama (SPACE LFAN),"dance,music",5,https://kyoto-butohfes.com/,,active
+kyo-spacelfan,,SPACE LFAN,,community_space,kyoto,Higashiyama / Honmachi,"dance,performance",4,,,active
+kyo-monochromecircus,,Monochrome Circus,モノクローム・サーカス,collective,kyoto,,dance,5,https://monochromecircus.com/,,active
+kyo-kiraza,,Butoh company Kiraza (Ima Tenko),舞踏カンパニー倚羅座 / 今貂子,collective,kyoto,,"dance,music",5,https://imakiraza.wixsite.com/kirabutoh,,active
+kyo-clubmetro,,CLUB METRO,クラブメトロ,club,kyoto,Jingu-Marutamachi (Keihan),music,4,,,active
+kyo-borofesta,,Boro Festa,ボロフェスタ,festival,kyoto,KBS Hall + Club Metro,music,4,,,active
+kyo-kcua,,@KCUA (Kyoto City University of Arts Gallery),京都市立芸術大学ギャラリー@KCUA,gallery,kyoto,Kyoto Station east / Higashiyama,"visual_art,performance",3,https://gallery.kcua.ac.jp/,,active
+kyo-rohm,,ROHM Theatre Kyoto,ロームシアター京都,art_centre,kyoto,Okazaki,"theatre,dance,music",3,https://rohmtheatrekyoto.jp/,,active
+kyo-theatre-e9,,THEATRE E9 KYOTO,シアターE9京都,theatre_small,kyoto,Higashi-Kujo (south of Kyoto Station),"theatre,dance",4,https://askyoto.or.jp/e9,,active
+kyo-haps,,HAPS (Higashiyama Artists Placement Service),東山 アーティスツ・プレイスメント・サービス,community_space,kyoto,Higashiyama,"visual_art,performance",4,https://haps-kyoto.com/,https://www.instagram.com/hapskyoto/,active
+kyo-kidwf,,Kyoto International Dance Workshop Festival (Kyoto no Atsui Natsu),京都国際ダンスワークショップフェスティバル「京都の暑い夏」,festival,kyoto,Kyoto Art Center,dance,4,https://www.kac.or.jp/events/20260330/,,active
+kyo-dancebox,,DANCE BOX / ArtTheater dB Kobe,NPO法人DANCE BOX／アートシアターdB神戸,theatre_small,kyoto,Day trip - Kobe: Shin-Nagata,dance,5,https://db-dancebox.org,https://www.instagram.com/dancebox_kobe/,active
+kyo-kyotoartbox,,Kyoto Art Box,京都文化芸術オフィシャルサイト Kyoto Art Box,aggregator,kyoto,,"visual_art,dance,theatre,music",3,https://kyoto-artbox.jp/,,active
+kyo-kyototravel-night,,Kyoto City Tourism 'Night events' listing (ja.kyoto.travel),京都観光Navi 夜観光イベント一覧,aggregator,kyoto,,"music,performance",3,https://ja.kyoto.travel/times/night/event/,,active
+kyo-kyotographie,,KYOTOGRAPHIE / KYOTOPHONIE / KG+,,festival,kyoto,,"photography,music,visual_art",3,,,active
+kyo-shunjuza,,Kyoto Art Theater Shunjuza,京都芸術劇場 春秋座,theatre_small,kyoto,Kitashirakawa (Kyoto University of the Arts),"theatre,dance",3,,,active
+tyo-ftarri,SRC070,Ftarri,Ftarri（水道橋）,venue_music,tokyo,Suidobashi / Hongo,"music,sound",5,https://www.ftarri.com/,,active
+tyo-forestlimit,SRC259,FORESTLIMIT,幡ヶ谷フォレストリミット,club,tokyo,Hatagaya,"music,visual_art",5,https://www.forestlimit.com,https://www.instagram.com/forestlimit_info/,active
+tyo-sessionhouse,SRC075,Kagurazaka Session House,神楽坂セッションハウス,dance_studio,tokyo,Kagurazaka,dance,4,https://session-house.net/,,active
+tyo-autumnmeteorite,,Tokyo Festival / Autumn Meteorite 2026 Tokyo,東京舞台芸術祭 舞台芸術祭「秋の隕石2026東京」,festival,tokyo,Ikebukuro (Tokyo Metropolitan Theatre),"theatre,dance,performance",3,https://autumnmeteorite.jp/,https://www.instagram.com/geigeki_info/,active
+tyo-geigeki,,Tokyo Metropolitan Theatre,東京芸術劇場,art_centre,tokyo,Ikebukuro,"theatre,dance,music",3,https://www.geigeki.jp/,,active
+tyo-ongoing,SRC260,Art Center Ongoing,アートセンター・オンゴーイング,artist_run_space,tokyo,Kichijoji,"visual_art,performance,sound",5,https://www.ongoing.jp/,https://www.instagram.com/artcenter_ongoing/,active
+tyo-buoy,,BUoY Arts Center Tokyo,北千住BUoY,art_centre,tokyo,Kita-Senju,"performance,dance,visual_art,music,theatre",5,https://buoy.or.jp/,https://www.instagram.com/buoy_tokyo/,active
+tyo-rawparty,,RAW PARTY (牢),『牢／RAW PARTY』,collective,tokyo,Kita-Senju (BUoY),"performance,dance",5,,https://www.instagram.com/_raw_party,active
+tyo-dommune,SRC069,SUPER DOMMUNE,スーパードミューン,media,tokyo,Shibuya (PARCO 9F),"music,sound,visual_art",4,https://www.dommune.com/,,active
+tyo-20000v,SRC071,Higashi-Koenji Nijuuman Denatsu (20000V),東高円寺二万電圧,live_house,tokyo,Higashi-Koenji,music,3,,,active
+tyo-nishiogi-ci,,Nishiogikubo Contact Improvisation WS & Jam,コンタクトインプロビゼーションWs＆Jam 西荻窪,collective,tokyo,Nishi-Ogikubo,dance,5,https://contactimprov-nn.com/workshop-list/nishiogi/,,
+tyo-dairakudakan,,Dairakudakan / Kochuten,大駱駝艦・壺中天,collective,tokyo,Kichijoji (studio) / Za-Koenji (shows),dance,5,,,active
+tyo-miminoimi,,MIMINOIMI Ambient Week,MIMINOIMI - Ambient / Week,collective,tokyo,,"music,sound",5,,,active
+tyo-artweektokyo,,Art Week Tokyo,,festival,tokyo,Citywide; AWT Bar in Minami-Aoyama,visual_art,3,https://www.artweektokyo.com/,,active
+tyo-tokyoartbeat,,Tokyo Art Beat,,aggregator,tokyo,,"visual_art,performance",3,https://www.tokyoartbeat.com/,,active
+tyo-tokyogigguide,,Tokyo Gig Guide,,aggregator,tokyo,,music,4,https://www.tokyogigguide.com/,,active
+tyo-ra,,Resident Advisor (Tokyo / Kansai),,aggregator,tokyo,,music,4,https://ra.co/,,active
+tyo-superdeluxe,,SuperDeluxe,スーパー・デラックス,venue_music,tokyo,Nishi-Azabu / Roppongi,"music,performance,visual_art",5,,,closed
+tyo-3331,,3331 Arts Chiyoda,アーツ千代田3331,art_centre,tokyo,Suehirocho / Akihabara,visual_art,4,https://www.3331.jp/,,closed
+tyo-youkobo,SRC076,Youkobo Art Space,遊工房アートスペース,residency,tokyo,Zempukuji / Nishi-Ogikubo,visual_art,3,https://youkobo.co.jp/,,
+tyo-theatercommons,,Theater Commons Tokyo,シアターコモンズ,festival,tokyo,Citywide,"theatre,performance",4,https://theatercommons.tokyo/en/,,active
+tyo-cinn,,C.I.N.N. (Contact Improvisation Nippon Network),,collective,tokyo,,dance,3,https://www.contactimprov-nn.com/,,active
+tyo-bal,,Body Arts Laboratory (Whenever Wherever Festival),,collective,tokyo,,"dance,performance",4,https://bodyartslabo.com/,,active
+tyo-the5thfloor,,The 5th Floor,,venue,tokyo,Ikenohata (Nezu),visual_art,4,https://the5thfloor.org/,,active
+tyo-jazzartsengawa,,JAZZ ART SENGAWA,JAZZ ART せんがわ,festival,tokyo,Sengawa (Chofu),"music,sound,performance",4,,,active
+tyo-cinn,,C.I.N.N. (Contact Improvisation Nippon Network),,collective,tokyo,,dance,3,https://www.contactimprov-nn.com/,,active
+tyo-bal,,Body Arts Laboratory (Whenever Wherever Festival),,collective,tokyo,,"dance,performance",4,https://bodyartslabo.com/,,active
+tyo-the5thfloor,,The 5th Floor,,venue,tokyo,Ikenohata (Nezu),visual_art,4,https://the5thfloor.org/,,active
+tyo-multiplespirits,,Multiple Spirits,マルスピ,collective,tokyo,,"visual_art,performance",3,,,active

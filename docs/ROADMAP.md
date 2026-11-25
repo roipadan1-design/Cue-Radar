@@ -253,19 +253,24 @@ Not lost: everything in `docs/`, both task specs (01 in repo, 02 in the owner's 
 | Task | Phase | Status | PR |
 |---|---|---|---|
 | 01 Cleanup and foundation | P1 | merged | #3 |
-| 02 Structure and typography | P1 | in review, fixes requested | #6 |
+| 02 Structure and typography | P1 | merged 2026-09-15 | #6 |
 | 03 Brand, profile and depth | P1 | shipped (mark, accent, real profile, sign-in/up screens — see `docs/DECISIONS.md`) | — |
 | 04 Supabase wiring and auth | P2 | shipped (auth, Hub, Saved, profile all live-wired — see `docs/DECISIONS.md`) | — |
 | 05 Seed and sync alignment | P1 | ongoing (sync workflow running; real-content growth tracked in `docs/PILOT_PLAN.md` Phase 2) | — |
-| 06 Pilot readiness | P2 | in progress on `task/pilot-readiness`, not yet merged — see `docs/PILOT_PLAN.md` Phase 1 for remaining items | — |
-| 07 Brand and visual polish | P2 | not started | — |
-| 08 Source recurrence migration | P2b | not started | — |
-| 09 Source detail page | P2b | not started — depends on 08 | — |
-| 10 Discover/Connect v1 backend | P6 | not started | — |
-| 11 Discover/Connect v1 frontend | P6 | not started — depends on 10 and a ux-ui-designer spec | — |
+| 06 Pilot readiness | P2 | merged (several PRs titled "Task/pilot readiness", last 2026-09-18); remaining items in `docs/PILOT_PLAN.md` Phase 1 not re-checked | #11, #13, #18 |
+| 07 Brand and visual polish | P2 | in main (commit `259d6c1`); the leftover branch `task/brand-and-visual-polish` is an older variant, superseded | — |
+| 08 Source recurrence migration | P2b | in main (`0005_source_recurrence.sql`); live-DB state not checked | — |
+| 09 Source detail page | P2b | in main (`app/sources/[id]/page.tsx`) | — |
+| 10 Discover/Connect v1 backend | P6 | in main (`0006_follows.sql`); live-DB state not checked | — |
+| 11 Discover/Connect v1 frontend | P6 | in main (`app/discover/page.tsx`) | — |
 | 12 Israel-only pilot pivot and content-scope broadening | planning/decision (no code) | logged in `docs/DECISIONS.md`, 2026-09-18 — not a code task file | — |
 | 13 Event-type vocab gap check | P4/P5 | completed 2026-09-18 — see `docs/DECISIONS.md`; `vocab` Sheet-tab format blocker documented in `docs/OWNER_TASKS.md` Step 4f | — |
 | 14 Sources directory | P2b | shipped 2026-09-18 — see `docs/DECISIONS.md` | — |
 | 15–18 (Profile v2, Trip Radar remainder, Pipeline v2, Peer calls, Intros, Digest) | P3–P6 | outlined, not yet numbered or started — numbers reserved, do not reuse | — |
-| 19 Visual identity refresh | P2a | not started — gated on a ux-ui-designer research/spec deliverable, see `docs/tasks/TASK_19_visual_identity_refresh.md` | — |
-| 20 Market reassignment cleanup | P2c | not started — see `docs/tasks/TASK_20_market_reassignment_cleanup.md` | — |
+| 19 Visual identity refresh | P2a | shipped 2026-09-18 per `docs/DECISIONS.md` (accent + title casing only) | — |
+| 20 Market reassignment cleanup | P2c | status unverified — see `docs/tasks/TASK_20_market_reassignment_cleanup.md` | — |
+| 21 ArtConnect standard | P2 | merged 2026-09-18 | #19 |
+| 22 Japan pilot (Kyoto + Tokyo) | pilot | merged 2026-10-19; data loaded to live DB (see `docs/OWNER_TASKS.md`); Sheet→DB sync still not running (empty GitHub secrets) | #20, #22 |
+| 23 Home, nav, auth icons | P2 | merged 2026-10-19 | #21 |
+
+*Updated 2026-10-19 from merged PRs and files in `main`. Rows marked "unverified" were not checked.*

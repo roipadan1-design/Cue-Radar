@@ -1,0 +1,27 @@
+﻿curator_id,name,name_ja,role_label,market,disciplines,affiliations,affiliation_names,affiliation_websites,website_url,instagram_url,evidence_url,status
+kyo-cur-kawasaki-yoko,Yoko Kawasaki,川崎陽子,Artistic director,kyoto,"dance,theatre,performance",kyo-kyotoexperiment,Kyoto Experiment,https://kyoto-ex.jp/en/,,,https://kyoto-ex.jp/en/news/2026-opening/,active
+kyo-cur-tsukahara-yuya,Yuya Tsukahara,塚原悠也,Artistic director,kyoto,"performance,dance,theatre",kyo-kyotoexperiment,Kyoto Experiment,https://kyoto-ex.jp/en/,,,https://kyoto-ex.jp/en/news/2026-opening/,active
+kyo-cur-katsura-kan,Kan Katsura,桂勘,Festival director,kyoto,"dance,performance,music","kyo-butohfes,kyo-urbanguild,kyo-spacelfan",Kyoto International Butoh Festival | UrBANGUILD | SPACE LFAN,https://kyoto-butohfes.com/ | https://urbanguild.net/,,,https://kyoto-butohfes.com/kbf-2026/,active
+kyo-cur-okuyama-riko,Riko Okuyama,奥山理子,Organiser,kyoto,"visual_art,performance",kyo-haps,HAPS (Higashiyama Artists Placement Service),https://haps-kyoto.com/,,,https://haps-kyoto.com/about/,active
+kyo-cur-fujita-mizuho,Mizuho Fujita,藤田瑞穂,Curator,kyoto,visual_art,kyo-kcua,@KCUA (Kyoto City University of Arts Gallery),https://gallery.kcua.ac.jp/,,,https://gallery.kcua.ac.jp/about/,active
+kyo-cur-ogura-emi,Emi Ogura,小倉笑,Programmer,kyoto,"dance,performance","kyo-kidwf,kyo-kac,kyo-urbanguild",Kyoto International Dance Workshop Festival (Kyoto no Atsui Natsu) | Kyoto Art Center | UrBANGUILD,https://www.kac.or.jp/events/20260330/ | https://www.kac.or.jp/ | https://urbanguild.net/,,,https://www.kac.or.jp/events/20260330/,active
+kyo-cur-tani-ryuichi,Ryuichi Tani,谷竜一,Programmer,kyoto,"theatre,dance",kyo-kac,Kyoto Art Center,https://www.kac.or.jp/,,,https://www.kac.or.jp/about/,active
+kyo-cur-iida-jinichiro,Jinichiro Iida,飯田仁一郎,Organiser,kyoto,music,"kyo-borofesta,kyo-clubmetro",Boro Festa | CLUB METRO,,,,https://l-tike.com/borofesta/,active
+kyo-cur-mogura,Mogura,土龍,Organiser,kyoto,music,kyo-borofesta,Boro Festa,,,,https://l-tike.com/borofesta/,active
+tyo-cur-okada-toshiki,Toshiki Okada,岡田利規,Artistic director,tokyo,"theatre,performance,dance","tyo-autumnmeteorite,tyo-geigeki",Tokyo Festival / Autumn Meteorite 2026 Tokyo | Tokyo Metropolitan Theatre,https://autumnmeteorite.jp/ | https://www.geigeki.jp/,,,https://autumnmeteorite.jp/ja,active
+tyo-cur-kishimoto-kako,Kako Kishimoto,岸本佳子,Artistic director,tokyo,"performance,dance,theatre,visual_art,music","tyo-buoy,tyo-rawparty",BUoY Arts Center Tokyo | RAW PARTY (牢),https://buoy.or.jp/,,,https://buoy.or.jp/about/,active
+tyo-cur-itoh-naoko,Naoko Itoh,伊藤直子,Artistic director,tokyo,dance,tyo-sessionhouse,Kagurazaka Session House,https://session-house.net/,,,https://session-house.net/about_sessionhouse.html,active
+tyo-cur-ogawa-nozomu,Nozomu Ogawa,小川希,Artistic director,tokyo,"visual_art,performance,music",tyo-ongoing,Art Center Ongoing,https://www.ongoing.jp/,,,https://www.tokyoartbeat.com/articles/-/best-exhibitions-of-2025-nozomu-ogawa-202512,active
+tyo-cur-soma-chiaki,Chiaki Soma,相馬千秋,Festival director,tokyo,"theatre,performance",tyo-theatercommons,Theater Commons Tokyo,https://theatercommons.tokyo/en/,,,https://theatercommons.tokyo/en/about/,active
+tyo-cur-takahashi-hiroko,Hiroko Takahashi,髙橋弘子,Organiser,tokyo,dance,tyo-cinn,C.I.N.N. (Contact Improvisation Nippon Network),https://www.contactimprov-nn.com/,,,https://contactimprov-nn.com/staff/,active
+tyo-cur-fukumoto-maaya,Maaya Fukumoto,福本まあや,Organiser,tokyo,dance,tyo-cinn,C.I.N.N. (Contact Improvisation Nippon Network),https://www.contactimprov-nn.com/,,,https://contactimprov-nn.com/about/staff/,active
+tyo-cur-yamazaki-kota,Kota Yamazaki,山崎広太,Festival director,tokyo,"dance,performance",tyo-bal,Body Arts Laboratory (Whenever Wherever Festival),https://bodyartslabo.com/,,,https://bodyartslabo.com/about,active
+tyo-cur-aokid,Aokid,,Curator,tokyo,"dance,performance","tyo-bal,tyo-rawparty",Body Arts Laboratory (Whenever Wherever Festival) | RAW PARTY (牢),https://bodyartslabo.com/,,,https://bodyartslabo.com/wwfes2026/festival,active
+tyo-cur-nishimura-mina,Mina Nishimura,西村未奈,Curator,tokyo,"dance,performance",tyo-bal,Body Arts Laboratory (Whenever Wherever Festival),https://bodyartslabo.com/,,,https://bodyartslabo.com/wwfes2026/festival,active
+tyo-cur-iwanaka-kanako,Kanako Iwanaka,岩中可南子,Programmer,tokyo,"dance,performance",tyo-bal,Body Arts Laboratory (Whenever Wherever Festival),https://bodyartslabo.com/,,,https://bodyartslabo.com/wwfes2026/festival,active
+tyo-cur-iwata-tomoya,Tomoya Iwata,岩田智哉,Artistic director,tokyo,visual_art,tyo-the5thfloor,The 5th Floor,https://the5thfloor.org/,,,https://the5thfloor.org/,active
+tyo-cur-makigami-koichi,Koichi Makigami,巻上公一,Festival director,tokyo,"music,sound,performance",tyo-jazzartsengawa,JAZZ ART SENGAWA,,,,https://www.artscouncil-tokyo.jp/en/grants/program/27293/,active
+tyo-cur-ukawa-naohiro,Naohiro Ukawa,宇川直宏,Programmer,tokyo,"music,sound,film",tyo-dommune,SUPER DOMMUNE,https://www.dommune.com/,,,https://www.dommune.com/about/,active
+tyo-cur-yama-yuki,Yama Yuki,,Organiser,tokyo,"music,sound",tyo-miminoimi,MIMINOIMI Ambient Week,,,,https://www.miminoimi.me/,active
+tyo-cur-nagata-kentaro,kentaro nagata,,Organiser,tokyo,"music,sound",tyo-miminoimi,MIMINOIMI Ambient Week,,,,https://www.miminoimi.me/,active
+tyo-cur-endo-mai,Mai Endo,遠藤麻衣,Curator,tokyo,"visual_art,photography,film,performance",tyo-multiplespirits,Multiple Spirits,,,,https://www.artweektokyo.com/en/institution-gallery/waitingroom/,inactive

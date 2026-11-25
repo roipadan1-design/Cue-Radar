@@ -1,0 +1,28 @@
+# Institutions already in the master database outside Japan (names only, for de-duplication)
+
+Source: master sheet `Fellow_Master_Database_v2`, tab `sources`, as of 2026-10-20. These markets are parked
+(`is_active = false`) but their rows stay in the database. If you find an institution that is already listed
+here, do not add it again: put its name in the `already_in_master` column of your output instead.
+
+**amsterdam**: Amsterdams Fonds voor de Kunst; Julidans; BAU; Frascati; ICK Dans Amsterdam; OT301; Zaal 100
+**athens**: Athens Biennale; Athens Digital Arts Festival; Creative Europe Desk Greece; Creative Greece grants; Kalamata International Dance Festival; Onassis AiR; Onassis Stegi; Plissken Festival; Athens Culture Net; Beton7; BIOS; Fournos; Knot Gallery; Romantso; Soundhealing.gr
+**barcelona**: ICUB; LEM Festival; Antic Teatre; Graner; Hangar; Mercat de les Flors; Niu
+**berlin**: Berlin Atonal; Berlin Senate performing arts funding; CTM Festival; Kulturstiftung des Bundes; Musikfonds; Uferstudios; ACUD MACHT NEU; ada Studio; ausland; Bpigs; Callie's; echtzeitmusik.de; HAU Hebbel am Ufer; KM28; Künstlerhaus Bethanien; Morphine Raum; Performing Arts Programm Berlin; silent green; Singuhr; Sophiensaele; STAY YANG SPACE; Tanzfabrik Berlin; Berlin Art Link; Cashmere Radio; field notes / inm; Refuge Worldwide; tanzschreiber; Res Artis
+**brussels**: Bâtard festival; Charleroi danse; Flemish Kunstendecreet; Fédération Wallonie-Bruxelles Culture; Kunstenfestivaldesarts; Flanders Arts Institute; Oscillation Festival; Overtoon; Q-O2; VGC Cultuur; WBI; workspacebrussels; agenda.brussels; Beursschouwburg; BOZAR; Cifas; Danscentrumjette; Garage29; iMAL; Kaaitheater; KANAL Centre Pompidou; La Balsamine; La Bellone; Les Brigittines; Les Halles de Schaerbeek; P.A.R.T.S.; Pianofabriek; Recyclart; Studio Etangs Noirs; Théâtre Les Tanneurs; Théâtre National Wallonie-Bruxelles; Ultima Vez; WIELS; Zsenne art lab; Ancienne Belgique; BRUZZ; Contredanse; Kiosk Radio; Needcompany; Rosas
+**cologne**: Freihandelszone / URBÄNG!; Internationale Photoszene Köln; KunstSalon Stiftung; Kunststiftung NRW; Stadt Köln Kulturamt; Art Initiatives Cologne; Barnes Crossing; Gemeinde Köln; Kolbhalle; Kulturnetz Köln; KHM; Köln Galerien; Odonien; Quartier am Hafen; Stadtgarten; Stiftung Skulpturenpark; studiobühneköln; Temporary Gallery; The LOFT; White Room; Qultor; Stadtrevue
+**copenhagen**: CIDF; Statens Kunstfond; Dansehallerne; Mayhem; Sort/Hvid; Warehouse9
+**israel (all cities)**: Acco Festival of Alternative Israeli Theatre; Negev Museum of Art; Red Sea Jazz Festival; Haifa Theatre; Herzliya Museum of Contemporary Art; Design Museum Holon; Otzrot Tarbut; Bezalel Continuing Education; Jerusalem Music Centre; Musrara; Yellow Submarine; Mahmoud Darwish Cultural Center; Ramat Gan Museum of Israeli Art; Heichal HaTarbut Rishon LeZion; Municipal Art Gallery Rishon LeZion; Ralli Museum Caesarea; AICF; Diver Festival; Fund for Independent Creators; Jerusalem Biennale; Mekudeshet; Manofim; Mifal HaPais; Musrara Mix; Rabinovich Foundation; Rondel Festival; Suzanne Dellal Centre; Artis; Artport; Barbur Gallery; Beit HaGefen; Beit Lessin; CCA Tel Aviv-Yafo; Israeli Center for Digital Art; Machol Shalem (MASH); Mamuta; Nalaga'at; Nissan Nativ; Teder.fm; Tel Aviv Museum of Art; Hazira; Harama; Tohu; Israeli Hashaa Theatre
+**krakow**: Adam Mickiewicz Institute; FestivALT; KRAKERS; Krakow Dance Festival; KBF; Patchlab; Unsound; Alchemia; Bunkier Sztuki; Cricoteka; Karnet; Krakow Choreographic Centre; MOCAK; Stakkato; Villa Decius; Didaskalia
+**lisbon**: Alkantara; Gulbenkian; Forum Dança; O Rumo do Fumo; Zaratan; ZDB
+**lyon**: Biennale de la Danse; DRAC AURA; Nuits Sonores; CCNR; Le Sonic; Les Subsistances
+**oslo**: CODA; Arts Council Norway; Ultima Oslo; Black Box Teater; Dansens Hus; Vega Scene
+**paris**: Sonic Protest; Ville de Paris DAC; Atelier de Paris / CDCN; CENTQUATRE; Instants Chavirés; micadanses; Ménagerie de Verre
+**prague**: Alternativa; Ministry of Culture CZ; Alfred ve dvoře; MeetFactory; PONEC; Punctum; Studio ALTA
+**seoul**: ARKO; MODAFE; SFAC; SIDance; Zandari Festa; Cakeshop; Seoul 284; Mullae Art Village; Nam June Paik Art Center; Post Territory Ujeongguk; SeMA Nanji; The Flow Room; vurt.; Neolook
+**stockholm**: Konstnärsnämnden; Kulturrådet; Norbergfestival; Region Stockholm Kultur; STHLM DANS; STOFF; Atalante; Danscentrum Stockholm; EMS; Fylkingen; Inkonst; Inter Arts Center; Konstepidemin; Konsthall C; Konträr; MDT; Weld; Danstidningen
+**tbilisi**: Goethe-Institut Georgien; Ministry of Culture Georgia; Tbilisi International Theatre Festival; 4710 Gallery; CCA-Tbilisi; Fabrika; GeoAIR; Mutants Radio; Patara Gallery; Untitled Tbilisi; Chai Khana; OC Media
+**turin**: Compagnia di San Paolo; Interplay; Torinodanza; Lavanderia a Vapore; OGR; sPAZIO211
+**vienna**: departure; ImPulsTanz; Wiener Festwochen; WIENWOCHE; brut Wien; eSeL.at; Fluc; Independent Space Index; Kosmos Theater; Kunsthalle Wien; quartier21; Tanzquartier Wien; WUK; Falter
+**warsaw**: Body/Mind festival; Ministry of Culture PL; Warsaw Autumn; Centrum w Ruchu; Komuna Warszawa
+**zurich** (and Basel/Geneva): Fachstelle Kultur Zürich; Fondation vaudoise; Les Digitales; LUFF; Migros-Kulturprozent; Pro Helvetia; SONIC MATTER; Ville de Genève; Arsenic; Ausstellungsraum Klingental; Cabaret Voltaire; Cave12; Gessnerallee; IFMZ; Kaserne Basel; kulturzüri; OTO; Rote Fabrik; Südpol; Tanzhaus Zürich; videokunst.ch; Zurich Art Space Guide; Fabrikzeitung; Radio LoRa; Tsüri.ch; zweikommasieben
+**remote / global networks**: Dancing Opportunities; On The Move; Res Artis; TransArtists; ArtConnect; Backstage
